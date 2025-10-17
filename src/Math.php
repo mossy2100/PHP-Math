@@ -28,7 +28,7 @@ function is_number(mixed $value): bool
  * @param mixed $value The value to check.
  * @return bool True if the value is an unsigned integer, false otherwise.
  */
-function isUnsignedInt(mixed $value): bool
+function is_uint(mixed $value): bool
 {
     return is_int($value) && $value >= 0;
 }
