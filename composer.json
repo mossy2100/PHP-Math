@@ -1,6 +1,6 @@
 {
-    "name": "mossy2100/math",
-    "description": "PHP classes for math operations.",
+    "name": "galaxon/math",
+    "description": "Additional PHP functions for mathematics.",
     "type": "library",
     "license": "MIT",
     "require": {
