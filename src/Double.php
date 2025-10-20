@@ -51,7 +51,7 @@ final class Double
     }
 
     /**
-     * Normalize negative zero to positive zero.
+     * Normalize negative zero to positive zero. This can be used to avoid surprising results from certain operations.
      *
      * @param float $value The floating-point number to normalize.
      * @return float The normalized floating-point number.
@@ -104,37 +104,18 @@ final class Double
     }
 
     /**
-     * Convert a float to a string that can't be confused with an integer, or with another float with a different value.
+     * Convert a float to a hexadecimal string.
      *
-     * Due to lack of precision in the way PHP converts floats to strings, two floats can have different values yet
-     * have the same representation produced by a (string) cast. This function avoids that problem.
+     * The advantage of this method over toString() is that every possible float value will produce a unique
+     * 16-character string.
+     * Whereas, with a cast to string, or sprintf(), the same string may be produced for different values.
      *
      * @param float $value The float to convert.
-     * @return string The string representation of the float.
+     * @return string The hexadecimal string representation of the float.
      */
-    public static function toString(float $value): string
+    public static function toHex(float $value): string
     {
-        // Handle special values.
-        if (is_nan($value)) {
-            return 'NaN';
-        }
-
-        if ($value === INF) {
-            return '∞';
-        }
-
-        if ($value === -INF) {
-            return '-∞';
-        }
-
-        // Convert the float to a string showing maximum useful precision.
-        $s = sprintf('%.17g', $value);
-        // If the string representation of the float value has no decimal point or exponent (i.e. nothing to distinguish
-        // it from an integer), append a decimal point and a zero.
-        if (!preg_match('/[.eE]/', $s)) {
-            $s .= '.0';
-        }
-        return $s;
+        return bin2hex(pack('d', $value));
     }
 
     /**
