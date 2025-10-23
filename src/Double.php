@@ -135,11 +135,18 @@ final class Double
         $r = fmod($value, $units_per_turn);
 
         // Get the range bounds.
-        $half = $units_per_turn / 2.0;
-        $min = $signed ? -$half : 0.0;
-        $max = $signed ? $half : $units_per_turn;
+        if ($signed) {
+            $half = $units_per_turn / 2.0;
+            $min = -$half;
+            $max = $half;
+        }
+        else {
+            $min = 0.0;
+            $max = $units_per_turn;
+        }
 
-        // Adjust into the half-open interval [min, max).
+        // The value may be outside the range due to the sign of $value or the value of $signed.
+        // Adjust accordingly.
         if ($r < $min) {
             $r += $units_per_turn;
         }

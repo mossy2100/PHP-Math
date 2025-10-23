@@ -150,7 +150,7 @@ class Stringify
     }
 
     /**
-     * Stringify a resource.
+     * Stringify a resource. It looks a bit like an HTML tag.
      *
      * @param mixed $value The resource to stringify.
      * @return string The string representation of the resource.
@@ -162,11 +162,16 @@ class Stringify
             throw new TypeError("Value is not a resource.");
         }
 
-        return 'resource:' . get_resource_type($value) . ':' . get_resource_id($value);
+        return '<resource type = "' . get_resource_type($value) . '", id = ' . get_resource_id($value) . '>';
     }
 
     /**
-     * Convert an object to a string. If the object's class doesn't implement Stringable, render like an HTML tag.
+     * Convert an object to a string.
+     *
+     * The result looks similar to an HTML tag, except that:
+     * - the fully qualified class name is used (with the namespace)
+     * - key-value pairs are comma-separated
+     * - the visibility of each property is shown using UML notation
      *
      * @param object $obj The object to encode.
      * @param bool $pretty_print Whether to use pretty printing (default false).
@@ -176,23 +181,6 @@ class Stringify
      */
     public static function stringifyObject(object $obj, bool $pretty_print = false, int $indent_level = 0): string
     {
-        return $obj instanceof Stringable ? $obj->__toString() : self::objectAsTag($obj, $pretty_print, $indent_level);
-    }
-
-    /**
-     * Render an object as an HTML tag, with bonus UML symbols to indicate visibility.
-     *
-     * Possible idea for the future would be to provide options to actually render as a property HTML or XML tag
-     * e.g. just show the base class name without the namespace, omit the UML visibility modifiers, and show the
-     * property values as strings.
-     *
-     * @param object $obj The object to encode.
-     * @param bool $pretty_print Whether to use pretty printing (default false).
-     * @param int $indent_level The level of indentation for this structure (default 0).
-     * @return string The string representation of the object.
-     * @throws TypeError If the object's class is anonymous.
-     */
-    public static function objectAsTag(object $obj, bool $pretty_print = false, int $indent_level = 0): string {
         // Get the tag name.
         $class = get_class($obj);
 
@@ -235,7 +223,7 @@ class Stringify
                     continue 2;
             }
 
-            $pairs[] = $indent . $vis_symbol . $key . ' => ' . self::stringify($value, $pretty_print, $indent_level + 1);
+            $pairs[] = $indent . $vis_symbol . $key . ' = ' . self::stringify($value, $pretty_print, $indent_level + 1);
         }
 
         // If pretty print, return string formatted with new lines and indentation.
