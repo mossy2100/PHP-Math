@@ -1,13 +1,19 @@
 {
-    "name": "galaxon/numbers",
-    "description": "PHP classes for math operations.",
+    "name": "galaxon/math",
+    "description": "PHP classes for math.",
     "type": "library",
     "license": "MIT",
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../Core"
+        }
+    ],
     "require": {
         "php": "^8.4",
         "ext-ctype": "*",
         "ext-mbstring": "*",
-        "galaxon/math": "@dev"
+        "galaxon/core": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0"
