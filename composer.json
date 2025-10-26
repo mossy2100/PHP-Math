@@ -1,24 +1,25 @@
 {
-    "name": "galaxon/math",
-    "description": "Additional PHP functions for mathematics.",
+    "name": "galaxon/numbers",
+    "description": "PHP classes for math operations.",
     "type": "library",
     "license": "MIT",
     "require": {
         "php": "^8.4",
         "ext-ctype": "*",
-        "ext-mbstring": "*"
+        "ext-mbstring": "*",
+        "galaxon/math": "@dev"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0"
     },
     "autoload": {
         "psr-4": {
-            "Galaxon\\Math\\": "src/"
+            "Galaxon\\Numbers\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Galaxon\\Math\\Tests\\": "tests/"
+            "Galaxon\\Numbers\\Tests\\": "tests/"
         }
     },
     "scripts": {

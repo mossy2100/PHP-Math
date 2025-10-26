@@ -1,9 +1,10 @@
-# PHP-Math
+# PHP-Numbers
 
-This library contains functions for mathematical operations.
+This package contains several useful classes for working with different types of numbers: Angle, Complex, and Rational.
 
-It's a general purpose library used by other packages in the Galaxon PHP family.
+Includes tests.
 
-The naming pattern generally follows the core Math functions in PHP.
+More comprehensive documentation to come.
 
-See: https://www.php.net/manual/en/ref.math.php
+Shaun
+ 
