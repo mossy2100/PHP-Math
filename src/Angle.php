@@ -8,7 +8,7 @@ use DomainException;
 use Override;
 use Stringable;
 use Throwable;
-use Galaxon\Math\{Double, Number};
+use Galaxon\Core\{Double, Number};
 
 class Angle implements Stringable
 {

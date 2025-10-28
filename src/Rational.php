@@ -9,7 +9,7 @@ use OverflowException;
 use Override;
 use RangeException;
 use Stringable;
-use Galaxon\Math\{Math, Integer};
+use Galaxon\Core\{Number, Integer};
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
