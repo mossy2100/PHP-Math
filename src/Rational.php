@@ -9,7 +9,7 @@ use OverflowException;
 use Override;
 use RangeException;
 use Stringable;
-use Galaxon\Core\{Number, Integer};
+use Galaxon\Core\{Numbers, Integers};
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
@@ -87,7 +87,7 @@ final class Rational implements Stringable
      * If you find the method to be slow in your environment, reduce the value of $max_den, but it should be OK.
      * In development the method runs superfast, but that was done on a high-end gaming laptop.
      * Tests indicate a $max_den of 200 million is sufficient for exact round-trip conversion between float and
-     * Rational for e, pi, tau, and common square roots and fractions.
+     * Rational for e, π, τ, and common square roots and fractions.
      *
      * Float representation limits can cause inexact round-trip conversions for values very close to integers.
      *
@@ -321,10 +321,10 @@ final class Rational implements Stringable
         $other = self::toRational($other);
 
         // (a/b) + (c/d) = (ad + bc) / (bd)
-        $f = Integer::mul($this->num, $other->den);
-        $g = Integer::mul($this->den, $other->num);
-        $h = Integer::add($f, $g);
-        $k = Integer::mul($this->den, $other->den);
+        $f = Integers::mul($this->num, $other->den);
+        $g = Integers::mul($this->den, $other->num);
+        $h = Integers::add($f, $g);
+        $k = Integers::mul($this->den, $other->den);
 
         return new self($h, $k);
     }
@@ -374,8 +374,8 @@ final class Rational implements Stringable
         // Cross-cancel before multiplying: (a/b) * (c/d)
         // Cancel gcd(a,d) from a and d
         // Cancel gcd(b,c) from b and c
-        $gcd1 = Integer::gcd($this->num, $other->den);
-        $gcd2 = Integer::gcd($this->den, $other->num);
+        $gcd1 = Integers::gcd($this->num, $other->den);
+        $gcd2 = Integers::gcd($this->den, $other->num);
 
         $a = intdiv($this->num, $gcd1);
         $b = intdiv($this->den, $gcd2);
@@ -383,8 +383,8 @@ final class Rational implements Stringable
         $d = intdiv($other->den, $gcd1);
 
         // Now multiply the reduced terms: (a/b) * (c/d) = ac/bd
-        $h = Integer::mul($a, $c);
-        $k = Integer::mul($b, $d);
+        $h = Integers::mul($a, $c);
+        $k = Integers::mul($b, $d);
 
         return new self($h, $k);
     }
@@ -441,8 +441,8 @@ final class Rational implements Stringable
         }
 
         // Calculate the new numerator and denominator with overflow checks.
-        $h = Integer::pow($this->num, $exponent);
-        $k = Integer::pow($this->den, $exponent);
+        $h = Integers::pow($this->num, $exponent);
+        $k = Integers::pow($this->den, $exponent);
 
         // Return the result.
         return new self($h, $k);
@@ -526,8 +526,8 @@ final class Rational implements Stringable
         else {
             try {
                 // Cross multiply: compare a*d with b*c for a/b vs c/d.
-                $left = Integer::mul($this->num, $other->den);
-                $right = Integer::mul($this->den, $other->num);
+                $left = Integers::mul($this->num, $other->den);
+                $right = Integers::mul($this->den, $other->num);
             } catch (OverflowException) {
                 // In case of overflow, compare equivalent floating point values.
                 // NB: This could produce a result of 0 (equal) if two rationals that are actually different convert to
@@ -633,7 +633,7 @@ final class Rational implements Stringable
         }
 
         // Calculate the GCD.
-        $gcd = Integer::gcd($num, $den);
+        $gcd = Integers::gcd($num, $den);
 
         // Reduce the fraction if necessary.
         if ($gcd > 1) {

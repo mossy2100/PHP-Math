@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "975f83f20db6d7efe3290bffbb4bce4e87c99e27"
+                "reference": "cd24eec6924a730d893270511e193d0dbeb19b79"
             },
             "require": {
                 "ext-ctype": "*",
@@ -44,7 +44,7 @@
             "license": [
                 "MIT"
             ],
-            "description": "Base package containing utility classes and methods for use in other packages.",
+            "description": "Base package containing utility classes and methods for use by other packages.",
             "transport-options": {
                 "relative": true
             }

@@ -6,11 +6,12 @@ namespace Galaxon\Math;
 
 use ArrayAccess;
 use DomainException;
+use Galaxon\Core\Angle;
 use LogicException;
 use OutOfRangeException;
-use ValueError;
 use Override;
 use Stringable;
+use ValueError;
 
 /**
  * TODO Complete tests.
@@ -72,7 +73,8 @@ final class Complex implements Stringable, ArrayAccess
         get {
             // Compute if necessary.
             if ($this->_phase === null) {
-                $this->_phase = $this->isReal() ? ($this->real < 0 ? M_PI : 0) : atan2($this->imag, $this->real);
+                $real_angle = $this->real < 0 ? M_PI : 0;
+                $this->_phase = $this->isReal() ? $real_angle : atan2($this->imag, $this->real);
             }
 
             return $this->_phase;
