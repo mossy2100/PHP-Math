@@ -290,7 +290,7 @@ var_dump($m2->isSquare());    // false
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
 
 ### equal()
 

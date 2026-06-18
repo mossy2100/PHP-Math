@@ -2,8 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+---
+
+## [2.0.0] - 2026-06-18
+
+### Changed
+
+- **Renamed package** from `galaxon/math` to `oceanmoon/math` — update your `composer.json` require accordingly.
+- **Renamed PHP namespaces** from `Galaxon\Math\*` to `OceanMoon\Math\*` throughout all source and test files.
+- Updated runtime dependency `galaxon/core` → `oceanmoon/core: ^2.0`.
+- Updated dev dependency `galaxon/coding-standard` → `oceanmoon/coding-standard: ^2.0`.
+- `composer.json`: updated author email, homepage, and support URLs to Ocean Moon Software.
 
 ---
 

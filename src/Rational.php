@@ -2,16 +2,16 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math;
+namespace OceanMoon\Math;
 
 use DivisionByZeroError;
 use DomainException;
-use Galaxon\Core\Exceptions\FormatException;
-use Galaxon\Core\Exceptions\IncomparableTypesException;
-use Galaxon\Core\Floats;
-use Galaxon\Core\Integers;
-use Galaxon\Core\Numbers;
-use Galaxon\Core\Traits\Comparison\ApproxComparable;
+use OceanMoon\Core\Exceptions\FormatException;
+use OceanMoon\Core\Exceptions\IncomparableTypesException;
+use OceanMoon\Core\Floats;
+use OceanMoon\Core\Integers;
+use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
 use Stringable;

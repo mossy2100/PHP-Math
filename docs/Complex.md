@@ -141,7 +141,7 @@ $z3 = Complex::parse("i");
 $z4 = Complex::parse("4i+3");
 ```
 
-**Throws:** [`FormatException`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string is invalid.
+**Throws:** [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string is invalid.
 
 ---
 
@@ -168,7 +168,7 @@ var_dump($z2->isReal());  // false
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
 
 ### equal()
 
@@ -806,4 +806,4 @@ $sum = $sin2->add($cos2);  // 1 + 0i
 - **[Rational](Rational.md)** - Exact rational number arithmetic
 - **[Matrix](Matrix.md)** - Matrix operations (can contain complex-valued computations)
 - **[Vector](Vector.md)** - Vector operations
-- **[Floats](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Floats.md)** - Float utilities including `TAU` constant and approximate comparison
+- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including `TAU` constant and approximate comparison

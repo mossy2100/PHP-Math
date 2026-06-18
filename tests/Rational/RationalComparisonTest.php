@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Rational;
+namespace OceanMoon\Math\Tests\Rational;
 
-use Galaxon\Core\Exceptions\IncomparableTypesException;
-use Galaxon\Math\Rational;
+use OceanMoon\Core\Exceptions\IncomparableTypesException;
+use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;

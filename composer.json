@@ -1,5 +1,5 @@
 {
-    "name": "galaxon/math",
+    "name": "oceanmoon/math",
     "description": "PHP classes for Complex and Rational number arithmetic, plus Vector and Matrix operations.",
     "type": "library",
     "license": "MIT",
@@ -17,24 +17,24 @@
     "authors": [
         {
             "name": "Shaun Moss",
-            "email": "shaun@astromultimedia.com"
+            "email": "shaun@oceanmoon.software"
         }
     ],
-    "homepage": "https://github.com/mossy2100/Galaxon-PHP-Math",
+    "homepage": "https://github.com/mossy2100/PHP-Math",
     "support": {
-        "issues": "https://github.com/mossy2100/Galaxon-PHP-Math/issues",
-        "source": "https://github.com/mossy2100/Galaxon-PHP-Math"
+        "issues": "https://github.com/mossy2100/PHP-Math/issues",
+        "source": "https://github.com/mossy2100/PHP-Math"
     },
     "require": {
         "php": "^8.4",
-        "galaxon/core": "^1.6"
+        "oceanmoon/core": "^2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "galaxon/coding-standard": "^1.0"
+        "oceanmoon/coding-standard": "^2.0"
     },
     "config": {
         "allow-plugins": {
@@ -43,12 +43,12 @@
     },
     "autoload": {
         "psr-4": {
-            "Galaxon\\Math\\": "src/"
+            "OceanMoon\\Math\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Galaxon\\Math\\Tests\\": "tests/"
+            "OceanMoon\\Math\\Tests\\": "tests/"
         }
     },
     "scripts": {

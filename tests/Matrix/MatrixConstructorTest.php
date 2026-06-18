@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Matrix;
+namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
-use Galaxon\Math\Matrix;
 use InvalidArgumentException;
 use LengthException;
+use OceanMoon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

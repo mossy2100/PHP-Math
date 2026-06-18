@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math;
+namespace OceanMoon\Math;
 
 use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
-use Galaxon\Core\Floats;
-use Galaxon\Core\Numbers;
-use Galaxon\Core\Stringify;
-use Galaxon\Core\Traits\Comparison\ApproxEquatable;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
+use OceanMoon\Core\Floats;
+use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Stringify;
+use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;

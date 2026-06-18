@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Complex;
+namespace OceanMoon\Math\Tests\Complex;
 
-use Galaxon\Math\Complex;
 use LogicException;
+use OceanMoon\Math\Complex;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

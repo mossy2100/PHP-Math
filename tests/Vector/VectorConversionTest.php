@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Vector;
+namespace OceanMoon\Math\Tests\Vector;
 
-use Galaxon\Math\Matrix;
-use Galaxon\Math\Vector;
 use InvalidArgumentException;
 use LogicException;
+use OceanMoon\Math\Matrix;
+use OceanMoon\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

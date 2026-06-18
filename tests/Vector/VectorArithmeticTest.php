@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Vector;
+namespace OceanMoon\Math\Tests\Vector;
 
 use DivisionByZeroError;
-use Galaxon\Core\Traits\Asserts\FloatAssertions;
-use Galaxon\Math\Vector;
 use LengthException;
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
+use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

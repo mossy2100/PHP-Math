@@ -129,7 +129,7 @@ $r4 = Rational::parse(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 ```
 
 **Throws:**
-- [`FormatException`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string cannot be parsed
+- [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string cannot be parsed
 - `OverflowException` if the value is too large to represent as a Rational
 - `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
@@ -153,7 +153,7 @@ $r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
 
 ## Comparison Methods
 
-The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait from the [Core](https://github.com/mossy2100/Galaxon-PHP-Core) package.
+The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
 
 ### equal()
 
@@ -736,4 +736,4 @@ var_dump($r3->lessThan(0.5));  // true (can compare with floats)
 - **[Complex](Complex.md)** - Complex number arithmetic
 - **[Matrix](Matrix.md)** - Matrix operations
 - **[Vector](Vector.md)** - Numeric vectors
-- **[Floats](https://github.com/mossy2100/Galaxon-PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison
+- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison

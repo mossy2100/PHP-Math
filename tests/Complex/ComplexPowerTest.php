@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Complex;
 
 use DomainException;
-use Galaxon\Core\Floats;
-use Galaxon\Math\Complex;
+use OceanMoon\Core\Floats;
+use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

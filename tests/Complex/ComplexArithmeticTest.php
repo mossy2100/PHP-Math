@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Complex;
+namespace OceanMoon\Math\Tests\Complex;
 
 use DivisionByZeroError;
-use Galaxon\Math\Complex;
+use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

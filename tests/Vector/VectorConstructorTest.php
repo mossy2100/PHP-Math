@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Galaxon\Math\Tests\Vector;
+namespace OceanMoon\Math\Tests\Vector;
 
 use DomainException;
-use Galaxon\Math\Vector;
 use InvalidArgumentException;
+use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 

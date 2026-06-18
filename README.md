@@ -1,4 +1,4 @@
-# Galaxon PHP Math
+# OceanMoon PHP Math
 
 Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 
@@ -22,9 +22,9 @@ This package provides classes for working with complex numbers, rational numbers
 
 ---
 
-## Development and Quality Assurance / AI Disclosure
+## Development and Quality Assurance
 
-[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and commented primarily by the author, with Claude providing substantial assistance with code review, suggesting improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative approach resulted in a high-quality, thoroughly-tested, and well-documented package delivered in significantly less time than traditional development methods.
+[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and commented primarily by the author, with Claude providing substantial assistance with code review, suggesting improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative approach has produced a well-designed, production-ready package with thorough test coverage and documentation.
 
 ![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
@@ -33,14 +33,14 @@ This package provides classes for working with complex numbers, rational numbers
 ## Requirements
 
 - PHP ^8.4
-- galaxon/core
+- oceanmoon/core
 
 ---
 
 ## Installation
 
 ```bash
-composer require galaxon/math
+composer require oceanmoon/math
 ``` 
 
 ---
@@ -117,11 +117,11 @@ MIT License - see [LICENSE](LICENSE) for details
 
 ## Support
 
-- **Issues**: https://github.com/mossy2100/Galaxon-PHP-Math/issues
+- **Issues**: https://github.com/mossy2100/PHP-Math/issues
 - **Documentation**: See [docs/](docs/) directory for detailed class documentation
 - **Examples**: See test files for comprehensive usage examples
 
-For questions or suggestions, please [open an issue](https://github.com/mossy2100/Galaxon-PHP-Math/issues).
+For questions or suggestions, please [open an issue](https://github.com/mossy2100/PHP-Math/issues).
 
 ---
 
