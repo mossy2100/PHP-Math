@@ -27,7 +27,7 @@ final class Vector implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
 
-    // region Private properties
+    #region Private properties
 
     /**
      * The vector data.
@@ -36,18 +36,18 @@ final class Vector implements Stringable, ArrayAccess
      */
     private array $data;
 
-    // endregion
+    #endregion
 
-    // region Public properties
+    #region Public properties
 
     /**
      * The number of elements in the vector.
      */
     private(set) int $size;
 
-    // endregion
+    #endregion
 
-    // region Property hooks
+    #region Property hooks
 
     /**
      * The magnitude (norm) of the vector. Cached on first access and invalidated on mutation.
@@ -63,9 +63,9 @@ final class Vector implements Stringable, ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Create a new vector with the specified size.
@@ -83,9 +83,9 @@ final class Vector implements Stringable, ArrayAccess
         $this->data = array_fill(0, $size, 0.0);
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Create a vector from an array.
@@ -116,9 +116,9 @@ final class Vector implements Stringable, ArrayAccess
         return $vector;
     }
 
-    // endregion
+    #endregion
 
-    // region Element access
+    #region Element access
 
     /**
      * Get a vector element.
@@ -143,10 +143,10 @@ final class Vector implements Stringable, ArrayAccess
      * Set a vector element.
      *
      * @param int $index Element index (0-based).
-     * @param int|float $value Value to set.
+     * @param float $value Value to set.
      * @throws OutOfRangeException If the index is outside the valid range.
      */
-    public function set(int $index, int|float $value): void
+    public function set(int $index, float $value): void
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
@@ -155,13 +155,13 @@ final class Vector implements Stringable, ArrayAccess
             );
         }
 
-        $this->data[$index] = (float)$value;
+        $this->data[$index] = $value;
         $this->magnitude = null;
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Check if this vector equals another.
@@ -234,9 +234,9 @@ final class Vector implements Stringable, ArrayAccess
         return true;
     }
 
-    // endregion
+    #endregion
 
-    // region Unary arithmetic methods
+    #region Unary arithmetic methods
 
     /**
      * Negate this vector.
@@ -248,9 +248,9 @@ final class Vector implements Stringable, ArrayAccess
         return $this->mul(-1);
     }
 
-    // endregion
+    #endregion
 
-    // region Binary arithmetic methods
+    #region Binary arithmetic methods
 
     /**
      * Add another vector to this one.
@@ -301,10 +301,10 @@ final class Vector implements Stringable, ArrayAccess
     /**
      * Multiply this vector by a scalar.
      *
-     * @param int|float $scalar Number to multiply by.
+     * @param float $scalar Number to multiply by.
      * @return self New vector representing the product.
      */
-    public function mul(int|float $scalar): self
+    public function mul(float $scalar): self
     {
         // Multiply the vectors element-wise.
         $result = new self($this->size);
@@ -318,11 +318,11 @@ final class Vector implements Stringable, ArrayAccess
     /**
      * Divide this vector by a scalar.
      *
-     * @param int|float $scalar Number to divide by.
+     * @param float $scalar Number to divide by.
      * @return self New vector representing the quotient.
      * @throws DivisionByZeroError If scalar is zero.
      */
-    public function div(int|float $scalar): self
+    public function div(float $scalar): self
     {
         // Guard.
         if (Numbers::isZero($scalar)) {
@@ -338,9 +338,9 @@ final class Vector implements Stringable, ArrayAccess
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Linear algebra methods
+    #region Linear algebra methods
 
     /**
      * Calculate the dot product of this vector with another vector.
@@ -401,9 +401,9 @@ final class Vector implements Stringable, ArrayAccess
         return $this->div($this->magnitude);
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Get a copy of the vector data as an array.
@@ -457,9 +457,9 @@ final class Vector implements Stringable, ArrayAccess
         return $this->format();
     }
 
-    // endregion
+    #endregion
 
-    // region ArrayAccess methods
+    #region ArrayAccess methods
 
     /**
      * Check if an offset exists.
@@ -525,5 +525,5 @@ final class Vector implements Stringable, ArrayAccess
         throw new LogicException('Cannot unset elements in a vector.');
     }
 
-    // endregion
+    #endregion
 }

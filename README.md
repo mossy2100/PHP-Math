@@ -89,6 +89,22 @@ Mutable two-dimensional matrix with support for:
 
 ---
 
+## Constants
+
+### [constants.php](src/constants.php)
+
+Composer's PSR-4 autoloading only handles classes — a file that just declares a constant has
+nothing for it to load on demand, so `constants.php` is registered separately via Composer's
+[`files` autoload](https://getcomposer.org/doc/04-schema.md#files) mechanism, which includes it
+unconditionally whenever the package is loaded.
+
+- **`I`** (`OceanMoon\Math\I`) - The imaginary unit, a `Complex(0, 1)` instance. A convenient
+  abbreviation for `Complex::i()`; import it with `use const OceanMoon\Math\I;`.
+
+There are no other constants at this time, but more may be added here in the future if needed.
+
+---
+
 ## Testing
 
 The library includes comprehensive test coverage:

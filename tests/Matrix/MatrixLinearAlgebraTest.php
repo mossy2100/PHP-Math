@@ -15,7 +15,7 @@ class MatrixLinearAlgebraTest extends TestCase
 {
     use FloatAssertions;
 
-    // region transpose() tests
+    #region transpose() tests
 
     /**
      * Test transposing a matrix.
@@ -37,9 +37,9 @@ class MatrixLinearAlgebraTest extends TestCase
         $this->assertSame(6.0, $t->get(2, 1));
     }
 
-    // endregion
+    #endregion
 
-    // region det() tests
+    #region det() tests
 
     /**
      * Test determinant of a 1x1 matrix.
@@ -91,9 +91,9 @@ class MatrixLinearAlgebraTest extends TestCase
         $m->det();
     }
 
-    // endregion
+    #endregion
 
-    // region trace() tests
+    #region trace() tests
 
     /**
      * Test trace of identity matrix.
@@ -158,9 +158,9 @@ class MatrixLinearAlgebraTest extends TestCase
         $m->trace();
     }
 
-    // endregion
+    #endregion
 
-    // region norm() tests
+    #region norm() tests
 
     /**
      * Test Frobenius norm of identity matrix.
@@ -234,5 +234,5 @@ class MatrixLinearAlgebraTest extends TestCase
         $this->assertSame(0.0, $m->pInfNorm());
     }
 
-    // endregion
+    #endregion
 }

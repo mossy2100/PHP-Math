@@ -13,7 +13,7 @@ use stdClass;
 #[CoversClass(Rational::class)]
 class RationalComparisonTest extends TestCase
 {
-    // region Compare tests
+    #region Compare tests
 
     /**
      * Test compare with equal Rationals.
@@ -163,9 +163,9 @@ class RationalComparisonTest extends TestCase
         $this->assertSame(1, $r->compare((float)PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
     }
 
-    // endregion
+    #endregion
 
-    // region Equal tests
+    #region Equal tests
 
     /**
      * Test equals with equal Rationals.
@@ -224,9 +224,9 @@ class RationalComparisonTest extends TestCase
         $this->assertFalse($r->equal(new stdClass()));
     }
 
-    // endregion
+    #endregion
 
-    // region Less/greater than tests
+    #region Less/greater than tests
 
     /**
      * Test lessThan.
@@ -282,9 +282,9 @@ class RationalComparisonTest extends TestCase
         $this->assertFalse($r2->greaterThanOrEqual($r1));
     }
 
-    // endregion
+    #endregion
 
-    // region Mathematical property tests
+    #region Mathematical property tests
 
     /**
      * Test reflexivity: a value should equal itself.
@@ -368,9 +368,9 @@ class RationalComparisonTest extends TestCase
         $this->assertSame(-1, $r1->compare($r3));
     }
 
-    // endregion
+    #endregion
 
-    // region Ordering method tests
+    #region Ordering method tests
 
     /**
      * Test lessThan with invalid type throws IncomparableTypesException.
@@ -472,9 +472,9 @@ class RationalComparisonTest extends TestCase
         $this->assertFalse($r1->greaterThanOrEqual($r3));
     }
 
-    // endregion
+    #endregion
 
-    // region Approximate equality tests
+    #region Approximate equality tests
 
     /**
      * Test basic approximate equality with default tolerances.
@@ -631,9 +631,9 @@ class RationalComparisonTest extends TestCase
         $this->assertTrue($r->approxEqual($f));
     }
 
-    // endregion
+    #endregion
 
-    // region Approximate comparison tests
+    #region Approximate comparison tests
 
     /**
      * Test approxCompare with values that are approximately equal.
@@ -708,5 +708,5 @@ class RationalComparisonTest extends TestCase
         $r->approxCompare('string');
     }
 
-    // endregion
+    #endregion
 }

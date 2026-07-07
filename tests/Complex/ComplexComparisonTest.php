@@ -13,7 +13,7 @@ use stdClass;
 #[CoversClass(Complex::class)]
 class ComplexComparisonTest extends TestCase
 {
-    // region Exact equality tests
+    #region Exact equality tests
 
     /**
      * Test exact equality with identical complex numbers.
@@ -167,9 +167,9 @@ class ComplexComparisonTest extends TestCase
         $this->assertFalse($z1->equal($z3));
     }
 
-    // endregion
+    #endregion
 
-    // region Approximate equality tests
+    #region Approximate equality tests
 
     /**
      * Test basic approximate equality with default tolerances.
@@ -410,5 +410,5 @@ class ComplexComparisonTest extends TestCase
         $this->assertTrue($z2->approxEqual($z1));
     }
 
-    // endregion
+    #endregion
 }

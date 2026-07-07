@@ -15,7 +15,7 @@ use UnderflowException;
 #[CoversClass(Rational::class)]
 class RationalConstructorTest extends TestCase
 {
-    // region Basic construction tests
+    #region Basic construction tests
 
     /**
      * Test creating rational numbers with integer arguments.
@@ -144,9 +144,9 @@ class RationalConstructorTest extends TestCase
         $this->assertSame(4, $r->denominator);
     }
 
-    // endregion
+    #endregion
 
-    // region Error handling tests
+    #region Error handling tests
 
     /**
      * Test that zero denominator throws DivisionByZeroError.
@@ -211,9 +211,9 @@ class RationalConstructorTest extends TestCase
         new Rational(1, NAN);
     }
 
-    // endregion
+    #endregion
 
-    // region PHP_INT_MIN / PHP_INT_MAX edge cases
+    #region PHP_INT_MIN / PHP_INT_MAX edge cases
 
     /**
      * Test PHP_INT_MIN numerator with denominator that is a multiple of 2.
@@ -334,9 +334,9 @@ class RationalConstructorTest extends TestCase
         $this->assertSame(PHP_INT_MIN / -4, $r->denominator);
     }
 
-    // endregion
+    #endregion
 
-    // region Float-to-ratio conversion tests (via constructor)
+    #region Float-to-ratio conversion tests (via constructor)
 
     /**
      * Test constructor with negative floats.
@@ -460,5 +460,5 @@ class RationalConstructorTest extends TestCase
         $this->assertEqualsWithDelta($value, $r->numerator / $r->denominator, 1e-25);
     }
 
-    // endregion
+    #endregion
 }

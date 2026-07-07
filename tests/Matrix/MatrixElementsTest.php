@@ -15,7 +15,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixElementsTest extends TestCase
 {
-    // region get() tests
+    #region get() tests
 
     /**
      * Test getting a valid element.
@@ -61,9 +61,9 @@ class MatrixElementsTest extends TestCase
         $m->get(0, 2);
     }
 
-    // endregion
+    #endregion
 
-    // region set() tests
+    #region set() tests
 
     /**
      * Test setting a valid element.
@@ -105,9 +105,9 @@ class MatrixElementsTest extends TestCase
         $m->set(0, -1, 1);
     }
 
-    // endregion
+    #endregion
 
-    // region getRow() tests
+    #region getRow() tests
 
     /**
      * Test getRow returns the correct Vector.
@@ -146,9 +146,9 @@ class MatrixElementsTest extends TestCase
         $m->getRow(-1);
     }
 
-    // endregion
+    #endregion
 
-    // region setRow() tests
+    #region setRow() tests
 
     /**
      * Test setRow with an array.
@@ -210,9 +210,9 @@ class MatrixElementsTest extends TestCase
         $m->setRow(0, [1, 'two', 3]); // @phpstan-ignore argument.type
     }
 
-    // endregion
+    #endregion
 
-    // region getColumn() tests
+    #region getColumn() tests
 
     /**
      * Test getColumn returns the correct Vector.
@@ -251,9 +251,9 @@ class MatrixElementsTest extends TestCase
         $m->getColumn(-1);
     }
 
-    // endregion
+    #endregion
 
-    // region setColumn() tests
+    #region setColumn() tests
 
     /**
      * Test setColumn with an array.
@@ -315,9 +315,9 @@ class MatrixElementsTest extends TestCase
         $m->setColumn(0, [1, 'two']); // @phpstan-ignore argument.type
     }
 
-    // endregion
+    #endregion
 
-    // region isSquare() tests
+    #region isSquare() tests
 
     /**
      * Test isSquare with a square matrix.
@@ -364,5 +364,5 @@ class MatrixElementsTest extends TestCase
         $this->assertFalse($m->isSquare(2));
     }
 
-    // endregion
+    #endregion
 }

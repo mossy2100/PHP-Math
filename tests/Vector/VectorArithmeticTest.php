@@ -208,9 +208,9 @@ class VectorArithmeticTest extends TestCase
         $a->cross($b);
     }
 
-    // endregion
+    #endregion
 
-    // region normalize() tests
+    #region normalize() tests
 
     /**
      * Test normalize produces a unit vector.
@@ -251,5 +251,5 @@ class VectorArithmeticTest extends TestCase
         $v->normalize();
     }
 
-    // endregion
+    #endregion
 }

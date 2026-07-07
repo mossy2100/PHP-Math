@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use LogicException;
 use OceanMoon\Math\Complex;
-use OutOfRangeException;
+use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use stdClass;
 
 #[CoversClass(Complex::class)]
 class ComplexConversionTest extends TestCase
@@ -145,59 +145,29 @@ class ComplexConversionTest extends TestCase
     }
 
     /**
-     * Test ArrayAccess offsetExists.
+     * Test toObject.
      */
-    public function testOffsetExists(): void
+    public function testToObject(): void
     {
         $z = new Complex(3, 4);
+        $obj = $z->toObject();
 
-        $this->assertTrue(isset($z[0]));
-        $this->assertTrue(isset($z[1]));
-        $this->assertFalse(isset($z[2]));
-        $this->assertFalse(isset($z[-1]));
+        $this->assertInstanceOf(stdClass::class, $obj);
+        $this->assertSame(3.0, $obj->real);
+        $this->assertSame(4.0, $obj->imaginary);
     }
 
     /**
-     * Test ArrayAccess offsetGet.
+     * Test toVector.
      */
-    public function testOffsetGet(): void
+    public function testToVector(): void
     {
         $z = new Complex(3, 4);
+        $vector = $z->toVector();
 
-        $this->assertSame(3.0, $z[0]);
-        $this->assertSame(4.0, $z[1]);
-    }
-
-    /**
-     * Test ArrayAccess offsetGet with invalid offset throws exception.
-     */
-    public function testOffsetGetInvalid(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->expectException(OutOfRangeException::class);
-        $value = $z[2];
-    }
-
-    /**
-     * Test ArrayAccess offsetSet throws exception (immutable).
-     */
-    public function testOffsetSetThrows(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->expectException(LogicException::class);
-        $z[0] = 5;
-    }
-
-    /**
-     * Test ArrayAccess offsetUnset throws exception (immutable).
-     */
-    public function testOffsetUnsetThrows(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->expectException(LogicException::class);
-        unset($z[0]);
+        $this->assertInstanceOf(Vector::class, $vector);
+        $this->assertSame(2, $vector->size);
+        $this->assertSame(3.0, $vector[0]);
+        $this->assertSame(4.0, $vector[1]);
     }
 }

@@ -97,9 +97,9 @@ class RationalConversionTest extends TestCase
         $this->assertEqualsWithDelta(M_PI, $f, 1e-10);
     }
 
-    // endregion
+    #endregion
 
-    // region toMixedNumber() tests
+    #region toMixedNumber() tests
 
     /**
      * Test toMixedNumber with improper positive fraction.
@@ -192,5 +192,5 @@ class RationalConversionTest extends TestCase
         $this->assertTrue($r->equal($reconstructed));
     }
 
-    // endregion
+    #endregion
 }

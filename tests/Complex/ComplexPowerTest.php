@@ -10,6 +10,8 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+use const OceanMoon\Math\I;
+
 #[CoversClass(Complex::class)]
 class ComplexPowerTest extends TestCase
 {
@@ -42,7 +44,7 @@ class ComplexPowerTest extends TestCase
      */
     public function testISquared(): void
     {
-        $result = Complex::i()->sqr();
+        $result = I->sqr();
 
         $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
@@ -53,7 +55,7 @@ class ComplexPowerTest extends TestCase
      */
     public function testISquaredViaPow(): void
     {
-        $result = Complex::i()->pow(2);
+        $result = I->pow(2);
 
         $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
@@ -248,5 +250,21 @@ class ComplexPowerTest extends TestCase
         $result2 = new Complex(-1)->sqrt();
         $this->assertEqualsWithDelta(0.0, $result2->real, Complex::EPSILON);
         $this->assertEqualsWithDelta(1.0, $result2->imaginary, Complex::EPSILON);
+
+        // General complex values (off the real/imaginary axes), exercising the phase/2 path.
+        // sqrt(3 + 4i) = 2 + i, since (2 + i)² = 3 + 4i.
+        $result3 = new Complex(3, 4)->sqrt();
+        $this->assertEqualsWithDelta(2.0, $result3->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result3->imaginary, Complex::EPSILON);
+
+        // sqrt(3 - 4i) = 2 - i (negative phase), since (2 - i)² = 3 - 4i.
+        $result4 = new Complex(3, -4)->sqrt();
+        $this->assertEqualsWithDelta(2.0, $result4->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-1.0, $result4->imaginary, Complex::EPSILON);
+
+        // sqrt(-3 + 4i) = 1 + 2i (second-quadrant input, phase near π), since (1 + 2i)² = -3 + 4i.
+        $result5 = new Complex(-3, 4)->sqrt();
+        $this->assertEqualsWithDelta(1.0, $result5->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result5->imaginary, Complex::EPSILON);
     }
 }

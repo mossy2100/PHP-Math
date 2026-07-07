@@ -11,6 +11,8 @@ The `Complex` class provides a complete implementation of complex number arithme
 - Transcendental functions (exponential, logarithm, power, roots)
 - Trigonometric and hyperbolic functions
 - Conversion between rectangular (a + bi) and polar (r∠θ) forms
+- Conversion to/from arrays, plain objects, and Vectors
+- Native PHP serialization and JSON encoding support
 - Epsilon-based equality comparison for floating-point precision
 
 All operations return new instances, maintaining immutability.
@@ -62,14 +64,14 @@ The range excludes -π but includes π, following the standard mathematical conv
 ## Constructor
 
 ```php
-public function __construct(int|float $real = 0, int|float $imag = 0)
+public function __construct(float $real = 0, float $imag = 0)
 ```
 
 Create a new complex number from real and imaginary parts.
 
 **Parameters:**
-- `$real` (int|float) - The real part (default: 0)
-- `$imag` (int|float) - The imaginary part (default: 0)
+- `$real` (float) - The real part (default: 0)
+- `$imag` (float) - The imaginary part (default: 0)
 
 **Examples:**
 ```php
@@ -91,7 +93,7 @@ $z4 = new Complex();            // 0 + 0i (zero)
 public static function i(): self
 ```
 
-Get the imaginary unit (0 + 1i). Returns a cached instance.
+Get the imaginary unit (0 + 1i). Returns a constant value.
 
 **Example:**
 ```php
@@ -99,17 +101,20 @@ $i = Complex::i();
 echo $i;  // "i"
 ```
 
+**Note:** the imaginary unit is also available directly as the constant `OceanMoon\Math\I`, which
+`Complex::i()` returns. Import it with `use const OceanMoon\Math\I;` if you prefer the constant form.
+
 ### fromPolar()
 
 ```php
-public static function fromPolar(int|float $magnitude, int|float $phase): self
+public static function fromPolar(float $mag, float $phase): self
 ```
 
 Create a complex number from polar coordinates (magnitude and phase).
 
 **Parameters:**
-- `$magnitude` (int|float) - The magnitude (r)
-- `$phase` (int|float) - The phase angle in radians
+- `$mag` (float) - The magnitude (r)
+- `$phase` (float) - The phase angle in radians
 
 **Examples:**
 ```php
@@ -142,6 +147,79 @@ $z4 = Complex::parse("4i+3");
 ```
 
 **Throws:** [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string is invalid.
+
+### toComplex()
+
+```php
+public static function toComplex(mixed $z): self
+```
+
+Convert a value to a Complex, if it isn't one already. This is the general-purpose conversion
+method used internally by the arithmetic methods to accept `self|float` arguments, but it accepts
+a broader range of types directly: an existing `Complex` is returned unchanged; an `int` or `float`
+becomes a real Complex; a `string` is parsed via `parse()`; a 2-element `array` or
+[`Vector`](Vector.md) is interpreted as `[real, imaginary]`; and a plain object is accepted if it
+has numeric `real` and `imaginary` properties.
+
+**Examples:**
+```php
+$z1 = Complex::toComplex(5);            // 5 + 0i
+$z2 = Complex::toComplex('3+4i');       // 3 + 4i
+$z3 = Complex::toComplex([3, 4]);       // 3 + 4i
+$z4 = Complex::toComplex((object)['real' => 3, 'imaginary' => 4]);  // 3 + 4i
+```
+
+**Throws:**
+- `InvalidArgumentException` if the value's type cannot be converted to a Complex.
+- `DomainException` if an array, object, or Vector does not have the required structure.
+- [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if a string cannot be parsed.
+
+### fromArray()
+
+```php
+public static function fromArray(array $arr): self
+```
+
+Create a Complex from a 2-element array, interpreted as `[real, imaginary]`.
+
+**Example:**
+```php
+$z = Complex::fromArray([3, 4]);  // 3 + 4i
+```
+
+**Throws:** `DomainException` if the array does not contain exactly two numeric elements.
+
+### fromObject()
+
+```php
+public static function fromObject(object $obj): self
+```
+
+Create a Complex from a plain object with numeric `real` and `imaginary` properties.
+
+**Example:**
+```php
+$obj = (object)['real' => 3, 'imaginary' => 4];
+$z = Complex::fromObject($obj);  // 3 + 4i
+```
+
+**Throws:** `DomainException` if the object does not have the required numeric properties.
+
+### fromVector()
+
+```php
+public static function fromVector(Vector $vector): self
+```
+
+Create a Complex from a 2-element [`Vector`](Vector.md), interpreted as `[real, imaginary]`.
+
+**Example:**
+```php
+$vector = Vector::fromArray([3, 4]);
+$z = Complex::fromVector($vector);  // 3 + 4i
+```
+
+**Throws:** `DomainException` if the Vector does not contain exactly two elements.
 
 ---
 
@@ -312,7 +390,7 @@ $result = $z->conj();  // 3 - 4i
 ### add()
 
 ```php
-public function add(int|float|self $other): self
+public function add(self|float $other): self
 ```
 
 Add another value to this complex number.
@@ -327,7 +405,7 @@ $sum = $z1->add($z2);  // 4 + 6i
 ### sub()
 
 ```php
-public function sub(int|float|self $other): self
+public function sub(self|float $other): self
 ```
 
 Subtract another value from this complex number.
@@ -342,7 +420,7 @@ $diff = $z1->sub($z2);  // 3 + 4i
 ### mul()
 
 ```php
-public function mul(int|float|self $other): self
+public function mul(self|float $other): self
 ```
 
 Multiply this complex number by another value.
@@ -360,7 +438,7 @@ $product = $z1->mul($z2);  // -5 + 10i
 ### div()
 
 ```php
-public function div(int|float|self $other): self
+public function div(self|float $other): self
 ```
 
 Divide this complex number by another value.
@@ -384,7 +462,7 @@ $quotient = $z1->div($z2);
 ### pow()
 
 ```php
-public function pow(int|float|self $exponent): self
+public function pow(self|float $exponent): self
 ```
 
 Raise this complex number to a power.
@@ -495,7 +573,7 @@ $result = $z->ln();
 ### log()
 
 ```php
-public function log(int|float|self $base): self
+public function log(self|float $base): self
 ```
 
 Calculate logarithm with specified base using change of base formula: log_b(z) = ln(z) / ln(b).
@@ -688,6 +766,34 @@ $z = new Complex(3, 4);
 $array = $z->toArray();  // [3.0, 4.0]
 ```
 
+### toObject()
+
+```php
+public function toObject(): stdClass
+```
+
+Convert to a plain object with `real` and `imaginary` properties.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$obj = $z->toObject();  // (object)['real' => 3.0, 'imaginary' => 4.0]
+```
+
+### toVector()
+
+```php
+public function toVector(): Vector
+```
+
+Convert to a 2-element [`Vector`](Vector.md), `[real, imaginary]`.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$vector = $z->toVector();  // Vector [3.0, 4.0]
+```
+
 ### \_\_toString()
 
 ```php
@@ -708,6 +814,61 @@ echo new Complex(0, 1);     // "i"
 echo new Complex(0, -3);    // "-3i"
 echo new Complex(3, 4);     // "3 + 4i"
 echo new Complex(3, -4);    // "3 - 4i"
+```
+
+---
+
+## Serialization Methods
+
+### \_\_serialize()
+
+```php
+public function __serialize(): array
+```
+
+Serialize to an associative array with `real` and `imaginary` keys. Used automatically by PHP's
+`serialize()`. The computed `magnitude`/`phase` properties are deliberately excluded, since they
+may not be set and are always recomputable from `real`/`imaginary`.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$data = $z->__serialize();  // ['real' => 3.0, 'imaginary' => 4.0]
+```
+
+### \_\_unserialize()
+
+```php
+public function __unserialize(array $data): void
+```
+
+Restore a Complex from data produced by `__serialize()`. Used automatically by PHP's
+`unserialize()`. Reconstructs via the constructor, so the usual finite-value validation applies to
+unserialized data just as it does to normal construction.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+$restored = unserialize(serialize($z));
+$restored->equal($z);  // true
+```
+
+**Throws:** `DomainException` if the data is missing the required keys, the values are not
+numeric, or either value is not finite (±INF or NAN).
+
+### jsonSerialize()
+
+```php
+public function jsonSerialize(): array
+```
+
+Provides `Complex`'s representation for `json_encode()`, via the `JsonSerializable` interface.
+Returns the same associative array as `__serialize()`.
+
+**Example:**
+```php
+$z = new Complex(3, 4);
+echo json_encode($z);  // '{"real":3,"imaginary":4}'
 ```
 
 ---

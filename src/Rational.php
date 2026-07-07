@@ -36,7 +36,7 @@ final class Rational implements Stringable
 {
     use ApproxComparable;
 
-    // region Properties
+    #region Properties
 
     /**
      * The numerator.
@@ -48,9 +48,9 @@ final class Rational implements Stringable
      */
     private(set) int $denominator;
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Constructor.
@@ -127,9 +127,9 @@ final class Rational implements Stringable
         $this->denominator = $den2;
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Parse a string into a rational number.
@@ -216,9 +216,9 @@ final class Rational implements Stringable
         return new self($value);
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Compare a rational number with another number.
@@ -319,9 +319,9 @@ final class Rational implements Stringable
         return Floats::approxEqual($this->toFloat(), $other, $relTol, $absTol);
     }
 
-    // endregion
+    #endregion
 
-    // region Unary arithmetic methods
+    #region Unary arithmetic methods
 
     /**
      * Calculate the absolute value of this rational number.
@@ -362,9 +362,9 @@ final class Rational implements Stringable
             : new self(-$this->denominator, -$this->numerator);
     }
 
-    // endregion
+    #endregion
 
-    // region Binary arithmetic methods
+    #region Binary arithmetic methods
 
     /**
      * Add another value to this rational number.
@@ -449,9 +449,9 @@ final class Rational implements Stringable
         return $this->mul($other->inv());
     }
 
-    // endregion
+    #endregion
 
-    // region Power methods
+    #region Power methods
 
     /**
      * Raise this rational number to an integer power.
@@ -501,7 +501,10 @@ final class Rational implements Stringable
         }
 
         // General solution. Calculate the new numerator and denominator with overflow checks.
-        return new self(Integers::pow($this->numerator, $exponent), Integers::pow($this->denominator, $exponent));
+        return new self(
+            Integers::pow($this->numerator, $exponent),
+            Integers::pow($this->denominator, $exponent)
+        );
     }
 
     /**
@@ -516,15 +519,16 @@ final class Rational implements Stringable
         return $this->mul($this);
     }
 
-    // endregion
+    #endregion
 
-    // region Rounding methods
+    #region Rounding methods
 
     /**
      * Find the integer closest to the rational number.
      *
-     * The rounding method used here is "half away from zero", to match the default rounding mode used by PHP's
-     * round() function. A future version of this method could include a RoundingMode parameter.
+     * The rounding method used here is "half away from zero", to match the default rounding mode
+     * used by PHP's round() function. A future version of this method could include a RoundingMode
+     * parameter.
      *
      * @return int The closest integer.
      */
@@ -557,6 +561,7 @@ final class Rational implements Stringable
         if ($this->denominator === 1) {
             return $this->numerator;
         }
+
         // PHP's intdiv() truncates toward zero, so for negative fractions the quotient is already
         // rounded up (toward zero). We need to subtract 1 to floor it (toward negative infinity).
         // For positive fractions, intdiv() already truncates down, which is the floor.
@@ -574,6 +579,7 @@ final class Rational implements Stringable
         if ($this->denominator === 1) {
             return $this->numerator;
         }
+
         // PHP's intdiv() truncates toward zero, so for positive fractions the quotient is already
         // rounded down (toward zero). We need to add 1 to ceil it (toward positive infinity).
         // For negative fractions, intdiv() already truncates up, which is the ceiling.
@@ -581,9 +587,9 @@ final class Rational implements Stringable
         return $this->numerator > 0 ? $q + 1 : $q;
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Convert the rational number to a float.
@@ -611,10 +617,25 @@ final class Rational implements Stringable
      */
     public function toMixedNumber(): array
     {
-        $integer = intdiv($this->numerator, $this->denominator);
-        $remainder = $this->numerator % $this->denominator;
+        // If the numerator is 0, the integer part is 0 and the remainder is 0/1.
+        if ($this->numerator === 0) {
+            return [0, new self(0)];
+        }
 
-        return [$integer, new self($remainder, $this->denominator)];
+        // If the denominator is 1, the integer part is the numerator and the remainder is 0.
+        if ($this->denominator === 1) {
+            return [$this->numerator, new self(0)];
+        }
+
+        // For proper fractions, the integer part is 0 and the remainder is the original fraction.
+        if (abs($this->numerator) < $this->denominator) {
+            return [0, $this];
+        }
+
+        // Calculate the integer part and the remainder. The remainder will have the same sign as the original fraction.
+        $int = intdiv($this->numerator, $this->denominator);
+        $rem = $this->numerator % $this->denominator;
+        return [$int, new self($rem, $this->denominator)];
     }
 
     /**
@@ -628,9 +649,9 @@ final class Rational implements Stringable
         return $this->numerator . ($this->denominator === 1 ? '' : '/' . $this->denominator);
     }
 
-    // endregion
+    #endregion
 
-    // region Helper methods
+    #region Helper methods
 
     /**
      * Convert a fraction to its canonical form.
@@ -717,16 +738,18 @@ final class Rational implements Stringable
         }
 
         // Check for values outside the valid range for Rational.
-        if ($absValue < 1 / PHP_INT_MAX) {
+        $min = 1.0 / PHP_INT_MAX;
+        $max = (float)PHP_INT_MAX;
+        if ($absValue < $min) {
             throw new UnderflowException("The value $value is too small to be expressed as a rational number.");
-        } elseif ($absValue > PHP_INT_MAX) {
+        } elseif ($absValue > $max) {
             throw new OverflowException("The value $value is too large to be expressed as a rational number.");
         }
 
         // Check for limits of range, which can't be handled by the continued fraction algorithm.
-        if ($absValue === 1.0 / PHP_INT_MAX) {
+        if ($absValue === $min) {
             return [$sign, PHP_INT_MAX];
-        } elseif ($absValue === (float)PHP_INT_MAX) {
+        } elseif ($absValue === $max) {
             return [$sign * PHP_INT_MAX, 1];
         }
 
@@ -792,5 +815,5 @@ final class Rational implements Stringable
         }
     }
 
-    // endregion
+    #endregion
 }

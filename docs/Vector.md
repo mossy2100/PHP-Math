@@ -122,14 +122,14 @@ echo $v->get(2);  // 30.0
 ### set()
 
 ```php
-public function set(int $index, int|float $value): void
+public function set(int $index, float $value): void
 ```
 
 Set a vector element by index. Integer values are cast to float.
 
 **Parameters:**
 - `$index` (int) - Element index (0-based).
-- `$value` (int|float) - Value to set.
+- `$value` (float) - Value to set.
 
 **Throws:**
 - `OutOfRangeException` if the index is outside the valid range.
@@ -290,13 +290,13 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 ### mul()
 
 ```php
-public function mul(int|float $scalar): self
+public function mul(float $scalar): self
 ```
 
 Multiply this vector by a scalar.
 
 **Parameters:**
-- `$scalar` (int|float) - Number to multiply by.
+- `$scalar` (float) - Number to multiply by.
 
 **Returns:**
 - `self` - New vector representing the product.
@@ -310,13 +310,13 @@ $result = $v->mul(3);  // [3, 6, 9]
 ### div()
 
 ```php
-public function div(int|float $scalar): self
+public function div(float $scalar): self
 ```
 
 Divide this vector by a scalar.
 
 **Parameters:**
-- `$scalar` (int|float) - Number to divide by.
+- `$scalar` (float) - Number to divide by.
 
 **Returns:**
 - `self` - New vector representing the quotient.

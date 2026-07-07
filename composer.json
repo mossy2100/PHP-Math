@@ -44,7 +44,10 @@
     "autoload": {
         "psr-4": {
             "OceanMoon\\Math\\": "src/"
-        }
+        },
+        "files": [
+            "src/constants.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {

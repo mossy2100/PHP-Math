@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [2.1.0] - Unreleased
+
+### Changed
+
+- Simplified scalar value-parameter types from `int|float` to `float` across `Complex`, `Vector`, and `Matrix` for a cleaner API. Integer arguments are still accepted, because PHP widens `int` to `float` even under `strict_types`, so this change is backward compatible.
+  - `Complex`: `__construct()`, `fromPolar()`, `add()`, `sub()`, `mul()`, `div()`, `pow()`, `log()`.
+  - `Vector`: `set()`, `mul()`, `div()`.
+  - `Matrix`: `set()`, `mul()`, `div()`.
+- `Rational` was intentionally left unchanged: its constructor distinguishes `int` from `float` arguments (exact integer ratios versus float approximation), so the `int` type is semantically significant there.
+
+---
+
 ## [2.0.0] - 2026-06-18
 
 ### Changed
@@ -65,7 +77,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - `Rational::floatToRatio()` — sign is now correctly placed on the numerator (not denominator) for the `1/PHP_INT_MAX` boundary case.
 - `Rational::floatToRatio()` — `(float)PHP_INT_MAX` and `(float)PHP_INT_MIN` now return correct boundary values instead of throwing.
-- `Complex.php` — missing `// endregion` for ArrayAccess implementation region.
+- `Complex.php` — missing `#endregion` for ArrayAccess implementation region.
 - `Matrix` — `rowCount` property was not initialised in constructor after property declaration change.
 
 ### Documentation

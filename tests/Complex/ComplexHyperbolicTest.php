@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexHyperbolicTest extends TestCase
 {
-    // region Hyperbolic functions
+    #region Hyperbolic functions
 
     /**
      * Test sinh (hyperbolic sine).
@@ -203,9 +203,9 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
     }
 
-    // endregion
+    #endregion
 
-    // region Inverse hyperbolic functions
+    #region Inverse hyperbolic functions
 
     /**
      * Test asinh (inverse hyperbolic sine).
@@ -389,5 +389,5 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $product3->imaginary, Complex::EPSILON);
     }
 
-    // endregion
+    #endregion
 }

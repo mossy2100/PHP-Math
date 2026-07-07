@@ -500,5 +500,5 @@ class RationalArithmeticTest extends TestCase
         $this->assertSame(1, $r2->denominator);
     }
 
-    // endregion
+    #endregion
 }

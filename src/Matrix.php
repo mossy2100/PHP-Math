@@ -22,7 +22,7 @@ final class Matrix implements Stringable
 {
     use ApproxEquatable;
 
-    // region Private properties
+    #region Private properties
 
     /**
      * The matrix data.
@@ -35,9 +35,9 @@ final class Matrix implements Stringable
      */
     private array $data;
 
-    // endregion
+    #endregion
 
-    // region Public properties
+    #region Public properties
 
     /**
      * The number of rows in the matrix.
@@ -49,9 +49,9 @@ final class Matrix implements Stringable
      */
     private(set) int $columnCount;
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Create a new matrix with the specified dimensions.
@@ -73,9 +73,9 @@ final class Matrix implements Stringable
         $this->data = array_fill(0, $rowCount, array_fill(0, $columnCount, 0.0));
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Create a matrix from a 2D array.
@@ -143,9 +143,9 @@ final class Matrix implements Stringable
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Get/set matrix elements
+    #region Get/set matrix elements
 
     /**
      * Get a matrix element.
@@ -175,10 +175,10 @@ final class Matrix implements Stringable
      *
      * @param int $row Row index (0-based).
      * @param int $col Column index (0-based).
-     * @param int|float $value Value to set.
+     * @param float $value Value to set.
      * @throws OutOfRangeException If indexes are outside valid range.
      */
-    public function set(int $row, int $col, int|float $value): void
+    public function set(int $row, int $col, float $value): void
     {
         // Check if indexes are within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
@@ -191,7 +191,7 @@ final class Matrix implements Stringable
         }
 
         assert($row < count($this->data) && $col < count($this->data[$row]));
-        $this->data[$row][$col] = (float)$value;
+        $this->data[$row][$col] = $value;
     }
 
     /**
@@ -322,9 +322,9 @@ final class Matrix implements Stringable
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Check if the matrix is square, optionally of a specific size.
@@ -337,9 +337,9 @@ final class Matrix implements Stringable
         return ($this->rowCount === $this->columnCount) && ($size === null || $this->rowCount === $size);
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
      * Check if this matrix equals another.
@@ -416,9 +416,9 @@ final class Matrix implements Stringable
         return true;
     }
 
-    // endregion
+    #endregion
 
-    // region Unary arithmetic methods
+    #region Unary arithmetic methods
 
     /**
      * Negate this matrix.
@@ -469,9 +469,9 @@ final class Matrix implements Stringable
         return $adjugate;
     }
 
-    // endregion
+    #endregion
 
-    // region Binary arithmetic methods
+    #region Binary arithmetic methods
 
     /**
      * Add another matrix to this one.
@@ -527,11 +527,11 @@ final class Matrix implements Stringable
      * When multiplying by a Vector, it is treated as a column vector (n×1 matrix) and the result
      * is returned as a Vector.
      *
-     * @param int|float|Vector|self $other Number, vector, or matrix to multiply by.
+     * @param float|Vector|self $other Number, vector, or matrix to multiply by.
      * @return self|Vector A Matrix for scalar/matrix operands, or a Vector for vector operands.
      * @throws LengthException If dimensions are incompatible for multiplication.
      */
-    public function mul(int|float|Vector|self $other): self|Vector
+    public function mul(float|Vector|self $other): self|Vector
     {
         // Multiplying matrix by a vector (treated as a column vector).
         if ($other instanceof Vector) {
@@ -584,12 +584,12 @@ final class Matrix implements Stringable
     /**
      * Divide this matrix by a number or another matrix (A × B⁻¹).
      *
-     * @param int|float|self $other Number or matrix to divide by.
+     * @param float|self $other Number or matrix to divide by.
      * @return self New matrix representing the quotient.
      * @throws DivisionByZeroError If dividing by zero.
      * @throws DomainException If dividing by a non-invertible matrix.
      */
-    public function div(int|float|self $other): self
+    public function div(float|self $other): self
     {
         // Check if dividing by a scalar.
         if (Numbers::isNumber($other)) {
@@ -614,9 +614,9 @@ final class Matrix implements Stringable
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Power methods
+    #region Power methods
 
     /**
      * Raise this matrix to a power.
@@ -676,9 +676,9 @@ final class Matrix implements Stringable
         return $result;
     }
 
-    // endregion
+    #endregion
 
-    // region Linear algebra methods
+    #region Linear algebra methods
 
     /**
      * Get the transpose of this matrix.
@@ -733,9 +733,9 @@ final class Matrix implements Stringable
         return $sum;
     }
 
-    // endregion
+    #endregion
 
-    // region Norm methods
+    #region Norm methods
 
     /**
      * Calculate the Frobenius norm (square root of the sum of all squared elements).
@@ -794,9 +794,9 @@ final class Matrix implements Stringable
         return $max;
     }
 
-    // endregion
+    #endregion
 
-    // region Helper methods
+    #region Helper methods
 
     /**
      * Recursive helper method to calculate determinant using cofactor expansion.
@@ -864,9 +864,9 @@ final class Matrix implements Stringable
         return $minor;
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
 
     /**
      * Get a copy of the matrix data as a rectangular array.
@@ -925,5 +925,5 @@ final class Matrix implements Stringable
         return $result;
     }
 
-    // endregion
+    #endregion
 }

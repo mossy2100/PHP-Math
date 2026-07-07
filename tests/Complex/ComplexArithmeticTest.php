@@ -9,6 +9,8 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
+use const OceanMoon\Math\I;
+
 #[CoversClass(Complex::class)]
 class ComplexArithmeticTest extends TestCase
 {
@@ -133,7 +135,7 @@ class ComplexArithmeticTest extends TestCase
     {
         // (3 + 4i) * i = 3i + 4i² = 3i - 4 = -4 + 3i
         $z = new Complex(3, 4);
-        $result = $z->mul(Complex::i());
+        $result = $z->mul(I);
 
         $this->assertSame(-4.0, $result->real);
         $this->assertSame(3.0, $result->imaginary);

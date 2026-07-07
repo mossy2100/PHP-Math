@@ -149,7 +149,7 @@ echo $m->get(1, 1);  // 4
 ### set()
 
 ```php
-public function set(int $row, int $col, int|float $value): void
+public function set(int $row, int $col, float $value): void
 ```
 
 Set a matrix element by row and column index.
@@ -157,7 +157,7 @@ Set a matrix element by row and column index.
 **Parameters:**
 - `$row` (int) - Row index (0-based)
 - `$col` (int) - Column index (0-based)
-- `$value` (int|float) - Value to set
+- `$value` (float) - Value to set
 
 **Throws:** `OutOfRangeException` if either index is outside the valid range.
 
@@ -461,7 +461,7 @@ $diff = $a->sub($b);
 ### mul()
 
 ```php
-public function mul(int|float|Vector|self $other): self|Vector
+public function mul(float|Vector|self $other): self|Vector
 ```
 
 Multiply this matrix by a scalar, vector, or another matrix.
@@ -469,7 +469,7 @@ Multiply this matrix by a scalar, vector, or another matrix.
 When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is performed (the number of columns in this matrix must equal the number of rows in the other). When multiplying by a Vector, it is treated as a column vector (n x 1 matrix) and the result is a Vector.
 
 **Parameters:**
-- `$other` (int|float|Vector|self) - Number, vector, or matrix to multiply by
+- `$other` (float|Vector|self) - Number, vector, or matrix to multiply by
 
 **Returns:** `self|Vector` - A Matrix for scalar/matrix operands, or a Vector for vector operands.
 
@@ -496,13 +496,13 @@ $result = $m->mul($v);  // Vector(5, 11)
 ### div()
 
 ```php
-public function div(int|float|self $other): self
+public function div(float|self $other): self
 ```
 
 Divide this matrix by a scalar or another matrix. Division by a matrix is defined as A × B⁻¹.
 
 **Parameters:**
-- `$other` (int|float|self) - Number or matrix to divide by
+- `$other` (float|self) - Number or matrix to divide by
 
 **Returns:** `self` - New matrix representing the quotient.
 

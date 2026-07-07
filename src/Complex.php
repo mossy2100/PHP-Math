@@ -7,6 +7,8 @@ namespace OceanMoon\Math;
 use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
+use InvalidArgumentException;
+use JsonSerializable;
 use LogicException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
@@ -15,6 +17,7 @@ use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
+use stdClass;
 use Stringable;
 
 /**
@@ -22,20 +25,20 @@ use Stringable;
  *
  * @implements ArrayAccess<int, float>
  */
-final class Complex implements Stringable, ArrayAccess
+final class Complex implements Stringable, ArrayAccess, JsonSerializable
 {
     use ApproxEquatable;
 
-    // region Constants
+    #region Constants
 
     /**
      * Small difference used for comparing values, to circumvent floating point rounding issues.
      */
     public const float EPSILON = 1e-10;
 
-    // endregion
+    #endregion
 
-    // region Properties
+    #region Properties
 
     /**
      * The real part of the complex number.
@@ -51,9 +54,9 @@ final class Complex implements Stringable, ArrayAccess
      */
     private(set) float $imaginary;
 
-    // endregion
+    #endregion
 
-    // region Property hooks
+    #region Property hooks
 
     /**
      * The magnitude (a.k.a. absolute value or modulus) of this complex number.
@@ -96,18 +99,18 @@ final class Complex implements Stringable, ArrayAccess
         }
     }
 
-    // endregion
+    #endregion
 
-    // region Constructor
+    #region Constructor
 
     /**
      * Create a new complex number.
      *
-     * @param int|float $real The real part.
-     * @param int|float $imag The imaginary part.
+     * @param float $real The real part.
+     * @param float $imag The imaginary part.
      * @throws DomainException If either part is not finite (±INF or NAN).
      */
-    public function __construct(int|float $real = 0, int|float $imag = 0)
+    public function __construct(float $real = 0, float $imag = 0)
     {
         // Check for non-finite values.
         if (!is_finite($real) || !is_finite($imag)) {
@@ -119,9 +122,9 @@ final class Complex implements Stringable, ArrayAccess
         $this->imaginary = $imag;
     }
 
-    // endregion
+    #endregion
 
-    // region Factory methods
+    #region Factory methods
 
     /**
      * Get a complex number representing the imaginary unit.
@@ -130,31 +133,137 @@ final class Complex implements Stringable, ArrayAccess
      */
     public static function i(): self
     {
-        // Cache the result to avoid recreating it every time.
-        static $i = null;
-        return $i ??= new self(0, 1);
+        // I is itself the cached singleton instance, so no extra caching is needed here.
+        return I;
     }
 
     /**
-     * Convert the input value to a complex number, if not already.
+     * Convert the input value to a Complex, if not already, and if possible.
      *
-     * @param self|int|float $z The real or complex value.
-     * @return self The equivalent complex value.
+     * An array can be converted to a Complex only if it contains exactly two numeric elements,
+     * which are interpreted as the real and imaginary parts.
+     * An object can be converted to a Complex only if it has public properties named "real" and
+     * "imaginary", which are numeric.
+     * A Vector can be converted to a Complex only if it has exactly two elements.
+     *
+     * @param mixed $z The value to convert.
+     * @return self The equivalent Complex.
+     * @throws InvalidArgumentException If the value has a type that cannot be converted to a
+     * Complex.
+     * @throws DomainException If the value does not have the required structure for conversion.
+     * @throws FormatException If the value is a string that cannot be parsed as a Complex.
      */
-    private static function toComplex(self|int|float $z): self
+    public static function toComplex(mixed $z): self
     {
-        return $z instanceof self ? $z : new self($z);
+        // Check for existing Complex instance.
+        if ($z instanceof self) {
+            return $z;
+        }
+
+        // Check for numeric values (int or float) and convert to Complex.
+        if (Numbers::isNumber($z)) {
+            return new self($z);
+        }
+
+        // Check for string values and parse them as Complex. This will throw a FormatException if
+        // the string is not a valid complex number.
+        if (is_string($z)) {
+            return self::parse($z);
+        }
+
+        // Check for array values and convert to Complex if possible.
+        if (is_array($z)) {
+            return self::fromArray($z);
+        }
+
+        // Check for Vector values and convert to Complex if possible. This must be checked before
+        // the generic is_object() case below, since Vector is itself an object and has no public
+        // "real"/"imaginary" properties, so it would otherwise always fail that generic check.
+        if ($z instanceof Vector) {
+            return self::fromVector($z);
+        }
+
+        // Check for other object values and convert to Complex if possible.
+        if (is_object($z)) {
+            return self::fromObject($z);
+        }
+
+        // The value has a type that cannot be converted to Complex.
+        throw new InvalidArgumentException(
+            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, object, or Vector.'
+        );
+    }
+
+    /**
+     * Create a Complex from a 2-element array.
+     *
+     * The array must contain exactly two numeric elements, interpreted as the real and imaginary
+     * parts, e.g. [3, 4] represents 3 + 4i.
+     *
+     * @param array<array-key, mixed> $arr The array to convert.
+     * @return self The equivalent Complex.
+     * @throws DomainException If the array does not contain exactly two numeric elements.
+     */
+    public static function fromArray(array $arr): self
+    {
+        if (count($arr) !== 2) {
+            throw new DomainException('Cannot convert array to Complex. Array must contain exactly two elements.');
+        }
+        if (!Numbers::isNumber($arr[0]) || !Numbers::isNumber($arr[1])) {
+            throw new DomainException('Cannot convert array to Complex. Both elements must be numeric (int or float).');
+        }
+        return new self($arr[0], $arr[1]);
+    }
+
+    /**
+     * Create a Complex from an object with "real" and "imaginary" properties.
+     *
+     * @param object $obj The object to convert.
+     * @return self The equivalent Complex.
+     * @throws DomainException If the object does not have the required numeric properties.
+     */
+    public static function fromObject(object $obj): self
+    {
+        if (!property_exists($obj, 'real') || !property_exists($obj, 'imaginary')) {
+            throw new DomainException(
+                'Cannot convert object to Complex. Object must have "real" and "imaginary" properties.'
+            );
+        }
+
+        if (!Numbers::isNumber($obj->real) || !Numbers::isNumber($obj->imaginary)) {
+            throw new DomainException(
+                'Cannot convert object to Complex. Both properties must be numeric (int or float).'
+            );
+        }
+
+        return new self($obj->real, $obj->imaginary);
+    }
+
+    /**
+     * Create a Complex from a 2-element Vector.
+     *
+     * @param Vector $vector The Vector to convert.
+     * @return self The equivalent Complex.
+     * @throws DomainException If the Vector does not contain exactly two elements.
+     */
+    public static function fromVector(Vector $vector): self
+    {
+        if ($vector->size !== 2) {
+            throw new DomainException('Cannot convert Vector to Complex. Vector must contain exactly two elements.');
+        }
+
+        return new self($vector[0], $vector[1]);
     }
 
     /**
      * Create a complex number from polar coordinates.
      *
-     * @param int|float $mag The magnitude (distance from origin).
-     * @param int|float $phase The phase angle in radians.
+     * @param float $mag The magnitude (distance from origin).
+     * @param float $phase The phase angle in radians.
      * @return self A new complex number.
      * @throws DomainException If the magnitude is not positive.
      */
-    public static function fromPolar(int|float $mag, int|float $phase): self
+    public static function fromPolar(float $mag, float $phase): self
     {
         // Check for valid magnitude.
         if ($mag < 0) {
@@ -199,12 +308,12 @@ final class Complex implements Stringable, ArrayAccess
             throw new FormatException('Cannot parse empty string as complex number.');
         }
 
-        // Handle pure real numbers (no imaginary unit)
+        // Handle pure real numbers (no imaginary part).
         if (is_numeric($str)) {
             return new self((float)$str, 0.0);
         }
 
-        // Handle pure imaginary with or without coefficient: i, 3i, -2.5j, etc.
+        // Handle pure imaginary numbers with or without a coefficient: i, 3i, -2.5j, etc.
         $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
         if (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
             // Handle cases where coefficient is omitted (like i or -i).
@@ -249,9 +358,9 @@ final class Complex implements Stringable, ArrayAccess
         return new self($real, $imag);
     }
 
-    // endregion
+    #endregion
 
-    // region Inspection methods
+    #region Inspection methods
 
     /**
      * Check if a complex number is real.
@@ -263,12 +372,27 @@ final class Complex implements Stringable, ArrayAccess
         return $this->imaginary === 0.0;
     }
 
-    // endregion
+    #endregion
 
-    // region Comparison methods
+    #region Comparison methods
 
     /**
-     * Check if this complex number equals another.
+     * Check if this complex number is identical to another, i.e. same type and value.
+     *
+     * This method works like the === operator does with value types such as float.
+     * If you use the === operator with Complex objects, it will check for object identity (same
+     * instance), not value equality.
+     *
+     * @param mixed $other The complex number to compare with.
+     * @return bool True if the numbers are identical, otherwise false.
+     */
+    public function identical(mixed $other): bool
+    {
+        return $other instanceof self && $this->real === $other->real && $this->imaginary === $other->imaginary;
+    }
+
+    /**
+     * Check if this Complex has equal value to another number, which may be int, float, or Complex.
      *
      * @param mixed $other The real or complex number to compare with.
      * @return bool True if the numbers are equal.
@@ -278,13 +402,11 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Convert int or float to Complex.
         if (Numbers::isNumber($other)) {
-            $other = self::toComplex($other);
-        } elseif (!$other instanceof self) { // Check if other is Complex.
-            return false;
+            $other = new self($other);
         }
 
-        // Compare real and imaginary parts.
-        return $this->real === $other->real && $this->imaginary === $other->imaginary;
+        // Check if numbers are both Complex and have equal value.
+        return $this->identical($other);
     }
 
     /**
@@ -306,10 +428,11 @@ final class Complex implements Stringable, ArrayAccess
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        // Convert int or float to Complex.
         if (Numbers::isNumber($other)) {
-            $other = self::toComplex($other);
-        } elseif (!$other instanceof self) { // Check if other is Complex.
+            // Convert int or float to Complex.
+            $other = new self($other);
+        } elseif (!$other instanceof self) {
+            // Check if other is Complex.
             return false;
         }
 
@@ -318,9 +441,9 @@ final class Complex implements Stringable, ArrayAccess
                Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
     }
 
-    // endregion
+    #endregion
 
-    // region Unary arithmetic methods
+    #region Unary arithmetic methods
 
     /**
      * Negate a complex number.
@@ -352,17 +475,17 @@ final class Complex implements Stringable, ArrayAccess
         return new self($this->real, -$this->imaginary);
     }
 
-    // endregion
+    #endregion
 
-    // region Binary arithmetic methods
+    #region Binary arithmetic methods
 
     /**
      * Add another complex number to this one.
      *
-     * @param self|int|float $other The real or complex number to add.
+     * @param self|float $other The real or complex number to add.
      * @return self A new complex number representing the sum.
      */
-    public function add(self|int|float $other): self
+    public function add(self|float $other): self
     {
         // Make sure $other is Complex.
         $other = self::toComplex($other);
@@ -374,10 +497,10 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Subtract another complex number from this one.
      *
-     * @param self|int|float $other The real or complex number to subtract.
+     * @param self|float $other The real or complex number to subtract.
      * @return self A new complex number representing the difference.
      */
-    public function sub(self|int|float $other): self
+    public function sub(self|float $other): self
     {
         // Make sure $other is Complex.
         $other = self::toComplex($other);
@@ -390,10 +513,10 @@ final class Complex implements Stringable, ArrayAccess
      * Multiply this complex number by another.
      * Uses the formula: (a + bi)(c + di) = (ac - bd) + (ad + bc)i
      *
-     * @param self|int|float $other The real or complex number to multiply by.
+     * @param self|float $other The real or complex number to multiply by.
      * @return self A new complex number representing the product.
      */
-    public function mul(self|int|float $other): self
+    public function mul(self|float $other): self
     {
         // Make sure $other is Complex.
         $other = self::toComplex($other);
@@ -410,11 +533,11 @@ final class Complex implements Stringable, ArrayAccess
      * Divide this complex number by another.
      * Uses the formula: (a + bi)/(c + di) = [(ac + bd) + (bc - ad)i]/(c² + d²)
      *
-     * @param self|int|float $other The real or complex number to divide by.
+     * @param self|float $other The real or complex number to divide by.
      * @return self A new complex number representing the quotient.
      * @throws DivisionByZeroError If the divisor is zero.
      */
-    public function div(self|int|float $other): self
+    public function div(self|float $other): self
     {
         // Make sure $other is Complex.
         $other = self::toComplex($other);
@@ -433,9 +556,9 @@ final class Complex implements Stringable, ArrayAccess
         return new self(($a * $c + $b * $d) / $f, ($b * $c - $a * $d) / $f);
     }
 
-    // endregion
+    #endregion
 
-    // region Power methods
+    #region Power methods
 
     /**
      * Raise this complex number to a power.
@@ -451,11 +574,11 @@ final class Complex implements Stringable, ArrayAccess
      * - Negative real base with fractional exponent: (-2)^(1/3)
      * - Any base with complex exponent: z^(a+bi) where b ≠ 0
      *
-     * @param self|int|float $other The real or complex number to raise this complex number to.
+     * @param self|float $other The real or complex number to raise this complex number to.
      * @return self A new complex number representing the result.
      * @throws DomainException If attempting 0 raised to a negative or complex power.
      */
-    public function pow(self|int|float $other): self
+    public function pow(self|float $other): self
     {
         // Get $other as a Complex.
         $other = self::toComplex($other);
@@ -564,12 +687,12 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function sqrt(): self
     {
-        return $this->pow(0.5);
+        assert(is_float($this->magnitude));
+        return self::fromPolar(sqrt($this->magnitude), $this->phase / 2);
     }
+    #endregion
 
-    // endregion
-
-    // region Transcendental methods
+    #region Transcendental methods
 
     /**
      * Calculate e^z where z is this complex number.
@@ -659,11 +782,11 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the logarithm of a complex number with the given base.
      * Uses the change of base formula: log_b(z) = ln(z) / ln(b)
      *
-     * @param self|int|float $base The base for the logarithm.
+     * @param self|float $base The base for the logarithm.
      * @return self A new complex number representing log_b(z).
      * @throws DomainException If the base is 0, 1, or if this number is 0.
      */
-    public function log(self|int|float $base): self
+    public function log(self|float $base): self
     {
         // Make sure $base is Complex.
         $base = self::toComplex($base);
@@ -701,9 +824,9 @@ final class Complex implements Stringable, ArrayAccess
         return $this->ln()->div($base->ln());
     }
 
-    // endregion
+    #endregion
 
-    // region Trigonometric methods
+    #region Trigonometric methods
 
     /**
      * Calculate the sine of this complex number.
@@ -783,9 +906,9 @@ final class Complex implements Stringable, ArrayAccess
         return $this->cos()->div($this->sin());
     }
 
-    // endregion
+    #endregion
 
-    // region Inverse trigonometric methods
+    #region Inverse trigonometric methods
 
     /**
      * Calculate the inverse sine of this complex number.
@@ -875,9 +998,9 @@ final class Complex implements Stringable, ArrayAccess
         return $this->inv()->atan();
     }
 
-    // endregion
+    #endregion
 
-    // region Hyperbolic methods
+    #region Hyperbolic methods
 
     /**
      * Calculate the hyperbolic sine of this complex number.
@@ -957,9 +1080,9 @@ final class Complex implements Stringable, ArrayAccess
         return $this->cosh()->div($this->sinh());
     }
 
-    // endregion
+    #endregion
 
-    // region Inverse hyperbolic methods
+    #region Inverse hyperbolic methods
 
     /**
      * Calculate the inverse hyperbolic sine of this complex number.
@@ -1037,18 +1160,39 @@ final class Complex implements Stringable, ArrayAccess
         return $this->inv()->atanh();
     }
 
-    // endregion
+    #endregion
 
-    // region Conversion methods
+    #region Conversion methods
+
+    /**
+     * Convert the complex number to a plain object.
+     *
+     * @return stdClass An object with 'real' and 'imaginary' properties.
+     */
+    public function toObject(): stdClass
+    {
+        return (object)$this->__serialize();
+    }
 
     /**
      * Convert the complex number to an array.
      *
-     * @return list<float> An array containing the real and imaginary parts of the complex number.
+     * @return array{0: float, 1: float} An array containing the real and imaginary parts of the
+     * complex number.
      */
     public function toArray(): array
     {
         return [$this->real, $this->imaginary];
+    }
+
+    /**
+     * Convert the complex number to a Vector.
+     *
+     * @return Vector The Vector representing the complex number.
+     */
+    public function toVector(): Vector
+    {
+        return Vector::fromArray($this->toArray());
     }
 
     /**
@@ -1082,9 +1226,67 @@ final class Complex implements Stringable, ArrayAccess
         return Floats::format($this->real) . $op . $imag . 'i';
     }
 
-    // endregion
+    #endregion
 
-    // region ArrayAccess implementation
+    #region Serialization methods
+
+    /**
+     * Serialize the Complex object to an array.
+     *
+     * This method overrides the default serialization behavior, which includes the computed
+     * magnitude and phase properties. However, those two properties aren't needed and shouldn't be
+     * included, as they may not be set, and are computed from the real and imaginary parts as
+     * needed.
+     *
+     * @return array{real: float, imaginary: float} An associative array containing the real and imaginary parts.
+     */
+    public function __serialize(): array
+    {
+        return [
+            'real'      => $this->real,
+            'imaginary' => $this->imaginary,
+        ];
+    }
+
+    /**
+     * Restore a Complex from serialized data, as produced by __serialize().
+     *
+     * Reconstructs via the constructor, so the usual finite-value validation applies to
+     * unserialized data just as it does to normal construction. Without this method, PHP's default
+     * unserialize() behavior would assign "real" and "imaginary" directly as properties, bypassing
+     * that validation entirely.
+     *
+     * @param array<string, mixed> $data The serialized data.
+     * @throws DomainException If the data does not contain numeric "real" and "imaginary" values, or
+     * if either value is not finite (±INF or NAN).
+     */
+    public function __unserialize(array $data): void
+    {
+        if (!array_key_exists('real', $data) || !array_key_exists('imaginary', $data)) {
+            throw new DomainException('Cannot unserialize Complex. Data must contain "real" and "imaginary" values.');
+        }
+        if (!Numbers::isNumber($data['real']) || !Numbers::isNumber($data['imaginary'])) {
+            throw new DomainException(
+                'Cannot unserialize Complex. Both "real" and "imaginary" values must be numeric (int or float).'
+            );
+        }
+
+        $this->__construct($data['real'], $data['imaginary']);
+    }
+
+    /**
+     * Convert Complex to a value for JSON serialization.
+     *
+     * @return array{real: float, imaginary: float} An associative array containing the real and imaginary parts.
+     */
+    public function jsonSerialize(): array
+    {
+        return $this->__serialize();
+    }
+
+    #endregion
+
+    #region ArrayAccess implementation
 
     /**
      * Check if the complex number has a given offset. Only 0 and 1 are valid offsets.
@@ -1144,5 +1346,5 @@ final class Complex implements Stringable, ArrayAccess
         throw new LogicException('Complex values are immutable.');
     }
 
-    // endregion
+    #endregion
 }
