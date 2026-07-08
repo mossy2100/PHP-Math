@@ -151,7 +151,7 @@ $z4 = Complex::parse("4i+3");
 ### toComplex()
 
 ```php
-public static function toComplex(mixed $z): self
+public static function toComplex(mixed $value): self
 ```
 
 Convert a value to a Complex, if it isn't one already. This is the general-purpose conversion

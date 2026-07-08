@@ -82,6 +82,24 @@ class MatrixLinearAlgebraTest extends TestCase
     }
 
     /**
+     * Test determinant of a 4x4 matrix. This is the smallest size that exercises the recursive cofactor-expansion
+     * branch of calcDet(), since 1x1, 2x2, and 3x3 are all handled directly via closed-form formulas and never reach
+     * it.
+     */
+    public function testDetFourByFour(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 0, 1, 3],
+            [1, 3, 2, 0],
+            [0, 1, 4, 1],
+            [5, 2, 0, 2],
+        ]);
+        // Verified via cofactor expansion along row 0 and independently via row reduction to
+        // upper-triangular form (product of pivots 2, 3, 3.5, -3): det = -63.
+        $this->assertEqualsWithDelta(-63.0, $m->det(), 1e-10);
+    }
+
+    /**
      * Test determinant of a non-square matrix throws DomainException.
      */
     public function testDetNonSquareThrows(): void

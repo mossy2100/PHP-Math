@@ -28,8 +28,8 @@ final class Matrix implements Stringable
      * The matrix data.
      *
      * This must be private because even if it's private(set) if they can get $this->data they could add new elements
-     * (inadvertently sizing the matrix without changing rowCount/colCount or making it non-rectangular) or they
-     * could set elements to non-numbers.
+     * (inadvertently sizing the matrix without changing rowCount/colCount or making it non-rectangular) or they could
+     * set elements to non-numbers.
      *
      * @var list<list<float>>
      */
@@ -350,6 +350,7 @@ final class Matrix implements Stringable
      * @param mixed $other The value to compare with.
      * @return bool True if the matrices have the same dimensions and all elements are equal.
      */
+    /** @disregard P1128 */
     #[Override]
     public function equal(mixed $other): bool
     {
@@ -378,8 +379,8 @@ final class Matrix implements Stringable
     /**
      * Check if this matrix approximately equals another, within given tolerances.
      *
-     * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks
-     * absolute tolerance first, then relative tolerance.
+     * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks absolute tolerance
+     * first, then relative tolerance.
      *
      * @param mixed $other The value to compare with.
      * @param float $relTol The relative tolerance.
@@ -435,9 +436,9 @@ final class Matrix implements Stringable
     /**
      * Calculate the inverse of this matrix using cofactor expansion with the adjugate matrix.
      *
-     * Warning: This algorithm has O(n! × n²) time complexity due to the underlying cofactor
-     * expansion used for determinant calculation. It is suitable for small matrices (up to ~10x10)
-     * but will be extremely slow for larger ones.
+     * Warning: This algorithm has O(n! × n²) time complexity due to the underlying cofactor expansion used for
+     * determinant calculation. It is suitable for small matrices (up to ~10x10) but will be extremely slow for larger
+     * ones.
      *
      * @return self New matrix representing the inverse.
      * @throws DomainException If matrix is not square or not invertible.
@@ -524,8 +525,8 @@ final class Matrix implements Stringable
     /**
      * Multiply this matrix by a scalar, vector, or another matrix.
      *
-     * When multiplying by a Vector, it is treated as a column vector (n×1 matrix) and the result
-     * is returned as a Vector.
+     * When multiplying by a Vector, it is treated as a column vector (n×1 matrix) and the result is returned as a
+     * Vector.
      *
      * @param float|Vector|self $other Number, vector, or matrix to multiply by.
      * @return self|Vector A Matrix for scalar/matrix operands, or a Vector for vector operands.
@@ -801,9 +802,28 @@ final class Matrix implements Stringable
     /**
      * Recursive helper method to calculate determinant using cofactor expansion.
      *
-     * Warning: This algorithm has O(n!) time complexity. It is suitable for small matrices
-     * (up to ~10x10) but will be extremely slow for larger ones. For high-performance
-     * determinant calculation, consider LU decomposition (O(n³)).
+     * Warning: This algorithm has O(n!) time complexity. It is suitable for small matrices (up to ~10x10) but will be
+     * extremely slow for larger ones. For high-performance determinant calculation, consider LU decomposition (O(n³)).
+     *
+     * LU decomposition hasn't been implemented here because it's a bigger undertaking than the complexity numbers
+     * alone suggest, for a case that's unlikely to be needed in practice:
+     * - It requires partial pivoting (PA = LU, not plain LU) to avoid dividing by a zero pivot, which even a
+     *   perfectly well-conditioned matrix can produce depending on element ordering.
+     * - Pivoting means tracking row-swap parity to get the determinant's sign right (det = (-1)^swaps × product of
+     *   U's diagonal), which is easy to get subtly wrong in a way that only shows up for specific pivot orderings.
+     * - Distinguishing a genuinely singular matrix from a merely ill-conditioned one becomes an epsilon-tuning
+     *   problem rather than an exact zero check.
+     * - It only speeds up det() itself. inv() calls calcDet() once per minor via the adjugate method, so a faster
+     *   calcDet() alone would still leave inv() at O(n² × n³); making inv() fast for large matrices needs its own
+     *   separate rewrite (e.g. Gauss-Jordan elimination on an augmented matrix).
+     * - Elimination requires division at every step, trading the current approach's exactness on integer-valued
+     *   matrices for speed.
+     *
+     * The 1x1, 2x2, and 3x3 cases are handled directly via closed-form formulas rather than recursing, both because
+     * they're common (e.g. 3x3 minors arise from cofactor-expanding a 4x4 matrix, a common size for 3D transforms)
+     * and to skip the overhead of building submatrix arrays for cases that are cheap to compute directly. The 3x3
+     * formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices; it does not generalize to 4x4 and up, which is
+     * why cofactor expansion is still needed there.
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
@@ -820,6 +840,17 @@ final class Matrix implements Stringable
             return $matrix[0][0] * $matrix[1][1] - $matrix[0][1] * $matrix[1][0];
         }
 
+        if ($n === 3) {
+            // Sarrus' Rule.
+            return $matrix[0][0] * $matrix[1][1] * $matrix[2][2]
+                + $matrix[0][1] * $matrix[1][2] * $matrix[2][0]
+                + $matrix[0][2] * $matrix[1][0] * $matrix[2][1]
+                - $matrix[0][2] * $matrix[1][1] * $matrix[2][0]
+                - $matrix[0][0] * $matrix[1][2] * $matrix[2][1]
+                - $matrix[0][1] * $matrix[1][0] * $matrix[2][2];
+        }
+
+        // Cofactor expansion for larger matrices.
         $det = 0.0;
         for ($j = 0; $j < $n; $j++) {
             $submatrix = [];
@@ -889,9 +920,9 @@ final class Matrix implements Stringable
             return '┌ ┐' . "\n" . '└ ┘';
         }
 
-        // Format every cell up front so column widths are calculated against the same strings
-        // that get rendered. Floats::format() trims floating-point representation noise (so
-        // 0.1 + 0.2 displays as '0.3' instead of '0.30000000000000004').
+        // Format every cell up front so column widths are calculated against the same strings that get rendered.
+        // Floats::format() trims floating-point representation noise (so 0.1 + 0.2 displays as '0.3' instead of
+        // '0.30000000000000004').
         $cells = [];
         $maxWidth = 0;
         for ($i = 0; $i < $this->rowCount; $i++) {

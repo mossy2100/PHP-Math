@@ -172,6 +172,7 @@ final class Vector implements Stringable, ArrayAccess
      * @param mixed $other The value to compare with.
      * @return bool True if the vectors are the same size and all elements are equal.
      */
+    /** @disregard P1128 */
     #[Override]
     public function equal(mixed $other): bool
     {

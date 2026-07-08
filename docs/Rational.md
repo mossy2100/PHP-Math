@@ -13,6 +13,7 @@ The `Rational` class provides exact representation of rational numbers using two
 - Conversion to/from floats using continued fractions
 - Comparison operations with support for mixed types
 - Overflow detection for safe integer arithmetic
+- Native PHP serialization and JSON encoding support
 
 **Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator can be PHP_INT_MIN.
 
@@ -41,24 +42,22 @@ The denominator. Always positive in canonical form. Read-only from outside the c
 ## Constructor
 
 ```php
-public function __construct(int|float $num = 0, int|float $den = 1)
+public function __construct(int $num = 0, int $den = 1)
 ```
 
-Create a new rational number.
+Create a new rational number from exact integers. This constructor is deliberately narrow — for
+converting a float, use [`fromFloat()`](#fromfloat) instead, which handles approximation via
+continued fractions.
 
 **Parameters:**
-- `$num` (int|float) - The numerator (default: 0)
-- `$den` (int|float) - The denominator (default: 1)
+- `$num` (int) - The numerator (default: 0)
+- `$den` (int) - The denominator (default: 1)
 
 **Behavior:**
 - Automatically reduces the fraction to simplest form
 - Converts negative denominators: -3/−4 → 3/4
-- Optimizes float-to-int conversion when possible
-- Uses continued fractions for float conversion when necessary
 
 **Examples:**
-
-Basic usage:
 ```php
 $r1 = new Rational(3, 4);        // 3/4
 $r2 = new Rational(6, 8);        // Automatically reduced to 3/4
@@ -68,44 +67,58 @@ $r5 = new Rational(-3, 4);       // -3/4
 $r6 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
 ```
 
-Float conversion — simple floats are converted to exact fractions using continued fractions:
+**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1.
+
 ```php
-$r1 = new Rational(0.5);         // 1/2
-$r2 = new Rational(0.75);        // 3/4
-$r3 = new Rational(1/3);         // 1/3 (exact despite 0.333... input)
-```
-
-Irrational numbers are approximated as closely as possible within the integer range:
-```php
-$r = new Rational(M_PI);
-echo $r;                          // "245850922/78256779"
-echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_PI)
-```
-
-**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Values outside this range throw overflow or underflow exceptions:
-```php
-// Too large — exceeds PHP_INT_MAX
-new Rational(1e19);               // OverflowException
-
-// Too small — closer to zero than 1/PHP_INT_MAX
-new Rational(1e-20);              // UnderflowException
-
-// Non-finite values are rejected
-new Rational(INF);                // DomainException
-new Rational(NAN);                // DomainException
-
-// Zero denominator
-new Rational(1, 0);               // DomainException
+new Rational(1, 0);               // DivisionByZeroError (zero denominator)
 ```
 
 **Throws:**
-- `DomainException` if denominator is zero, or if a float argument is infinite or NAN
+- `DivisionByZeroError` if the denominator is zero
+- `DomainException` if the ratio can't be simplified (PHP_INT_MIN with an incompatible counterpart)
 - `OverflowException` if the value is too large to represent as a Rational
 - `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
 ---
 
 ## Factory Methods
+
+### fromFloat()
+
+```php
+public static function fromFloat(float $value): self
+```
+
+Create a Rational from a float, approximating it if necessary. A float that's actually a whole
+number (e.g. `3.0`) converts directly and exactly; otherwise, it's approximated using continued
+fractions.
+
+**Examples:**
+```php
+$r1 = Rational::fromFloat(0.5);         // 1/2
+$r2 = Rational::fromFloat(0.75);        // 3/4
+$r3 = Rational::fromFloat(1 / 3);       // 1/3 (exact despite 0.333... input)
+```
+
+Irrational numbers are approximated as closely as possible within the integer range:
+```php
+$r = Rational::fromFloat(M_PI);
+echo $r;                          // "245850922/78256779"
+echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_PI)
+```
+
+**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Values outside this range throw overflow or underflow exceptions:
+```php
+Rational::fromFloat(1e19);              // OverflowException — too large
+Rational::fromFloat(1e-20);             // UnderflowException — too small
+Rational::fromFloat(INF);               // DomainException — non-finite
+Rational::fromFloat(NAN);               // DomainException — non-finite
+```
+
+**Throws:**
+- `DomainException` if the value is not finite (±INF or NAN)
+- `OverflowException` if the value is too large to represent as a Rational
+- `UnderflowException` if the value is non-zero but too small to represent as a Rational
 
 ### parse()
 
@@ -136,10 +149,11 @@ $r4 = Rational::parse(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 ### toRational()
 
 ```php
-public static function toRational(int|float|string|self $value): self
+public static function toRational(mixed $value): self
 ```
 
-Convert a value to a Rational if it isn't one already.
+Convert a value to a Rational if it isn't one already. Accepts an existing `Rational` (returned
+unchanged), an `int` or `float`, or a `string` in the format accepted by `parse()`.
 
 **Examples:**
 ```php
@@ -148,6 +162,12 @@ $r2 = Rational::toRational(0.5);            // 1/2
 $r3 = Rational::toRational("3/4");          // 3/4
 $r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
 ```
+
+**Throws:**
+- `DomainException` if the argument is a non-finite float (±INF or NAN), or a string that doesn't represent a valid rational
+- `OverflowException` if the value is too large to represent as a Rational
+- `UnderflowException` if the value is non-zero but too small to represent as a Rational
+- `InvalidArgumentException` if the value is not a Rational, int, float, or string
 
 ---
 
@@ -661,6 +681,52 @@ echo new Rational(5, 1);   // "5"
 echo new Rational(3, 4);   // "3/4"
 echo new Rational(-2, 5);  // "-2/5"
 echo new Rational(6, 8);   // "3/4" (auto-reduced)
+```
+
+---
+
+## Serialization Methods
+
+### \_\_unserialize()
+
+```php
+public function __unserialize(array $data): void
+```
+
+Restore a Rational from serialized data. Used automatically by PHP's `unserialize()`. Reconstructs
+via the constructor, so the usual validation and canonicalization (reduction to lowest terms) apply
+to unserialized data just as they do to normal construction.
+
+There is no corresponding `__serialize()` method: unlike `Complex` (which has computed
+`magnitude`/`phase` properties that must be excluded from the serialized payload), `Rational`'s only
+properties are `numerator` and `denominator`, so PHP's default serialization already produces
+exactly the same payload a custom `__serialize()` would.
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+$restored = unserialize(serialize($r));
+$restored->equal($r);  // true
+```
+
+**Throws:**
+- `DomainException` if the data is missing "numerator"/"denominator", or either value is not an integer
+- `DivisionByZeroError` if the denominator is zero
+- `UnderflowException` if the value is non-zero but too small to represent as a Rational
+- `OverflowException` if the value is too large to represent as a Rational
+
+### jsonSerialize()
+
+```php
+public function jsonSerialize(): array
+```
+
+Provides `Rational`'s representation for `json_encode()`, via the `JsonSerializable` interface.
+
+**Example:**
+```php
+$r = new Rational(3, 4);
+echo json_encode($r);  // '{"numerator":3,"denominator":4}'
 ```
 
 ---

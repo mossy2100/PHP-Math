@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rational::class)]
 class RationalConversionTest extends TestCase
 {
+    #region toFloat() and __toString() tests
+
     /**
      * Test toFloat conversion.
      */
@@ -28,6 +30,33 @@ class RationalConversionTest extends TestCase
         $r4 = new Rational(-7, 2);
         $this->assertSame(-3.5, $r4->toFloat());
     }
+
+    /**
+     * Test round-trip conversion for exact values.
+     */
+    public function testRoundTripExact(): void
+    {
+        $r = new Rational(3, 4);
+        $f = $r->toFloat();
+        $r2 = Rational::fromFloat($f);
+
+        $this->assertTrue($r->equal($r2));
+    }
+
+    /**
+     * Test round-trip conversion for approximate values.
+     */
+    public function testRoundTripApproximate(): void
+    {
+        $r = Rational::fromFloat(M_PI);
+        $f = $r->toFloat();
+
+        $this->assertEqualsWithDelta(M_PI, $f, 1e-10);
+    }
+
+    #endregion
+
+    #region toString() tests
 
     /**
      * Test __toString for whole numbers.
@@ -72,29 +101,6 @@ class RationalConversionTest extends TestCase
 
         $r2 = new Rational(10, 15);
         $this->assertSame('2/3', (string)$r2);
-    }
-
-    /**
-     * Test round-trip conversion for exact values.
-     */
-    public function testRoundTripExact(): void
-    {
-        $r = new Rational(3, 4);
-        $f = $r->toFloat();
-        $r2 = new Rational($f);
-
-        $this->assertTrue($r->equal($r2));
-    }
-
-    /**
-     * Test round-trip conversion for approximate values.
-     */
-    public function testRoundTripApproximate(): void
-    {
-        $r = new Rational(M_PI);
-        $f = $r->toFloat();
-
-        $this->assertEqualsWithDelta(M_PI, $f, 1e-10);
     }
 
     #endregion

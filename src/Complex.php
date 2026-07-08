@@ -138,67 +138,10 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Convert the input value to a Complex, if not already, and if possible.
-     *
-     * An array can be converted to a Complex only if it contains exactly two numeric elements,
-     * which are interpreted as the real and imaginary parts.
-     * An object can be converted to a Complex only if it has public properties named "real" and
-     * "imaginary", which are numeric.
-     * A Vector can be converted to a Complex only if it has exactly two elements.
-     *
-     * @param mixed $z The value to convert.
-     * @return self The equivalent Complex.
-     * @throws InvalidArgumentException If the value has a type that cannot be converted to a
-     * Complex.
-     * @throws DomainException If the value does not have the required structure for conversion.
-     * @throws FormatException If the value is a string that cannot be parsed as a Complex.
-     */
-    public static function toComplex(mixed $z): self
-    {
-        // Check for existing Complex instance.
-        if ($z instanceof self) {
-            return $z;
-        }
-
-        // Check for numeric values (int or float) and convert to Complex.
-        if (Numbers::isNumber($z)) {
-            return new self($z);
-        }
-
-        // Check for string values and parse them as Complex. This will throw a FormatException if
-        // the string is not a valid complex number.
-        if (is_string($z)) {
-            return self::parse($z);
-        }
-
-        // Check for array values and convert to Complex if possible.
-        if (is_array($z)) {
-            return self::fromArray($z);
-        }
-
-        // Check for Vector values and convert to Complex if possible. This must be checked before
-        // the generic is_object() case below, since Vector is itself an object and has no public
-        // "real"/"imaginary" properties, so it would otherwise always fail that generic check.
-        if ($z instanceof Vector) {
-            return self::fromVector($z);
-        }
-
-        // Check for other object values and convert to Complex if possible.
-        if (is_object($z)) {
-            return self::fromObject($z);
-        }
-
-        // The value has a type that cannot be converted to Complex.
-        throw new InvalidArgumentException(
-            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, object, or Vector.'
-        );
-    }
-
-    /**
      * Create a Complex from a 2-element array.
      *
-     * The array must contain exactly two numeric elements, interpreted as the real and imaginary
-     * parts, e.g. [3, 4] represents 3 + 4i.
+     * The array must contain exactly two numeric elements, interpreted as the real and imaginary parts,
+     * e.g. [3, 4] represents 3 + 4i.
      *
      * @param array<array-key, mixed> $arr The array to convert.
      * @return self The equivalent Complex.
@@ -209,9 +152,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         if (count($arr) !== 2) {
             throw new DomainException('Cannot convert array to Complex. Array must contain exactly two elements.');
         }
+
         if (!Numbers::isNumber($arr[0]) || !Numbers::isNumber($arr[1])) {
             throw new DomainException('Cannot convert array to Complex. Both elements must be numeric (int or float).');
         }
+
         return new self($arr[0], $arr[1]);
     }
 
@@ -276,7 +221,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         // Construct the new Complex.
         $z = new self($mag * cos($phase), $mag * sin($phase));
 
-        // Remember the magnitude and phase since we know them already.
+        // Remember the magnitude and phase since we know them.
         $z->magnitude = $mag;
         $z->phase = $phase;
 
@@ -299,9 +244,10 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      */
     public static function parse(string $str): self
     {
-        // Remove all whitespace
-        /** @var string $str */
+        // Remove all whitespace.
         $str = preg_replace('/\s+/', '', $str);
+        // preg_replace() can return null on error, but we know the pattern is valid.
+        assert(is_string($str));
 
         // Handle empty string
         if ($str === '') {
@@ -358,6 +304,62 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         return new self($real, $imag);
     }
 
+    /**
+     * Convert the input value to a Complex, if not already, and if possible.
+     *
+     * NB:
+     * - An array can be converted to a Complex only if it contains exactly two numeric elements, which are interpreted
+     *   as the real and imaginary parts.
+     * - An object can be converted to a Complex only if it has public properties named "real" and "imaginary", which
+     *   are numeric.
+     * - A Vector can be converted to a Complex only if it has exactly two elements.
+     *
+     * @param mixed $value The value to convert.
+     * @return self The equivalent Complex.
+     * @throws InvalidArgumentException If the value has a type that cannot be converted to a Complex.
+     * @throws DomainException If the value does not have the required structure for conversion.
+     * @throws FormatException If the value is a string that cannot be parsed as a Complex.
+     */
+    public static function toComplex(mixed $value): self
+    {
+        // Check for Complex.
+        if ($value instanceof self) {
+            return $value;
+        }
+
+        // Check for number (int or float).
+        if (Numbers::isNumber($value)) {
+            return new self($value);
+        }
+
+        // Check for string. This will throw a FormatException if the string is not a valid complex number.
+        if (is_string($value)) {
+            return self::parse($value);
+        }
+
+        // Check for array and convert to Complex if possible.
+        if (is_array($value)) {
+            return self::fromArray($value);
+        }
+
+        // Check for Vector and convert to Complex if possible. This must be checked before the generic
+        // is_object() case below, since Vector is itself an object and has no public "real"/"imaginary" properties, so
+        // it would otherwise always fail that generic check.
+        if ($value instanceof Vector) {
+            return self::fromVector($value);
+        }
+
+        // Check for other type of object and convert to Complex if possible.
+        if (is_object($value)) {
+            return self::fromObject($value);
+        }
+
+        // The value has a type that cannot be converted to Complex.
+        throw new InvalidArgumentException(
+            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, object, or Vector.'
+        );
+    }
+
     #endregion
 
     #region Inspection methods
@@ -377,26 +379,12 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     #region Comparison methods
 
     /**
-     * Check if this complex number is identical to another, i.e. same type and value.
-     *
-     * This method works like the === operator does with value types such as float.
-     * If you use the === operator with Complex objects, it will check for object identity (same
-     * instance), not value equality.
-     *
-     * @param mixed $other The complex number to compare with.
-     * @return bool True if the numbers are identical, otherwise false.
-     */
-    public function identical(mixed $other): bool
-    {
-        return $other instanceof self && $this->real === $other->real && $this->imaginary === $other->imaginary;
-    }
-
-    /**
      * Check if this Complex has equal value to another number, which may be int, float, or Complex.
      *
      * @param mixed $other The real or complex number to compare with.
      * @return bool True if the numbers are equal.
      */
+    /** @disregard P1128 */
     #[Override]
     public function equal(mixed $other): bool
     {
@@ -405,8 +393,13 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
             $other = new self($other);
         }
 
-        // Check if numbers are both Complex and have equal value.
-        return $this->identical($other);
+        // Check if other is Complex.
+        if (!$other instanceof self) {
+            return false;
+        }
+
+        // Check if the real and imaginary parts are equal.
+        return $this->real === $other->real && $this->imaginary === $other->imaginary;
     }
 
     /**
@@ -438,7 +431,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
         // Compare real and imaginary parts.
         return Floats::approxEqual($this->real, $other->real, $relTol, $absTol) &&
-               Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
+            Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
     }
 
     #endregion
@@ -585,8 +578,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
         // Handle exponent = 0. Any number to power 0 is 1.
         // Although mathematically 0^0 is undefined, we return 1 for consistency with pow(0, 0).
-        // This is a common result in many programming languages.
-        // (Principle of least astonishment.)
+        // This is a common result in many programming languages and hence follows the Principle of Least Astonishment.
         // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
         if ($other->equal(0)) {
             return new self(1);
@@ -688,8 +680,10 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     public function sqrt(): self
     {
         assert(is_float($this->magnitude));
+        assert(is_float($this->phase));
         return self::fromPolar(sqrt($this->magnitude), $this->phase / 2);
     }
+
     #endregion
 
     #region Transcendental methods
@@ -1233,10 +1227,9 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     /**
      * Serialize the Complex object to an array.
      *
-     * This method overrides the default serialization behavior, which includes the computed
-     * magnitude and phase properties. However, those two properties aren't needed and shouldn't be
-     * included, as they may not be set, and are computed from the real and imaginary parts as
-     * needed.
+     * This method overrides the default serialization behavior, which includes the computed magnitude and phase
+     * properties. However, those two properties aren't needed and shouldn't be included, as they may not be set, and
+     * in any case are computed from the real and imaginary parts as needed.
      *
      * @return array{real: float, imaginary: float} An associative array containing the real and imaginary parts.
      */
@@ -1251,26 +1244,33 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     /**
      * Restore a Complex from serialized data, as produced by __serialize().
      *
-     * Reconstructs via the constructor, so the usual finite-value validation applies to
-     * unserialized data just as it does to normal construction. Without this method, PHP's default
-     * unserialize() behavior would assign "real" and "imaginary" directly as properties, bypassing
-     * that validation entirely.
+     * Reconstructs via the constructor, so the usual finite-value validation applies to unserialized data just as it
+     * does to normal construction. Without this method, PHP's default unserialize() behavior would assign "real" and
+     * "imaginary" directly as properties, bypassing that validation entirely.
+     *
+     * Only "real" and "imaginary" are read from $data; any other keys (e.g. from a hand-crafted string) are ignored.
+     * The $magnitude and $phase properties are unaffected — they retain their declared null default from object
+     * allocation and are recomputed lazily on first access, same as after normal construction.
      *
      * @param array<string, mixed> $data The serialized data.
-     * @throws DomainException If the data does not contain numeric "real" and "imaginary" values, or
-     * if either value is not finite (±INF or NAN).
+     * @throws DomainException If the data does not contain numeric "real" and "imaginary" values, or if either value is
+     * not finite (±INF or NAN).
      */
     public function __unserialize(array $data): void
     {
+        // Guard against missing values.
         if (!array_key_exists('real', $data) || !array_key_exists('imaginary', $data)) {
             throw new DomainException('Cannot unserialize Complex. Data must contain "real" and "imaginary" values.');
         }
+
+        // Guard against non-numeric values.
         if (!Numbers::isNumber($data['real']) || !Numbers::isNumber($data['imaginary'])) {
             throw new DomainException(
                 'Cannot unserialize Complex. Both "real" and "imaginary" values must be numeric (int or float).'
             );
         }
 
+        // Call the constructor to validate and set the values.
         $this->__construct($data['real'], $data['imaginary']);
     }
 
@@ -1320,7 +1320,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Unsupported as this class is immutable.
+     * This method is unsupported because this class is immutable.
      *
      * @param mixed $offset The offset to set.
      * @param mixed $value The value to set.
@@ -1334,7 +1334,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Unsupported as this class is immutable.
+     * This method is unsupported because this class is immutable.
      *
      * @param mixed $offset The offset to unset.
      * @return void
