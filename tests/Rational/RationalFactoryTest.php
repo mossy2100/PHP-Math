@@ -219,10 +219,10 @@ class RationalFactoryTest extends TestCase
     public function testFromFloatIrrational(): void
     {
         $r = Rational::fromFloat(M_PI);
-        $this->assertEqualsWithDelta(M_PI, $r->numerator / $r->denominator, 1e-10);
+        $this->assertEqualsWithDelta(M_PI, $r->numerator / $r->denominator, EPSILON);
 
         $r2 = Rational::fromFloat(M_E);
-        $this->assertEqualsWithDelta(M_E, $r2->numerator / $r2->denominator, 1e-10);
+        $this->assertEqualsWithDelta(M_E, $r2->numerator / $r2->denominator, EPSILON);
     }
 
     /**

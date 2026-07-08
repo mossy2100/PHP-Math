@@ -25,18 +25,18 @@ class ComplexPowerTest extends TestCase
         $result = $z->pow(2);
 
         // (3 + 4i)^2 = 9 + 24i + 16i² = 9 + 24i - 16 = -7 + 24i
-        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-7.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(24.0, $result->imaginary, EPSILON);
 
         // z^0 = 1
         $result2 = $z->pow(0);
-        $this->assertEqualsWithDelta(1.0, $result2->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result2->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
 
         // z^1 = z
         $result3 = $z->pow(1);
-        $this->assertEqualsWithDelta(3.0, $result3->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(4.0, $result3->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(3.0, $result3->real, EPSILON);
+        $this->assertEqualsWithDelta(4.0, $result3->imaginary, EPSILON);
     }
 
     /**
@@ -46,8 +46,8 @@ class ComplexPowerTest extends TestCase
     {
         $result = I->sqr();
 
-        $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-1.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -57,8 +57,8 @@ class ComplexPowerTest extends TestCase
     {
         $result = I->pow(2);
 
-        $this->assertEqualsWithDelta(-1.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-1.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -71,12 +71,12 @@ class ComplexPowerTest extends TestCase
         $result = $z->pow(-1);
         $expected = $z->inv();
 
-        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
 
         // Verify actual values: 3/25 - 4i/25
-        $this->assertEqualsWithDelta(0.12, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(-0.16, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.12, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-0.16, $result->imaginary, EPSILON);
     }
 
     /**
@@ -90,8 +90,8 @@ class ComplexPowerTest extends TestCase
         // e^(2+3i) should equal exp(2+3i)
         $expected = $w->exp();
 
-        $this->assertEqualsWithDelta($expected->real, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
     }
 
     /**
@@ -101,8 +101,8 @@ class ComplexPowerTest extends TestCase
     {
         $result = new Complex(0)->pow(0);
 
-        $this->assertEqualsWithDelta(1.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -112,8 +112,8 @@ class ComplexPowerTest extends TestCase
     {
         $result = new Complex(0)->pow(5);
 
-        $this->assertEqualsWithDelta(0.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -143,8 +143,8 @@ class ComplexPowerTest extends TestCase
         $z = new Complex(3, 4);
         $result = $z->sqr();
 
-        $this->assertEqualsWithDelta(-7.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(24.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-7.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(24.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -156,8 +156,8 @@ class ComplexPowerTest extends TestCase
         $z = new Complex(0, 2);
         $result = $z->sqr();
 
-        $this->assertEqualsWithDelta(-4.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-4.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
     }
 
     /**
@@ -169,8 +169,8 @@ class ComplexPowerTest extends TestCase
         $sqr = $z->sqr();
         $pow2 = $z->pow(2);
 
-        $this->assertEqualsWithDelta($sqr->real, $pow2->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($sqr->imaginary, $pow2->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($sqr->real, $pow2->real, EPSILON);
+        $this->assertEqualsWithDelta($sqr->imaginary, $pow2->imaginary, EPSILON);
     }
 
     /**
@@ -187,8 +187,8 @@ class ComplexPowerTest extends TestCase
         // Verify all roots satisfy z^3 = 1
         foreach ($roots as $root) {
             $cubed = $root->pow(3);
-            $this->assertEqualsWithDelta(1.0, $cubed->real, Complex::EPSILON);
-            $this->assertEqualsWithDelta(0.0, $cubed->imaginary, Complex::EPSILON);
+            $this->assertEqualsWithDelta(1.0, $cubed->real, EPSILON);
+            $this->assertEqualsWithDelta(0.0, $cubed->imaginary, EPSILON);
         }
     }
 
@@ -205,11 +205,11 @@ class ComplexPowerTest extends TestCase
         // One root should be i, the other -i
         [$root1, $root2] = $roots;
 
-        $this->assertEqualsWithDelta(0.0, $root1->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $root1->real, EPSILON);
         $this->assertTrue(
             Floats::approxEqual($root1->imaginary, 1.0) || Floats::approxEqual($root1->imaginary, -1.0)
         );
-        $this->assertEqualsWithDelta(0.0, $root2->real, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $root2->real, EPSILON);
         $this->assertTrue(
             Floats::approxEqual($root2->imaginary, 1.0) || Floats::approxEqual($root2->imaginary, -1.0)
         );
@@ -232,8 +232,8 @@ class ComplexPowerTest extends TestCase
         $roots = new Complex(0)->roots(3);
 
         $this->assertCount(1, $roots);
-        $this->assertEqualsWithDelta(0.0, $roots[0]->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $roots[0]->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $roots[0]->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $roots[0]->imaginary, EPSILON);
     }
 
     /**
@@ -243,28 +243,28 @@ class ComplexPowerTest extends TestCase
     {
         // sqrt(4) = 2
         $result = new Complex(4)->sqrt();
-        $this->assertEqualsWithDelta(2.0, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
 
         // sqrt(-1) = i (principal value)
         $result2 = new Complex(-1)->sqrt();
-        $this->assertEqualsWithDelta(0.0, $result2->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(1.0, $result2->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->real, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result2->imaginary, EPSILON);
 
         // General complex values (off the real/imaginary axes), exercising the phase/2 path.
         // sqrt(3 + 4i) = 2 + i, since (2 + i)² = 3 + 4i.
         $result3 = new Complex(3, 4)->sqrt();
-        $this->assertEqualsWithDelta(2.0, $result3->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(1.0, $result3->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result3->real, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result3->imaginary, EPSILON);
 
         // sqrt(3 - 4i) = 2 - i (negative phase), since (2 - i)² = 3 - 4i.
         $result4 = new Complex(3, -4)->sqrt();
-        $this->assertEqualsWithDelta(2.0, $result4->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(-1.0, $result4->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result4->real, EPSILON);
+        $this->assertEqualsWithDelta(-1.0, $result4->imaginary, EPSILON);
 
         // sqrt(-3 + 4i) = 1 + 2i (second-quadrant input, phase near π), since (1 + 2i)² = -3 + 4i.
         $result5 = new Complex(-3, 4)->sqrt();
-        $this->assertEqualsWithDelta(1.0, $result5->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(2.0, $result5->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result5->real, EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result5->imaginary, EPSILON);
     }
 }

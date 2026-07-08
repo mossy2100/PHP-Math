@@ -51,7 +51,7 @@ class RationalConversionTest extends TestCase
         $r = Rational::fromFloat(M_PI);
         $f = $r->toFloat();
 
-        $this->assertEqualsWithDelta(M_PI, $f, 1e-10);
+        $this->assertEqualsWithDelta(M_PI, $f, EPSILON);
     }
 
     #endregion

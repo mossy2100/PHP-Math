@@ -29,15 +29,6 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 {
     use ApproxEquatable;
 
-    #region Constants
-
-    /**
-     * Small difference used for comparing values, to circumvent floating point rounding issues.
-     */
-    public const float EPSILON = 1e-10;
-
-    #endregion
-
     #region Properties
 
     /**

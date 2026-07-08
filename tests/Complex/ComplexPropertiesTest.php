@@ -50,19 +50,19 @@ class ComplexPropertiesTest extends TestCase
     {
         // 3-4-5 triangle
         $z = new Complex(3, 4);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
 
         // 5-12-13 triangle
         $z2 = new Complex(5, 12);
-        $this->assertEqualsWithDelta(13.0, $z2->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(13.0, $z2->magnitude, EPSILON);
 
         // Negative values
         $z3 = new Complex(-3, -4);
-        $this->assertEqualsWithDelta(5.0, $z3->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z3->magnitude, EPSILON);
 
         // Arbitrary complex number
         $z4 = new Complex(1.5, 2.5);
-        $this->assertEqualsWithDelta(hypot(1.5, 2.5), $z4->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(hypot(1.5, 2.5), $z4->magnitude, EPSILON);
     }
 
     /**
@@ -72,15 +72,15 @@ class ComplexPropertiesTest extends TestCase
     {
         // Positive real
         $z = new Complex(5, 0);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
 
         // Negative real
         $z2 = new Complex(-7, 0);
-        $this->assertEqualsWithDelta(7.0, $z2->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(7.0, $z2->magnitude, EPSILON);
 
         // Zero
         $z3 = new Complex(0, 0);
-        $this->assertEqualsWithDelta(0.0, $z3->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $z3->magnitude, EPSILON);
     }
 
     /**
@@ -90,11 +90,11 @@ class ComplexPropertiesTest extends TestCase
     {
         // Positive imaginary
         $z = new Complex(0, 5);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
 
         // Negative imaginary
         $z2 = new Complex(0, -7);
-        $this->assertEqualsWithDelta(7.0, $z2->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(7.0, $z2->magnitude, EPSILON);
     }
 
     /**
@@ -117,19 +117,19 @@ class ComplexPropertiesTest extends TestCase
     {
         // First quadrant (0 to π/2)
         $z1 = new Complex(1, 1);
-        $this->assertEqualsWithDelta(M_PI / 4, $z1->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 4, $z1->phase, EPSILON);
 
         // Second quadrant (π/2 to π)
         $z2 = new Complex(-1, 1);
-        $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, EPSILON);
 
         // Third quadrant (-π to -π/2)
         $z3 = new Complex(-1, -1);
-        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z3->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z3->phase, EPSILON);
 
         // Fourth quadrant (-π/2 to 0)
         $z4 = new Complex(1, -1);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z4->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z4->phase, EPSILON);
     }
 
     /**
@@ -139,15 +139,15 @@ class ComplexPropertiesTest extends TestCase
     {
         // Positive real (phase = 0)
         $z1 = new Complex(5, 0);
-        $this->assertEqualsWithDelta(0.0, $z1->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $z1->phase, EPSILON);
 
         // Negative real (phase = π)
         $z2 = new Complex(-5, 0);
-        $this->assertEqualsWithDelta(M_PI, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI, $z2->phase, EPSILON);
 
         // Zero (phase = 0)
         $z3 = new Complex(0, 0);
-        $this->assertEqualsWithDelta(0.0, $z3->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $z3->phase, EPSILON);
     }
 
     /**
@@ -157,11 +157,11 @@ class ComplexPropertiesTest extends TestCase
     {
         // Positive imaginary (phase = π/2)
         $z1 = new Complex(0, 1);
-        $this->assertEqualsWithDelta(M_PI / 2, $z1->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 2, $z1->phase, EPSILON);
 
         // Negative imaginary (phase = -π/2)
         $z2 = new Complex(0, -1);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, EPSILON);
     }
 
     /**
@@ -188,14 +188,14 @@ class ComplexPropertiesTest extends TestCase
         $z = Complex::fromPolar($mag, $phase);
 
         // Verify magnitude is correct
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
 
         // Verify phase is correct
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
 
         // Verify real and imaginary parts
-        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, EPSILON);
+        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, EPSILON);
     }
 
     /**
@@ -208,15 +208,15 @@ class ComplexPropertiesTest extends TestCase
 
         foreach ($positiveAngles as $angle) {
             $z = Complex::fromPolar(1.0, $angle);
-            $this->assertEqualsWithDelta($angle, $z->phase, Complex::EPSILON);
+            $this->assertEqualsWithDelta($angle, $z->phase, EPSILON);
         }
 
         // Test negative angles (should remain in principal range (-π, π])
         $z1 = Complex::fromPolar(1.0, -M_PI / 2);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z1->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z1->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1.0, -M_PI / 4);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z2->phase, EPSILON);
     }
 
     /**
@@ -231,10 +231,10 @@ class ComplexPropertiesTest extends TestCase
         $this->assertSame(1.0, $z->imaginary);
 
         // Verify magnitude
-        $this->assertEqualsWithDelta(1.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $z->magnitude, EPSILON);
 
         // Verify phase
-        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, EPSILON);
     }
 
     /**

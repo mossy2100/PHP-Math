@@ -151,8 +151,8 @@ class ComplexArithmeticTest extends TestCase
         $z2 = new Complex(1, 2);
         $result = $z1->div($z2);
 
-        $this->assertEqualsWithDelta(2.2, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(-0.4, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(2.2, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-0.4, $result->imaginary, EPSILON);
     }
 
     /**
@@ -202,13 +202,13 @@ class ComplexArithmeticTest extends TestCase
         $z = new Complex(3, 4);
         $result = $z->inv();
 
-        $this->assertEqualsWithDelta(0.12, $result->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(-0.16, $result->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.12, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-0.16, $result->imaginary, EPSILON);
 
         // Verify z * inv(z) = 1
         $product = $z->mul($result);
-        $this->assertEqualsWithDelta(1.0, $product->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta(0.0, $product->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta(1.0, $product->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->imaginary, EPSILON);
     }
 
     /**

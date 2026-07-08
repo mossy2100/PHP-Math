@@ -22,10 +22,10 @@ class ComplexPolarTest extends TestCase
 
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, Complex::EPSILON);
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, EPSILON);
+        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
     }
 
     /**
@@ -48,8 +48,8 @@ class ComplexPolarTest extends TestCase
 
         foreach ($angles as $angle) {
             $z = Complex::fromPolar(1.0, $angle);
-            $this->assertEqualsWithDelta(cos($angle), $z->real, Complex::EPSILON);
-            $this->assertEqualsWithDelta(sin($angle), $z->imaginary, Complex::EPSILON);
+            $this->assertEqualsWithDelta(cos($angle), $z->real, EPSILON);
+            $this->assertEqualsWithDelta(sin($angle), $z->imaginary, EPSILON);
         }
     }
 
@@ -87,7 +87,7 @@ class ComplexPolarTest extends TestCase
     {
         // Quadrant 1: positive real, positive imaginary → [0, π/2)
         $z = new Complex(1, 1);
-        $this->assertEqualsWithDelta(M_PI / 4, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 4, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
         $this->assertLessThanOrEqual(M_PI, $z->phase);
     }
@@ -96,7 +96,7 @@ class ComplexPolarTest extends TestCase
     {
         // Quadrant 2: negative real, positive imaginary → [π/2, π]
         $z = new Complex(-1, 1);
-        $this->assertEqualsWithDelta(3 * M_PI / 4, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(3 * M_PI / 4, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
         $this->assertLessThanOrEqual(M_PI, $z->phase);
     }
@@ -105,7 +105,7 @@ class ComplexPolarTest extends TestCase
     {
         // Quadrant 3: negative real, negative imaginary → [-π, -π/2)
         $z = new Complex(-1, -1);
-        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
         $this->assertLessThanOrEqual(M_PI, $z->phase);
     }
@@ -114,7 +114,7 @@ class ComplexPolarTest extends TestCase
     {
         // Quadrant 4: positive real, negative imaginary → [-π/2, 0)
         $z = new Complex(1, -1);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
         $this->assertLessThanOrEqual(M_PI, $z->phase);
     }
@@ -122,45 +122,45 @@ class ComplexPolarTest extends TestCase
     public function testPhasePositiveRealAxis(): void
     {
         $z = new Complex(5, 0);
-        $this->assertEqualsWithDelta(0.0, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(0.0, $z->phase, EPSILON);
     }
 
     public function testPhaseNegativeRealAxis(): void
     {
         $z = new Complex(-5, 0);
-        $this->assertEqualsWithDelta(M_PI, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI, $z->phase, EPSILON);
     }
 
     public function testPhasePositiveImaginaryAxis(): void
     {
         $z = new Complex(0, 3);
-        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, EPSILON);
     }
 
     public function testPhaseNegativeImaginaryAxis(): void
     {
         $z = new Complex(0, -3);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, EPSILON);
     }
 
     public function testFromPolarNegativePhasePreserved(): void
     {
         // Negative angles in [-π, π] should be preserved
         $z = Complex::fromPolar(1, -M_PI / 4);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, -M_PI / 2);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, EPSILON);
     }
 
     public function testFromPolarLargePositivePhaseNormalized(): void
     {
         // Angles > π should wrap to (-π, π]
         $z = Complex::fromPolar(1, 3 * M_PI);
-        $this->assertEqualsWithDelta(M_PI, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI, $z->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, 3 * M_PI / 2);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, EPSILON);
     }
 
     public function testFromPolarVeryLargePhaseNormalized(): void
@@ -168,10 +168,10 @@ class ComplexPolarTest extends TestCase
         // Very large angles should wrap correctly
         // Avoid landing exactly on ±π boundaries to prevent FP precision issues
         $z = Complex::fromPolar(1, 10.5 * M_PI);
-        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, 11.25 * M_PI);
-        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-3 * M_PI / 4, $z2->phase, EPSILON);
     }
 
     public function testFromPolarVeryLargeNegativePhaseNormalized(): void
@@ -179,10 +179,10 @@ class ComplexPolarTest extends TestCase
         // Very large negative angles should wrap correctly
         // Avoid landing exactly on ±π boundaries to prevent FP precision issues
         $z = Complex::fromPolar(1, -10.5 * M_PI);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, -11.25 * M_PI);
-        $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, EPSILON);
     }
 
     public function testFromPolarRoundTripQuadrant1(): void
@@ -191,8 +191,8 @@ class ComplexPolarTest extends TestCase
         $phase = M_PI / 6;  // 30 degrees
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
     }
 
     public function testFromPolarRoundTripQuadrant2(): void
@@ -201,8 +201,8 @@ class ComplexPolarTest extends TestCase
         $phase = 2 * M_PI / 3;  // 120 degrees
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
     }
 
     public function testFromPolarRoundTripQuadrant3(): void
@@ -211,8 +211,8 @@ class ComplexPolarTest extends TestCase
         $phase = -5 * M_PI / 6;  // -150 degrees
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
     }
 
     public function testFromPolarRoundTripQuadrant4(): void
@@ -221,8 +221,8 @@ class ComplexPolarTest extends TestCase
         $phase = -M_PI / 4;  // -45 degrees
         $z = Complex::fromPolar($mag, $phase);
 
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
     }
 
     public function testRectangularToPolarQuadrant3(): void
@@ -230,10 +230,10 @@ class ComplexPolarTest extends TestCase
         // Create from rectangular, verify polar form is correct
         $z = new Complex(-3, -4);
 
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
         // Phase should be in [-π, -π/2) range, specifically -(π - atan(4/3))
         $expectedPhase = -(M_PI - atan(4 / 3));
-        $this->assertEqualsWithDelta($expectedPhase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedPhase, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
         $this->assertLessThan(-M_PI / 2, $z->phase);
     }
@@ -243,10 +243,10 @@ class ComplexPolarTest extends TestCase
         // Create from rectangular, verify polar form is correct
         $z = new Complex(3, -4);
 
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
         // Phase should be in [-π/2, 0) range, specifically -atan(4/3)
         $expectedPhase = -atan(4 / 3);
-        $this->assertEqualsWithDelta($expectedPhase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedPhase, $z->phase, EPSILON);
         $this->assertGreaterThanOrEqual(-M_PI / 2, $z->phase);
         $this->assertLessThan(0, $z->phase);
     }
@@ -262,8 +262,8 @@ class ComplexPolarTest extends TestCase
         $expectedReal = $mag * cos($phase);
         $expectedImag = $mag * sin($phase);
 
-        $this->assertEqualsWithDelta($expectedReal, $z->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($expectedImag, $z->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($expectedReal, $z->real, EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $z->imaginary, EPSILON);
     }
 
     public function testPhaseAlwaysInPrincipalRange(): void
@@ -296,14 +296,14 @@ class ComplexPolarTest extends TestCase
         $z = Complex::fromPolar($mag, $phase);
 
         // Verify magnitude is correct
-        $this->assertEqualsWithDelta($mag, $z->magnitude, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
 
         // Verify phase is correct
-        $this->assertEqualsWithDelta($phase, $z->phase, Complex::EPSILON);
+        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
 
         // Verify real and imaginary parts
-        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, Complex::EPSILON);
-        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, Complex::EPSILON);
+        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, EPSILON);
+        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, EPSILON);
     }
 
     public function testFromPolarWithVariousAnglesPhase(): void
@@ -325,7 +325,7 @@ class ComplexPolarTest extends TestCase
             $this->assertEqualsWithDelta(
                 $expectedPhase,
                 $z->phase,
-                Complex::EPSILON,
+                EPSILON,
                 "Phase should be $expectedPhase for input angle $inputAngle"
             );
         }

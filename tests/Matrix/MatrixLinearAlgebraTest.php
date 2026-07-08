@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -13,8 +12,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixLinearAlgebraTest extends TestCase
 {
-    use FloatAssertions;
-
     #region transpose() tests
 
     /**
@@ -49,7 +46,7 @@ class MatrixLinearAlgebraTest extends TestCase
         $m = Matrix::fromArray([
             [5],
         ]);
-        $this->assertEqualsWithDelta(5.0, $m->det(), 1e-10);
+        $this->assertEqualsWithDelta(5.0, $m->det(), EPSILON);
     }
 
     /**
@@ -62,7 +59,7 @@ class MatrixLinearAlgebraTest extends TestCase
             [3, 4],
         ]);
         // det = 1*4 - 2*3 = -2
-        $this->assertEqualsWithDelta(-2.0, $m->det(), 1e-10);
+        $this->assertEqualsWithDelta(-2.0, $m->det(), EPSILON);
     }
 
     /**
@@ -78,7 +75,7 @@ class MatrixLinearAlgebraTest extends TestCase
         // det = 6(-2*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)
         //     = 6(-14-40) - 1(28-10) + 1(32+4)
         //     = 6(-54) - 18 + 36 = -324 - 18 + 36 = -306
-        $this->assertEqualsWithDelta(-306.0, $m->det(), 1e-10);
+        $this->assertEqualsWithDelta(-306.0, $m->det(), EPSILON);
     }
 
     /**
@@ -96,7 +93,7 @@ class MatrixLinearAlgebraTest extends TestCase
         ]);
         // Verified via cofactor expansion along row 0 and independently via row reduction to
         // upper-triangular form (product of pivots 2, 3, 3.5, -3): det = -63.
-        $this->assertEqualsWithDelta(-63.0, $m->det(), 1e-10);
+        $this->assertEqualsWithDelta(-63.0, $m->det(), EPSILON);
     }
 
     /**
@@ -186,7 +183,7 @@ class MatrixLinearAlgebraTest extends TestCase
     public function testNormFrobeniusIdentity(): void
     {
         // Identity 3x3: sqrt(1+1+1) = sqrt(3)
-        $this->assertApproxEqual(sqrt(3), Matrix::identity(3)->norm());
+        $this->assertEqualsWithDelta(sqrt(3), Matrix::identity(3)->norm(), EPSILON);
     }
 
     /**
@@ -199,7 +196,7 @@ class MatrixLinearAlgebraTest extends TestCase
             [1, 2],
             [3, 4],
         ]);
-        $this->assertApproxEqual(sqrt(30), $m->norm());
+        $this->assertEqualsWithDelta(sqrt(30), $m->norm(), EPSILON);
     }
 
     /**
@@ -212,7 +209,7 @@ class MatrixLinearAlgebraTest extends TestCase
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertApproxEqual(sqrt(91), $m->norm());
+        $this->assertEqualsWithDelta(sqrt(91), $m->norm(), EPSILON);
     }
 
     /**

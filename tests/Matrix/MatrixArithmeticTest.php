@@ -159,10 +159,10 @@ class MatrixArithmeticTest extends TestCase
         $this->assertSame(2, $result->columnCount);
         // Row 0: 1*7+2*9+3*11=58, 1*8+2*10+3*12=64
         // Row 1: 4*7+5*9+6*11=139, 4*8+5*10+6*12=154
-        $this->assertEqualsWithDelta(58.0, $result->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(64.0, $result->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(139.0, $result->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(154.0, $result->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(58.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(64.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(139.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(154.0, $result->get(1, 1), EPSILON);
     }
 
     /**
@@ -190,8 +190,8 @@ class MatrixArithmeticTest extends TestCase
         $this->assertInstanceOf(Vector::class, $result);
         // Row 0: 1*1+2*2+3*3=14
         // Row 1: 4*1+5*2+6*3=32
-        $this->assertEqualsWithDelta(14.0, $result->toArray()[0], 1e-10);
-        $this->assertEqualsWithDelta(32.0, $result->toArray()[1], 1e-10);
+        $this->assertEqualsWithDelta(14.0, $result->toArray()[0], EPSILON);
+        $this->assertEqualsWithDelta(32.0, $result->toArray()[1], EPSILON);
     }
 
     /**
@@ -216,10 +216,10 @@ class MatrixArithmeticTest extends TestCase
             [12, 16],
         ]);
         $result = $m->div(4);
-        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(2.0, $result->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(3.0, $result->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(4.0, $result->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(3.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(4.0, $result->get(1, 1), EPSILON);
     }
 
     /**
@@ -247,10 +247,10 @@ class MatrixArithmeticTest extends TestCase
         ]);
         $result = $a->div($b);
         // I * (2I)^-1 = 0.5I
-        $this->assertEqualsWithDelta(0.5, $result->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(0.5, $result->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(0.5, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.5, $result->get(1, 1), EPSILON);
     }
 
     /**
@@ -266,10 +266,10 @@ class MatrixArithmeticTest extends TestCase
 
         // Verify A * A^-1 = I.
         $product = $a->mul($inv);
-        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), EPSILON);
     }
 
     /**
@@ -306,10 +306,10 @@ class MatrixArithmeticTest extends TestCase
         ]);
         $result = $m->pow(3);
         // [[1,1],[0,1]]^3 = [[1,3],[0,1]]
-        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(3.0, $result->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(3.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), EPSILON);
     }
 
     /**
@@ -322,10 +322,10 @@ class MatrixArithmeticTest extends TestCase
             [4, 5],
         ]);
         $result = $m->pow(0);
-        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $result->get(1, 1), EPSILON);
     }
 
     /**
@@ -341,10 +341,10 @@ class MatrixArithmeticTest extends TestCase
 
         // Verify M * M^-1 = I.
         $product = $m->mul($result);
-        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), 1e-10);
-        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), 1e-10);
-        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), 1e-10);
+        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), EPSILON);
     }
 
     /**

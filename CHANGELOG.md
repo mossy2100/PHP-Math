@@ -6,6 +6,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [Unreleased]
+
+### Changed
+
+- Consolidated the float-comparison tolerance used throughout the test suite into a single global
+  `EPSILON` constant (`tests/bootstrap.php`), replacing the `Complex::EPSILON` class constant and
+  various ad-hoc tolerance values scattered across individual test files.
+- Replaced `assertApproxEqual()` (from Core's `FloatAssertions` trait) with PHPUnit's own
+  `assertEqualsWithDelta(..., EPSILON)` in the `Matrix` and `Vector` test suites, matching the
+  pattern already used everywhere else in this package's tests. `FloatAssertions`'s relative-tolerance
+  behavior wasn't being exercised by any of the seven call sites it had here (all in a similar,
+  modest magnitude range), so the switch is a simplification, not a loss of coverage. The trait
+  itself is untouched in Core.
+
+### Removed
+
+- `Complex::EPSILON` — superseded by the global `EPSILON` constant, above.
+
+---
+
 ## [3.0.0] - 2026-07-09
 
 ### Breaking

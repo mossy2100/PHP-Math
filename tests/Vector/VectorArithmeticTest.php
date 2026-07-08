@@ -6,7 +6,6 @@ namespace OceanMoon\Math\Tests\Vector;
 
 use DivisionByZeroError;
 use LengthException;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -14,8 +13,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Vector::class)]
 class VectorArithmeticTest extends TestCase
 {
-    use FloatAssertions;
-
     /**
      * Test negating a vector.
      */
@@ -127,7 +124,7 @@ class VectorArithmeticTest extends TestCase
     {
         $v = Vector::fromArray([10, 20, 30]);
         $result = $v->div(10);
-        $this->assertEqualsWithDelta([1.0, 2.0, 3.0], $result->toArray(), 1e-10);
+        $this->assertEqualsWithDelta([1.0, 2.0, 3.0], $result->toArray(), EPSILON);
     }
 
     /**
@@ -221,9 +218,9 @@ class VectorArithmeticTest extends TestCase
         $unit = $v->normalize();
 
         $this->assertNotNull($unit->magnitude);
-        $this->assertApproxEqual(1.0, $unit->magnitude);
-        $this->assertApproxEqual(3.0 / 5.0, $unit->get(0));
-        $this->assertApproxEqual(4.0 / 5.0, $unit->get(1));
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(3.0 / 5.0, $unit->get(0), EPSILON);
+        $this->assertEqualsWithDelta(4.0 / 5.0, $unit->get(1), EPSILON);
     }
 
     /**
@@ -235,7 +232,7 @@ class VectorArithmeticTest extends TestCase
         $unit = $v->normalize();
 
         $this->assertNotNull($unit->magnitude);
-        $this->assertApproxEqual(1.0, $unit->magnitude);
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
         $this->assertSame(1.0, $unit->get(0));
         $this->assertSame(0.0, $unit->get(1));
         $this->assertSame(0.0, $unit->get(2));
