@@ -61,8 +61,11 @@ final class Rational implements Stringable, JsonSerializable
      * @param int $num The numerator. Defaults to 0.
      * @param int $den The denominator. Defaults to 1.
      * @throws DivisionByZeroError If the denominator is zero.
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
+     * @throws DomainException If the ratio involves PHP_INT_MIN in a way that can't be exactly
+     * simplified (PHP_INT_MIN paired with an odd or otherwise incompatible counterpart). This is not
+     * a magnitude problem — the resulting value may well be within the representable range — it's
+     * specifically this exact integer ratio that can't be reduced, because PHP_INT_MIN can't be
+     * safely negated. Use fromFloat() if an approximation is acceptable instead.
      */
     public function __construct(int $num = 0, int $den = 1)
     {
@@ -75,17 +78,7 @@ final class Rational implements Stringable, JsonSerializable
             // Simplify the ratio to canonical form.
             [$num, $den] = self::simplify($num, $den);
         } catch (DomainException) {
-            // A PHP_INT_MIN numerator (with no even counterpart to halve away) makes the value's
-            // magnitude too large to represent, since negating PHP_INT_MIN itself would overflow.
-            if ($num === PHP_INT_MIN) {
-                throw new OverflowException("The value $num/$den is too large to be expressed as a rational number.");
-            }
-
-            // A PHP_INT_MIN denominator (with no even counterpart to halve away) makes the value's
-            // magnitude too small to represent, for the same reason.
-            if ($den === PHP_INT_MIN) {
-                throw new UnderflowException("The value $num/$den is too small to be expressed as a rational number.");
-            }
+            throw new DomainException("Cannot exactly represent the ratio $num/$den as a Rational.");
         }
 
         // Store the simplified values.

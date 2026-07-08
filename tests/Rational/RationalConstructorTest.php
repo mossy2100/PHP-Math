@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Rational;
 
 use DivisionByZeroError;
+use DomainException;
 use OceanMoon\Math\Rational;
-use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
-use UnderflowException;
 
 #[CoversClass(Rational::class)]
 class RationalConstructorTest extends TestCase
@@ -150,7 +149,7 @@ class RationalConstructorTest extends TestCase
      */
     public function testConstructorWithMinIntNumeratorAndDenominatorNotAMultipleOf2Throws(): void
     {
-        $this->expectException(OverflowException::class);
+        $this->expectException(DomainException::class);
         $r = new Rational(PHP_INT_MIN);
     }
 
@@ -169,7 +168,7 @@ class RationalConstructorTest extends TestCase
      */
     public function testConstructorWithMinIntDenominatorAndNumeratorNotAMultipleOf2Throws(): void
     {
-        $this->expectException(UnderflowException::class);
+        $this->expectException(DomainException::class);
         new Rational(1, PHP_INT_MIN);
     }
 
@@ -196,34 +195,35 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
-     * Test PHP_INT_MIN numerator with denominator 1 throws OverflowException.
+     * Test PHP_INT_MIN numerator with denominator 1 throws DomainException.
      */
     public function testConstructorWithMinIntNumeratorAndDenominator1Throws(): void
     {
-        $this->expectException(OverflowException::class);
+        $this->expectException(DomainException::class);
         new Rational(PHP_INT_MIN, 1);
     }
 
     /**
-     * Test PHP_INT_MIN numerator with denominator -1 throws OverflowException.
+     * Test PHP_INT_MIN numerator with denominator -1 throws DomainException.
      */
     public function testConstructorWithMinIntNumeratorAndDenominatorNeg1Throws(): void
     {
-        $this->expectException(OverflowException::class);
+        $this->expectException(DomainException::class);
         new Rational(PHP_INT_MIN, -1);
     }
 
     /**
      * Test PHP_INT_MIN numerator with odd denominator throws DomainException.
      *
-     * simplify() can't compute the GCD of PHP_INT_MIN with an odd counterpart. Unlike the old
-     * constructor, this no longer falls back to a float approximation — the constructor is
-     * int-only and tight, so an unsimplifiable ratio is now a hard error. Use fromFloat() if an
-     * approximation is acceptable.
+     * simplify() can't compute the GCD of PHP_INT_MIN with an odd counterpart. This isn't a
+     * magnitude problem — PHP_INT_MIN/3 is well within the representable range — it's specifically
+     * this exact integer ratio that can't be reduced, since PHP_INT_MIN can't be safely negated.
+     * The constructor is int-only and tight, so it doesn't fall back to a float approximation; use
+     * fromFloat() if an approximation is acceptable.
      */
     public function testConstructorWithMinIntNumeratorAndOddDenominatorThrows(): void
     {
-        $this->expectException(OverflowException::class);
+        $this->expectException(DomainException::class);
         new Rational(PHP_INT_MIN, 3);
     }
 
