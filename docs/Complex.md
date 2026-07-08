@@ -462,7 +462,7 @@ $quotient = $z1->div($z2);
 ### pow()
 
 ```php
-public function pow(self|float $exponent): self
+public function pow(self|float $other): self
 ```
 
 Raise this complex number to a power.

@@ -75,9 +75,11 @@ new Rational(1, 0);               // DivisionByZeroError (zero denominator)
 
 **Throws:**
 - `DivisionByZeroError` if the denominator is zero
-- `DomainException` if the ratio can't be simplified (PHP_INT_MIN with an incompatible counterpart)
-- `OverflowException` if the value is too large to represent as a Rational
-- `UnderflowException` if the value is non-zero but too small to represent as a Rational
+- `DomainException` if the ratio can't be exactly represented (PHP_INT_MIN paired with an odd or
+  otherwise incompatible counterpart, e.g. `new Rational(PHP_INT_MIN, 3)`). This is not a magnitude
+  problem — the resulting value may well be within the representable range — it's specifically that
+  exact integer ratio that can't be reduced, since PHP_INT_MIN can't be safely negated. Use
+  `fromFloat()` if an approximation is acceptable instead.
 
 ---
 

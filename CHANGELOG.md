@@ -6,15 +6,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
-## [2.1.0] - Unreleased
+## [3.0.0] - 2026-07-09
+
+### Breaking
+
+- **`Rational::__construct()` no longer accepts `float`** — it's now `__construct(int $num = 0, int $den = 1)`. Code calling `new Rational(0.5)` (or any float argument) will now throw a `TypeError`. Use the new `Rational::fromFloat()` instead, which handles the approximation via continued fractions explicitly. This mirrors `Complex`'s existing pattern: a tight, exact constructor plus dedicated factory methods for conversions that require real logic, rather than an implicit fallback baked into `new`.
+
+### Added
+
+- **`Complex`**: `toObject()`, `toVector()`, `fromArray()`, `fromObject()`, `fromVector()` — conversion to/from plain objects, arrays, and `Vector`. `toComplex()` is now `public` (was previously private), so it can be called directly. `Complex` now implements `JsonSerializable`, and gained `__serialize()`/`__unserialize()` for correct native PHP serialization (validated and canonicalized via the constructor, rather than PHP's default property-hydration bypassing it).
+- **`Rational`**: `fromFloat()` — the float-to-Rational conversion extracted from the constructor (see Breaking, above). `Rational` now implements `JsonSerializable`, and gained `__unserialize()` for the same constructor-validated serialization guarantee as `Complex`. (No corresponding `__serialize()`: unlike `Complex`, `Rational` has no computed properties to exclude from the payload, so PHP's default serialization already matches what a custom one would produce.)
+- **`OceanMoon\Math\I`** — the imaginary unit as a real language-level constant (`src/constants.php`, wired up via Composer's `files` autoload), a convenient abbreviation for `Complex::i()`.
+- **`Matrix`**: `calcDet()` gained a closed-form 3×3 fast path (Sarrus' Rule), which also speeds up `inv()` on 4×4 matrices via its minors.
 
 ### Changed
 
-- Simplified scalar value-parameter types from `int|float` to `float` across `Complex`, `Vector`, and `Matrix` for a cleaner API. Integer arguments are still accepted, because PHP widens `int` to `float` even under `strict_types`, so this change is backward compatible.
+- Simplified scalar value-parameter types from `int|float` to `float` across `Complex`, `Vector`, and `Matrix`. Integer arguments are still accepted, because PHP widens `int` to `float` even under `strict_types`, so this change is backward compatible.
   - `Complex`: `__construct()`, `fromPolar()`, `add()`, `sub()`, `mul()`, `div()`, `pow()`, `log()`.
   - `Vector`: `set()`, `mul()`, `div()`.
   - `Matrix`: `set()`, `mul()`, `div()`.
-- `Rational` was intentionally left unchanged: its constructor distinguishes `int` from `float` arguments (exact integer ratios versus float approximation), so the `int` type is semantically significant there.
+- `Rational::toRational()`'s parameter widened from `int|float|string|self` to `mixed`; it now throws `InvalidArgumentException` for a value of any other type, rather than a language-level `TypeError`. Backward compatible — every previously-accepted type still works.
+- Fixed a latent bug in `Complex::toComplex()`: the `Vector` branch was unreachable, because the generic `is_object()` check ran first and always failed it (`Vector` has no public `real`/`imaginary` properties). Reordered so `Vector` is checked first.
+
+### Removed
+
+- `Rational::__serialize()` — redundant now that `Rational` has no computed properties to exclude from serialization; `__unserialize()` alone provides the correctness guarantee (routing through the constructor rather than bypassing it).
 
 ---
 

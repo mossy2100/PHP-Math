@@ -13,11 +13,12 @@ Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 This package provides classes for working with complex numbers, rational numbers, vectors, and matrices in PHP.
 
 **Key Features:**
-- **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, and polar/rectangular conversions
+- **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, polar/rectangular conversions, and conversion to/from arrays, objects, and Vectors
 - **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection
 - **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access
 - **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication
-- **Type flexibility** - Methods accept int, float, string, or the respective class type
+- **Type flexibility** - Methods accept int or float (int widens to float automatically); `Rational` uses a dedicated `fromFloat()` method for approximate conversion, keeping its constructor exact-integer-only
+- **Serialization** - `Complex` and `Rational` support native PHP serialization and JSON encoding
 - **Comprehensive testing** - 100% code coverage with extensive test suites
 
 ---
@@ -54,6 +55,8 @@ Immutable class for complex numbers (a + bi) with support for:
 - Transcendental functions (exp, ln, log, pow, roots)
 - Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan)
 - Polar and rectangular form conversions
+- Conversion to/from arrays, plain objects, and Vectors
+- Native PHP serialization and JSON encoding
 - Epsilon-based equality comparison
 - String parsing and formatting
 
@@ -62,7 +65,8 @@ Immutable class for complex numbers (a + bi) with support for:
 Immutable class for rational numbers (p/q) with support for:
 - Exact arithmetic using integer ratios (no floating-point errors)
 - Automatic reduction to simplest form (e.g., 6/8 → 3/4)
-- Conversion to/from floats using continued fractions
+- A dedicated `fromFloat()` method for approximate conversion from floats using continued fractions
+- Native PHP serialization and JSON encoding
 - Overflow-safe integer operations
 - Comparison operations with mixed types
 - String parsing and formatting
