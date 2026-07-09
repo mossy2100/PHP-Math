@@ -206,4 +206,16 @@ class ComplexParseTest extends TestCase
         $this->assertEqualsWithDelta($expectedReal, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
+
+    /**
+     * Test toComplex() with a parseable string. Lives here rather than in ComplexFactoryTest,
+     * since it exercises toComplex()'s delegation to parse() specifically, not general factory
+     * behavior.
+     */
+    public function testToComplexWithString(): void
+    {
+        $result = Complex::toComplex('3+4i');
+        $this->assertSame(3.0, $result->real);
+        $this->assertSame(4.0, $result->imaginary);
+    }
 }

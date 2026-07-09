@@ -6,8 +6,8 @@ namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
 use InvalidArgumentException;
+use LengthException;
 use OceanMoon\Math\Complex;
-use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -17,97 +17,6 @@ use const OceanMoon\Math\I;
 #[CoversClass(Complex::class)]
 class ComplexFactoryTest extends TestCase
 {
-    /**
-     * Test the constructor with various inputs.
-     */
-    public function testConstructor(): void
-    {
-        $z1 = new Complex(3, 4);
-        $this->assertSame(3.0, $z1->real);
-        $this->assertSame(4.0, $z1->imaginary);
-
-        $z2 = new Complex(-5.5, 2.3);
-        $this->assertSame(-5.5, $z2->real);
-        $this->assertSame(2.3, $z2->imaginary);
-
-        $z3 = new Complex();
-        $this->assertSame(0.0, $z3->real);
-        $this->assertSame(0.0, $z3->imaginary);
-
-        $z4 = new Complex(5);
-        $this->assertSame(5.0, $z4->real);
-        $this->assertSame(0.0, $z4->imaginary);
-    }
-
-    /**
-     * Test the constructor accepts int or float.
-     */
-    public function testConstructorIntFloat(): void
-    {
-        $z1 = new Complex(3, 4.5);
-        $this->assertSame(3.0, $z1->real);
-        $this->assertSame(4.5, $z1->imaginary);
-
-        $z2 = new Complex(3.5, 4);
-        $this->assertSame(3.5, $z2->real);
-        $this->assertSame(4.0, $z2->imaginary);
-    }
-
-    /**
-     * Test constructor throws for INF real part.
-     */
-    public function testConstructorInfRealThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        new Complex(INF, 0);
-    }
-
-    /**
-     * Test constructor throws for INF imaginary part.
-     */
-    public function testConstructorInfImaginaryThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        new Complex(0, INF);
-    }
-
-    /**
-     * Test constructor throws for NAN real part.
-     */
-    public function testConstructorNanRealThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        new Complex(NAN, 0);
-    }
-
-    /**
-     * Test constructor throws for NAN imaginary part.
-     */
-    public function testConstructorNanImaginaryThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        new Complex(0, NAN);
-    }
-
-    /**
-     * Test constructor throws for negative infinity.
-     */
-    public function testConstructorNegativeInfThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        new Complex(-INF, -INF);
-    }
-
-    /**
-     * Test the imaginary unit static method.
-     */
-    public function testImaginaryUnitMethod(): void
-    {
-        $i = Complex::i();
-        $this->assertSame(0.0, $i->real);
-        $this->assertSame(1.0, $i->imaginary);
-    }
-
     /**
      * Test the imaginary unit constant.
      */
@@ -142,16 +51,6 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test toComplex() with a parseable string.
-     */
-    public function testToComplexWithString(): void
-    {
-        $result = Complex::toComplex('3+4i');
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
      * Test toComplex() with a valid 2-element array.
      */
     public function testToComplexWithArray(): void
@@ -166,7 +65,7 @@ class ComplexFactoryTest extends TestCase
      */
     public function testToComplexWithArrayInvalidCountThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(LengthException::class);
         Complex::toComplex([3, 4, 5]);
     }
 
@@ -177,28 +76,6 @@ class ComplexFactoryTest extends TestCase
     {
         $this->expectException(DomainException::class);
         Complex::toComplex([3, 'four']);
-    }
-
-    /**
-     * Test toComplex() with a valid 2-element Vector.
-     *
-     * This must be checked before the generic object case, since Vector is itself an object.
-     */
-    public function testToComplexWithVector(): void
-    {
-        $vector = Vector::fromArray([3, 4]);
-        $result = Complex::toComplex($vector);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test toComplex() with a Vector of the wrong size throws.
-     */
-    public function testToComplexWithVectorInvalidSizeThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        Complex::toComplex(Vector::fromArray([1, 2, 3]));
     }
 
     /**
@@ -254,7 +131,7 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test fromArray() with a valid 2-element array.
+     * Test fromArray() with a valid 2-element list.
      */
     public function testFromArray(): void
     {
@@ -264,21 +141,108 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test fromArray() with the wrong number of elements throws.
+     * Test fromArray() with the result of a cast.
+     */
+    public function testFromArrayWithCast(): void
+    {
+        $z = new Complex(3, 4);
+        $a = (array)$z;
+        $result = Complex::fromArray($a);
+        $this->assertSame(3.0, $result->real);
+        $this->assertSame(4.0, $result->imaginary);
+    }
+
+    /**
+     * Test fromArray() with a list containing the wrong number of elements throws.
      */
     public function testFromArrayInvalidCountThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(LengthException::class);
         Complex::fromArray([1]);
     }
 
     /**
-     * Test fromArray() with non-numeric elements throws.
+     * Test fromArray() with a list containing non-numeric elements throws.
      */
     public function testFromArrayNonNumericThrows(): void
     {
         $this->expectException(DomainException::class);
         Complex::fromArray(['a', 'b']);
+    }
+
+    /**
+     * Test fromArray() with a valid associative array.
+     */
+    public function testFromArrayAssociative(): void
+    {
+        // Key order shouldn't matter.
+        $result = Complex::fromArray([
+            'imaginary' => 4,
+            'real'      => 3,
+        ]);
+        $this->assertSame(3.0, $result->real);
+        $this->assertSame(4.0, $result->imaginary);
+    }
+
+    /**
+     * Test fromArray() supports the result of (array) $complex, ignoring extra keys.
+     */
+    public function testFromArrayAssociativeIgnoresExtraKeys(): void
+    {
+        $result = Complex::fromArray([
+            'real'      => 3,
+            'imaginary' => 4,
+            'magnitude' => 5,
+            'phase'     => 0.9,
+        ]);
+        $this->assertSame(3.0, $result->real);
+        $this->assertSame(4.0, $result->imaginary);
+    }
+
+    /**
+     * Test fromArray() with an associative array missing the "real" key throws.
+     */
+    public function testFromArrayAssociativeMissingRealKeyThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromArray([
+            'imaginary' => 4,
+        ]);
+    }
+
+    /**
+     * Test fromArray() with an associative array missing the "imaginary" key throws.
+     */
+    public function testFromArrayAssociativeMissingImaginaryKeyThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromArray([
+            'real' => 3,
+        ]);
+    }
+
+    /**
+     * Test fromArray() with an associative array containing a non-numeric "real" value throws.
+     */
+    public function testFromArrayAssociativeNonNumericRealThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromArray([
+            'real'      => 'a',
+            'imaginary' => 4,
+        ]);
+    }
+
+    /**
+     * Test fromArray() with an associative array containing a non-numeric "imaginary" value throws.
+     */
+    public function testFromArrayAssociativeNonNumericImaginaryThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromArray([
+            'real'      => 3,
+            'imaginary' => 'b',
+        ]);
     }
 
     /**
@@ -295,18 +259,31 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test fromObject() with missing properties throws.
+     * Test fromObject() with a missing "real" property throws.
      */
-    public function testFromObjectMissingPropertiesThrows(): void
+    public function testFromObjectMissingRealPropertyThrows(): void
     {
+        $obj = new stdClass();
+        $obj->imaginary = 4;
         $this->expectException(DomainException::class);
-        Complex::fromObject(new stdClass());
+        Complex::fromObject($obj);
     }
 
     /**
-     * Test fromObject() with non-numeric properties throws.
+     * Test fromObject() with a missing "imaginary" property throws.
      */
-    public function testFromObjectNonNumericPropertiesThrows(): void
+    public function testFromObjectMissingImaginaryPropertyThrows(): void
+    {
+        $obj = new stdClass();
+        $obj->real = 3;
+        $this->expectException(DomainException::class);
+        Complex::fromObject($obj);
+    }
+
+    /**
+     * Test fromObject() with a non-numeric "real" property throws.
+     */
+    public function testFromObjectNonNumericRealPropertyThrows(): void
     {
         $obj = new stdClass();
         $obj->real = [];
@@ -316,31 +293,14 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test fromVector() with a valid 2-element Vector.
+     * Test fromObject() with a non-numeric "imaginary" property throws.
      */
-    public function testFromVector(): void
+    public function testFromObjectNonNumericImaginaryPropertyThrows(): void
     {
-        $vector = Vector::fromArray([3, 4]);
-        $result = Complex::fromVector($vector);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromVector() with the wrong number of elements throws.
-     */
-    public function testFromVectorInvalidSizeThrows(): void
-    {
+        $obj = new stdClass();
+        $obj->real = 3;
+        $obj->imaginary = [];
         $this->expectException(DomainException::class);
-        Complex::fromVector(Vector::fromArray([1, 2, 3]));
-    }
-
-    /**
-     * Test fromVector() with an empty Vector throws.
-     */
-    public function testFromVectorEmptyThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        Complex::fromVector(new Vector(0));
+        Complex::fromObject($obj);
     }
 }

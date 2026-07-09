@@ -11,7 +11,7 @@ The `Complex` class provides a complete implementation of complex number arithme
 - Transcendental functions (exponential, logarithm, power, roots)
 - Trigonometric and hyperbolic functions
 - Conversion between rectangular (a + bi) and polar (r∠θ) forms
-- Conversion to/from arrays, plain objects, and Vectors
+- Conversion to/from arrays and plain objects
 - Native PHP serialization and JSON encoding support
 - Epsilon-based equality comparison for floating-point precision
 
@@ -87,22 +87,45 @@ $z4 = new Complex();            // 0 + 0i (zero)
 
 ## Factory Methods
 
-### i()
+These are all static methods that return a `Complex`.
+
+### fromArray()
 
 ```php
-public static function i(): self
+public static function fromArray(array $arr): self
 ```
 
-Get the imaginary unit (0 + 1i). Returns a constant value.
+Create a Complex from an array, which can be either a list `[real, imaginary]` or an associative
+array with `'real'` and `'imaginary'` keys. The associative form accepts the result of
+`(array) $complex`, which also includes `'magnitude'` and `'phase'` keys; these are ignored.
 
 **Example:**
 ```php
-$i = Complex::i();
-echo $i;  // "i"
+$z = Complex::fromArray([3, 4]);                             // 3 + 4i
+$z = Complex::fromArray(['real' => 3, 'imaginary' => 4]);    // 3 + 4i
 ```
 
-**Note:** the imaginary unit is also available directly as the constant `OceanMoon\Math\I`, which
-`Complex::i()` returns. Import it with `use const OceanMoon\Math\I;` if you prefer the constant form.
+**Throws:**
+- `LengthException` if the array is a list and doesn't contain exactly two elements.
+- `DomainException` if the array is missing the `'real'` or `'imaginary'` key, or if either value is
+  not numeric.
+
+### fromObject()
+
+```php
+public static function fromObject(object $obj): self
+```
+
+Create a Complex from a plain object with numeric `real` and `imaginary` properties.
+
+**Example:**
+```php
+$obj = (object)['real' => 3, 'imaginary' => 4];
+$z = Complex::fromObject($obj);  // 3 + 4i
+```
+
+**Throws:** `DomainException` if the object is missing the `real` or `imaginary` property, or if
+either value is not numeric.
 
 ### fromPolar()
 
@@ -157,9 +180,8 @@ public static function toComplex(mixed $value): self
 Convert a value to a Complex, if it isn't one already. This is the general-purpose conversion
 method used internally by the arithmetic methods to accept `self|float` arguments, but it accepts
 a broader range of types directly: an existing `Complex` is returned unchanged; an `int` or `float`
-becomes a real Complex; a `string` is parsed via `parse()`; a 2-element `array` or
-[`Vector`](Vector.md) is interpreted as `[real, imaginary]`; and a plain object is accepted if it
-has numeric `real` and `imaginary` properties.
+becomes a real Complex; a `string` is parsed via `parse()`; an `array` is converted via `fromArray()`
+(list or associative); and an `object` is converted via `fromObject()`.
 
 **Examples:**
 ```php
@@ -171,55 +193,65 @@ $z4 = Complex::toComplex((object)['real' => 3, 'imaginary' => 4]);  // 3 + 4i
 
 **Throws:**
 - `InvalidArgumentException` if the value's type cannot be converted to a Complex.
-- `DomainException` if an array, object, or Vector does not have the required structure.
+- `LengthException` if the value is a list array and doesn't contain exactly two elements.
+- `DomainException` if an array or object does not have the required structure.
 - [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if a string cannot be parsed.
 
-### fromArray()
+---
+
+## Conversion Methods
+
+### toArray()
 
 ```php
-public static function fromArray(array $arr): self
+public function toArray(): array
 ```
 
-Create a Complex from a 2-element array, interpreted as `[real, imaginary]`.
+Convert to list array with two floats: \[real, imaginary\]. NB: This is a different result than `(array) $complex`,
+which will produce an associative array with keys "real", "imaginary", "magnitude", and "phase".
 
 **Example:**
 ```php
-$z = Complex::fromArray([3, 4]);  // 3 + 4i
+$z = new Complex(3, 4);
+$array = $z->toArray();  // [3.0, 4.0]
 ```
 
-**Throws:** `DomainException` if the array does not contain exactly two numeric elements.
-
-### fromObject()
+### toObject()
 
 ```php
-public static function fromObject(object $obj): self
+public function toObject(): stdClass
 ```
 
-Create a Complex from a plain object with numeric `real` and `imaginary` properties.
+Convert to a plain object (i.e. `stdClass`) with `real` and `imaginary` properties. NB: This is a different result than
+`(object) $complex`, which will do nothing, i.e. it will simply return the same Complex object.
 
 **Example:**
 ```php
-$obj = (object)['real' => 3, 'imaginary' => 4];
-$z = Complex::fromObject($obj);  // 3 + 4i
+$z = new Complex(3, 4);
+$obj = $z->toObject();  // (object)['real' => 3.0, 'imaginary' => 4.0]
 ```
 
-**Throws:** `DomainException` if the object does not have the required numeric properties.
-
-### fromVector()
+### \_\_toString()
 
 ```php
-public static function fromVector(Vector $vector): self
+public function __toString(): string
 ```
 
-Create a Complex from a 2-element [`Vector`](Vector.md), interpreted as `[real, imaginary]`.
+Convert to string representation.
 
-**Example:**
+**Format:**
+- Real numbers: `"5"`
+- Pure imaginary: `"i"`, `"3i"`, `"-2i"`
+- Complex: `"3 + 4i"`, `"3 - 4i"`, `"-3 + 4i"`, `"-3 - 4i"`
+
+**Examples:**
 ```php
-$vector = Vector::fromArray([3, 4]);
-$z = Complex::fromVector($vector);  // 3 + 4i
+echo new Complex(5);        // "5"
+echo new Complex(0, 1);     // "i"
+echo new Complex(0, -3);    // "-3i"
+echo new Complex(3, 4);     // "3 + 4i"
+echo new Complex(3, -4);    // "3 - 4i"
 ```
-
-**Throws:** `DomainException` if the Vector does not contain exactly two elements.
 
 ---
 
@@ -472,8 +504,7 @@ Raise this complex number to a power.
 $z = new Complex(3, 4);
 $result = $z->pow(2);  // -7 + 24i
 
-$i = Complex::i();
-$result = $i->pow(2);  // -1 + 0i
+$result = I->pow(2);  // -1 + 0i
 ```
 
 **Special cases:**
@@ -746,74 +777,6 @@ $z = new Complex(2);
 $asech = $z->asech();  // acosh(1/z)
 $acsch = $z->acsch();  // asinh(1/z)
 $acoth = $z->acoth();  // atanh(1/z)
-```
-
----
-
-## Conversion Methods
-
-### toArray()
-
-```php
-public function toArray(): array
-```
-
-Convert to array [real, imaginary].
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$array = $z->toArray();  // [3.0, 4.0]
-```
-
-### toObject()
-
-```php
-public function toObject(): stdClass
-```
-
-Convert to a plain object with `real` and `imaginary` properties.
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$obj = $z->toObject();  // (object)['real' => 3.0, 'imaginary' => 4.0]
-```
-
-### toVector()
-
-```php
-public function toVector(): Vector
-```
-
-Convert to a 2-element [`Vector`](Vector.md), `[real, imaginary]`.
-
-**Example:**
-```php
-$z = new Complex(3, 4);
-$vector = $z->toVector();  // Vector [3.0, 4.0]
-```
-
-### \_\_toString()
-
-```php
-public function __toString(): string
-```
-
-Convert to string representation.
-
-**Format:**
-- Real numbers: `"5"`
-- Pure imaginary: `"i"`, `"3i"`, `"-2i"`
-- Complex: `"3 + 4i"`, `"3 - 4i"`, `"-3 + 4i"`, `"-3 - 4i"`
-
-**Examples:**
-```php
-echo new Complex(5);        // "5"
-echo new Complex(0, 1);     // "i"
-echo new Complex(0, -3);    // "-3i"
-echo new Complex(3, 4);     // "3 + 4i"
-echo new Complex(3, -4);    // "3 - 4i"
 ```
 
 ---

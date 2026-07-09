@@ -8,6 +8,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+### Added
+
+- **`Complex::fromArray()`** now also accepts an associative array with `'real'` and `'imaginary'`
+  keys (order-independent), in addition to the existing `[real, imaginary]` list form. This
+  includes the result of `(array) $complex`, whose extra `'magnitude'`/`'phase'` keys are ignored.
+  `Complex::toComplex()` inherits this via its existing delegation to `fromArray()`.
+
 ### Changed
 
 - Consolidated the float-comparison tolerance used throughout the test suite into a single global
@@ -19,10 +26,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   behavior wasn't being exercised by any of the seven call sites it had here (all in a similar,
   modest magnitude range), so the switch is a simplification, not a loss of coverage. The trait
   itself is untouched in Core.
+- **`Complex::fromArray()`** (and `toComplex()`, which delegates to it) now throws `LengthException`
+  rather than `DomainException` when a list array doesn't contain exactly two elements, matching how
+  `LengthException` is used elsewhere in this package. Code that specifically catches
+  `DomainException` around these calls to handle a wrong-length array will need to catch
+  `LengthException` instead; catching the broader `Exception` or `Throwable` is unaffected.
 
 ### Removed
 
 - `Complex::EPSILON` — superseded by the global `EPSILON` constant, above.
+- **`Complex::i()`** — redundant now that `Complex::i()` and the `OceanMoon\Math\I` constant did
+  exactly the same thing; use the `I` constant directly.
+- **`Complex::fromVector()`**, **`Complex::toVector()`**, and the `Vector` branch of
+  **`Complex::toComplex()`** — `Complex` no longer has any dependency on `Vector`, so the extension
+  currently in development (which implements `Complex` but not the rest of the package) can support
+  it standalone. Convert via `toArray()`/`fromArray()` and `Vector::toArray()`/`Vector::fromArray()`
+  instead.
 
 ---
 

@@ -13,13 +13,13 @@ Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 This package provides classes for working with complex numbers, rational numbers, vectors, and matrices in PHP.
 
 **Key Features:**
-- **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, polar/rectangular conversions, and conversion to/from arrays, objects, and Vectors
-- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection
-- **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access
-- **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication
-- **Type flexibility** - Methods accept int or float (int widens to float automatically); `Rational` uses a dedicated `fromFloat()` method for approximate conversion, keeping its constructor exact-integer-only
-- **Serialization** - `Complex` and `Rational` support native PHP serialization and JSON encoding
-- **Comprehensive testing** - 100% code coverage with extensive test suites
+- **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, polar/rectangular conversions, and conversion to/from arrays and objects.
+- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow detection.
+- **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access.
+- **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication.
+- **Type flexibility** - Methods accept int or float (int widens to float automatically); `Rational` uses a dedicated `fromFloat()` method for approximate conversion, keeping its constructor exact-integer-only.
+- **Serialization** - `Complex` and `Rational` support native PHP serialization and JSON encoding.
+- **Comprehensive testing** - 100% code coverage with extensive test suites.
 
 ---
 
@@ -55,7 +55,7 @@ Immutable class for complex numbers (a + bi) with support for:
 - Transcendental functions (exp, ln, log, pow, roots)
 - Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan)
 - Polar and rectangular form conversions
-- Conversion to/from arrays, plain objects, and Vectors
+- Conversion to/from arrays and plain objects
 - Native PHP serialization and JSON encoding
 - Epsilon-based equality comparison
 - String parsing and formatting
@@ -102,8 +102,8 @@ nothing for it to load on demand, so `constants.php` is registered separately vi
 [`files` autoload](https://getcomposer.org/doc/04-schema.md#files) mechanism, which includes it
 unconditionally whenever the package is loaded.
 
-- **`I`** (`OceanMoon\Math\I`) - The imaginary unit, a `Complex(0, 1)` instance. A convenient
-  abbreviation for `Complex::i()`; import it with `use const OceanMoon\Math\I;`.
+- **`I`** (`OceanMoon\Math\I`) - The imaginary unit, a `Complex(0, 1)` instance. Import it with `use const OceanMoon\Math\I;`.
+  This is not a class constant because PHP only permits object constants to be created using the `const` keyword (not `define`) outside of a class.
 
 There are no other constants at this time, but more may be added here in the future if needed.
 

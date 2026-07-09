@@ -9,6 +9,7 @@ use DivisionByZeroError;
 use DomainException;
 use InvalidArgumentException;
 use JsonSerializable;
+use LengthException;
 use LogicException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
@@ -118,37 +119,65 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     #region Factory methods
 
     /**
-     * Get a complex number representing the imaginary unit.
-     *
-     * @return self A complex number representing the imaginary unit.
-     */
-    public static function i(): self
-    {
-        // I is itself the cached singleton instance, so no extra caching is needed here.
-        return I;
-    }
-
-    /**
      * Create a Complex from a 2-element array.
      *
-     * The array must contain exactly two numeric elements, interpreted as the real and imaginary parts,
-     * e.g. [3, 4] represents 3 + 4i.
+     * The array must contain two numeric elements that will be interpreted as the real and imaginary parts.
+     *
+     * The method supports two kinds of arrays: list and associative:
+     * 1. If list, there must be exactly two elements, and they will be interpreted as [real, imaginary].
+     * The order of the values matters. This version will support the result of a call to toArray().
+     * 2. If associative, the array must have keys 'real' and 'imaginary', which must both be numeric. The order of the
+     * values doesn't matter. This version will support the result of (array) $complex, which includes keys for
+     * 'magnitude' and 'phase', but these will be ignored.
+     *
+     * So: both [3, 4] and ['real' => 3, 'imaginary' => 4, ...] will be converted to 3 + 4i.
      *
      * @param array<array-key, mixed> $arr The array to convert.
      * @return self The equivalent Complex.
-     * @throws DomainException If the array does not contain exactly two numeric elements.
+     * @throws LengthException If the array is a list and doesn't have two elements.
+     * @throws DomainException If the array does not have the right structure.
      */
     public static function fromArray(array $arr): self
     {
-        if (count($arr) !== 2) {
-            throw new DomainException('Cannot convert array to Complex. Array must contain exactly two elements.');
+        // Check for list: [real, imaginary]
+        if (array_is_list($arr)) {
+            // Check for exactly two elements.
+            if (count($arr) !== 2) {
+                throw new LengthException('Cannot convert array to Complex. Array must contain exactly two elements.');
+            }
+
+            // Check both elements are numeric (int or float).
+            if (!Numbers::isNumber($arr[0])) {
+                throw new DomainException(
+                    'Cannot convert array to Complex. Element at index 0 must be numeric (int or float).'
+                );
+            }
+            if (!Numbers::isNumber($arr[1])) {
+                throw new DomainException(
+                    'Cannot convert array to Complex. Element at index 1 must be numeric (int or float).'
+                );
+            }
+            return new self($arr[0], $arr[1]);
         }
 
-        if (!Numbers::isNumber($arr[0]) || !Numbers::isNumber($arr[1])) {
-            throw new DomainException('Cannot convert array to Complex. Both elements must be numeric (int or float).');
+        // Associative array: ['real' => ..., 'imaginary' => ...]
+        if (!array_key_exists('real', $arr)) {
+            throw new DomainException('Cannot convert array to Complex. Array is missing key "real".');
         }
-
-        return new self($arr[0], $arr[1]);
+        if (!array_key_exists('imaginary', $arr)) {
+            throw new DomainException('Cannot convert array to Complex. Array is missing key "imaginary".');
+        }
+        if (!Numbers::isNumber($arr['real'])) {
+            throw new DomainException(
+                'Cannot convert array to Complex. Value for key "real" must be numeric (int or float).'
+            );
+        }
+        if (!Numbers::isNumber($arr['imaginary'])) {
+            throw new DomainException(
+                'Cannot convert array to Complex. Value for key "imaginary" must be numeric (int or float).'
+            );
+        }
+        return new self($arr['real'], $arr['imaginary']);
     }
 
     /**
@@ -160,35 +189,24 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      */
     public static function fromObject(object $obj): self
     {
-        if (!property_exists($obj, 'real') || !property_exists($obj, 'imaginary')) {
+        if (!property_exists($obj, 'real')) {
+            throw new DomainException('Cannot convert object to Complex. Object is missing property "real".');
+        }
+        if (!property_exists($obj, 'imaginary')) {
+            throw new DomainException('Cannot convert object to Complex. Object is missing property "imaginary".');
+        }
+        if (!Numbers::isNumber($obj->real)) {
             throw new DomainException(
-                'Cannot convert object to Complex. Object must have "real" and "imaginary" properties.'
+                'Cannot convert object to Complex. Value for property "real" must be numeric (int or float).'
             );
         }
-
-        if (!Numbers::isNumber($obj->real) || !Numbers::isNumber($obj->imaginary)) {
+        if (!Numbers::isNumber($obj->imaginary)) {
             throw new DomainException(
-                'Cannot convert object to Complex. Both properties must be numeric (int or float).'
+                'Cannot convert object to Complex. Value for property "imaginary" must be numeric (int or float).'
             );
         }
 
         return new self($obj->real, $obj->imaginary);
-    }
-
-    /**
-     * Create a Complex from a 2-element Vector.
-     *
-     * @param Vector $vector The Vector to convert.
-     * @return self The equivalent Complex.
-     * @throws DomainException If the Vector does not contain exactly two elements.
-     */
-    public static function fromVector(Vector $vector): self
-    {
-        if ($vector->size !== 2) {
-            throw new DomainException('Cannot convert Vector to Complex. Vector must contain exactly two elements.');
-        }
-
-        return new self($vector[0], $vector[1]);
     }
 
     /**
@@ -303,7 +321,6 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *   as the real and imaginary parts.
      * - An object can be converted to a Complex only if it has public properties named "real" and "imaginary", which
      *   are numeric.
-     * - A Vector can be converted to a Complex only if it has exactly two elements.
      *
      * @param mixed $value The value to convert.
      * @return self The equivalent Complex.
@@ -333,22 +350,71 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
             return self::fromArray($value);
         }
 
-        // Check for Vector and convert to Complex if possible. This must be checked before the generic
-        // is_object() case below, since Vector is itself an object and has no public "real"/"imaginary" properties, so
-        // it would otherwise always fail that generic check.
-        if ($value instanceof Vector) {
-            return self::fromVector($value);
-        }
-
-        // Check for other type of object and convert to Complex if possible.
+        // Check for object and convert to Complex if possible.
         if (is_object($value)) {
             return self::fromObject($value);
         }
 
         // The value has a type that cannot be converted to Complex.
         throw new InvalidArgumentException(
-            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, object, or Vector.'
+            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, or object.'
         );
+    }
+
+    #endregion
+
+    #region Conversion methods
+
+    /**
+     * Convert the complex number to a plain object.
+     *
+     * @return stdClass An object with 'real' and 'imaginary' properties.
+     */
+    public function toObject(): stdClass
+    {
+        return (object)$this->__serialize();
+    }
+
+    /**
+     * Convert the complex number to an array.
+     *
+     * @return array{0: float, 1: float} An array containing the real and imaginary parts of the
+     * complex number.
+     */
+    public function toArray(): array
+    {
+        return [$this->real, $this->imaginary];
+    }
+
+    /**
+     * Convert the complex number to a string representation.
+     *
+     * @return string String representation in the form "a", "bi", "a + bi", or "a - bi".
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        // Handle case for 0 imaginary part.
+        if ($this->isReal()) {
+            return Floats::format($this->real);
+        }
+
+        // Handle case for 0 real part and non-zero imaginary part.
+        if ($this->real === 0.0) {
+            if ($this->imaginary === 1.0) {
+                return 'i';
+            }
+            if ($this->imaginary === -1.0) {
+                return '-i';
+            }
+            return Floats::format($this->imaginary) . 'i';
+        }
+
+        // Construct the string for the a + bi or a - bi form.
+        $op = $this->imaginary > 0 ? ' + ' : ' - ';
+        $abs = abs($this->imaginary);
+        $imag = $abs === 1.0 ? '' : Floats::format($abs);
+        return Floats::format($this->real) . $op . $imag . 'i';
     }
 
     #endregion
@@ -1143,72 +1209,6 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     {
         // acoth(z) = atanh(1/z)
         return $this->inv()->atanh();
-    }
-
-    #endregion
-
-    #region Conversion methods
-
-    /**
-     * Convert the complex number to a plain object.
-     *
-     * @return stdClass An object with 'real' and 'imaginary' properties.
-     */
-    public function toObject(): stdClass
-    {
-        return (object)$this->__serialize();
-    }
-
-    /**
-     * Convert the complex number to an array.
-     *
-     * @return array{0: float, 1: float} An array containing the real and imaginary parts of the
-     * complex number.
-     */
-    public function toArray(): array
-    {
-        return [$this->real, $this->imaginary];
-    }
-
-    /**
-     * Convert the complex number to a Vector.
-     *
-     * @return Vector The Vector representing the complex number.
-     */
-    public function toVector(): Vector
-    {
-        return Vector::fromArray($this->toArray());
-    }
-
-    /**
-     * Convert the complex number to a string representation.
-     *
-     * @return string String representation in the form "a", "bi", "a + bi", or "a - bi".
-     */
-    #[Override]
-    public function __toString(): string
-    {
-        // Handle case for 0 imaginary part.
-        if ($this->isReal()) {
-            return Floats::format($this->real);
-        }
-
-        // Handle case for 0 real part and non-zero imaginary part.
-        if ($this->real === 0.0) {
-            if ($this->imaginary === 1.0) {
-                return 'i';
-            }
-            if ($this->imaginary === -1.0) {
-                return '-i';
-            }
-            return Floats::format($this->imaginary) . 'i';
-        }
-
-        // Construct the string for the a + bi or a - bi form.
-        $op = $this->imaginary > 0 ? ' + ' : ' - ';
-        $abs = abs($this->imaginary);
-        $imag = $abs === 1.0 ? '' : Floats::format($abs);
-        return Floats::format($this->real) . $op . $imag . 'i';
     }
 
     #endregion
