@@ -160,7 +160,7 @@ class RationalComparisonTest extends TestCase
         $r = new Rational(1, 2);
 
         // (float)PHP_INT_MIN is exactly representable, but should still use float comparison path
-        $this->assertSame(1, $r->compare((float)PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
+        $this->assertSame(1, $r->compare((float) PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
     }
 
     #endregion
@@ -625,7 +625,7 @@ class RationalComparisonTest extends TestCase
     public function testApproxEqualVeryLargeValues(): void
     {
         $r = new Rational(PHP_INT_MAX, 1);
-        $f = (float)PHP_INT_MAX;
+        $f = (float) PHP_INT_MAX;
 
         // Should be approximately equal
         $this->assertTrue($r->approxEqual($f));

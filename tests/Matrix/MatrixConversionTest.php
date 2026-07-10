@@ -35,7 +35,7 @@ class MatrixConversionTest extends TestCase
             [1, 2],
             [3, 4],
         ]);
-        $str = (string)$m;
+        $str = (string) $m;
         $this->assertStringContainsString("\u{250C}", $str); // top-left corner
         $this->assertStringContainsString("\u{2510}", $str); // top-right corner
         $this->assertStringContainsString("\u{2514}", $str); // bottom-left corner
@@ -49,7 +49,7 @@ class MatrixConversionTest extends TestCase
     public function testToStringWithEmptyMatrix(): void
     {
         $m = new Matrix(0, 0);
-        $str = (string)$m;
+        $str = (string) $m;
         $this->assertStringContainsString("\u{250C}", $str);
         $this->assertStringContainsString("\u{2518}", $str);
     }
@@ -63,7 +63,7 @@ class MatrixConversionTest extends TestCase
             [1, 200],
             [30, 4],
         ]);
-        $str = (string)$m;
+        $str = (string) $m;
         // The wider number (200) should pad narrower numbers.
         $this->assertStringContainsString('200', $str);
         $this->assertStringContainsString('1', $str);
@@ -86,7 +86,7 @@ class MatrixConversionTest extends TestCase
             [0.1 + 0.2, 1],
             [2, 0.1 + 0.2],
         ]);
-        $str = (string)$m;
+        $str = (string) $m;
 
         // Cells should render as '0.3', not '0.30000000000000004'.
         $this->assertStringContainsString('0.3', $str);

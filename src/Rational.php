@@ -130,7 +130,7 @@ final class Rational implements Stringable, JsonSerializable
 
         // Check for values outside the valid range for Rational.
         $min = 1.0 / PHP_INT_MAX;
-        $max = (float)PHP_INT_MAX;
+        $max = (float) PHP_INT_MAX;
         if ($absValue < $min) {
             throw new UnderflowException("The value $value is too small to be expressed as a rational number.");
         } elseif ($absValue > $max) {
@@ -145,7 +145,7 @@ final class Rational implements Stringable, JsonSerializable
         }
 
         // Track the best approximation found so far. Initialize to the nearest integer.
-        $hBest = (int)round($absValue);
+        $hBest = (int) round($absValue);
         $kBest = 1;
 
         // Initialize convergents.
@@ -161,7 +161,7 @@ final class Rational implements Stringable, JsonSerializable
         // Loop until done.
         while (true) {
             // Extract integer part.
-            $a = (int)$x;
+            $a = (int) $x;
 
             // Calculate next convergent
             $hNew = $a * $h0 + $h1;
@@ -175,7 +175,7 @@ final class Rational implements Stringable, JsonSerializable
             }
 
             // Check if we've found an exact representation.
-            $err = (float)abs($hNew / $kNew - $absValue);
+            $err = (float) abs($hNew / $kNew - $absValue);
             if ($err === 0.0) {
                 return new self($sign * $hNew, $kNew);
             }
@@ -309,6 +309,69 @@ final class Rational implements Stringable, JsonSerializable
 
     #endregion
 
+    #region Conversion methods
+
+    /**
+     * Convert the rational number to a float.
+     *
+     * @return float The equivalent float.
+     */
+    public function toFloat(): float
+    {
+        return $this->numerator / $this->denominator;
+    }
+
+    /**
+     * Convert to a mixed number representation: an integer part and a fractional part.
+     *
+     * Uses trunc/frac semantics: the integer part truncates toward zero, and the fractional part carries the same sign
+     * as the original. In this way, the two can be added to reconstruct the original value.
+     *
+     * For example:
+     *     9/4 → [ 2,  1/4] (i.e.  2 + 1/4    =  9/4).
+     *    -9/4 → [-2, -1/4] (i.e. -2 + (-1/4) = -9/4).
+     *
+     * For proper fractions (|numerator| < denominator), the integer part is 0.
+     *
+     * @return array{int, self} A tuple of [integer part, fractional remainder].
+     */
+    public function toMixedNumber(): array
+    {
+        // If the numerator is 0, the integer part is 0 and the remainder is 0/1.
+        if ($this->numerator === 0) {
+            return [0, new self(0)];
+        }
+
+        // If the denominator is 1, the integer part is the numerator and the remainder is 0.
+        if ($this->denominator === 1) {
+            return [$this->numerator, new self(0)];
+        }
+
+        // For proper fractions, the integer part is 0 and the remainder is the original fraction.
+        if (abs($this->numerator) < $this->denominator) {
+            return [0, $this];
+        }
+
+        // Calculate the integer part and the remainder. The remainder will have the same sign as
+        // the original fraction.
+        $int = intdiv($this->numerator, $this->denominator);
+        $rem = $this->numerator % $this->denominator;
+        return [$int, new self($rem, $this->denominator)];
+    }
+
+    /**
+     * Convert the rational number to a string. (Stringable implementation.)
+     *
+     * @return string The string representation of the rational number.
+     */
+    #[Override]
+    public function __toString(): string
+    {
+        return $this->numerator . ($this->denominator === 1 ? '' : '/' . $this->denominator);
+    }
+
+    #endregion
+
     #region Comparison methods
 
     /**
@@ -346,7 +409,7 @@ final class Rational implements Stringable, JsonSerializable
         // $other as floats than it would be to call fromFloat() and compare two Rationals.
         if (!$other instanceof self) {
             $left = $this->toFloat();
-            $right = (float)$other;
+            $right = (float) $other;
         } else {
             /** @var self $other */
             if ($this->denominator === $other->denominator) {
@@ -398,7 +461,7 @@ final class Rational implements Stringable, JsonSerializable
     ): bool {
         // Get the other value as a float.
         if (is_int($other)) {
-            $other = (float)$other;
+            $other = (float) $other;
         } elseif ($other instanceof self) {
             $other = $other->toFloat();
         }
@@ -678,69 +741,6 @@ final class Rational implements Stringable, JsonSerializable
         // For negative fractions, intdiv() already truncates up, which is the ceiling.
         $q = intdiv($this->numerator, $this->denominator);
         return $this->numerator > 0 ? $q + 1 : $q;
-    }
-
-    #endregion
-
-    #region Conversion methods
-
-    /**
-     * Convert the rational number to a float.
-     *
-     * @return float The equivalent float.
-     */
-    public function toFloat(): float
-    {
-        return $this->numerator / $this->denominator;
-    }
-
-    /**
-     * Convert to a mixed number representation: an integer part and a fractional part.
-     *
-     * Uses trunc/frac semantics: the integer part truncates toward zero, and the fractional part carries the same sign
-     * as the original. In this way, the two can be added to reconstruct the original value.
-     *
-     * For example:
-     *     9/4 → [ 2,  1/4] (i.e.  2 + 1/4    =  9/4).
-     *    -9/4 → [-2, -1/4] (i.e. -2 + (-1/4) = -9/4).
-     *
-     * For proper fractions (|numerator| < denominator), the integer part is 0.
-     *
-     * @return array{int, self} A tuple of [integer part, fractional remainder].
-     */
-    public function toMixedNumber(): array
-    {
-        // If the numerator is 0, the integer part is 0 and the remainder is 0/1.
-        if ($this->numerator === 0) {
-            return [0, new self(0)];
-        }
-
-        // If the denominator is 1, the integer part is the numerator and the remainder is 0.
-        if ($this->denominator === 1) {
-            return [$this->numerator, new self(0)];
-        }
-
-        // For proper fractions, the integer part is 0 and the remainder is the original fraction.
-        if (abs($this->numerator) < $this->denominator) {
-            return [0, $this];
-        }
-
-        // Calculate the integer part and the remainder. The remainder will have the same sign as
-        // the original fraction.
-        $int = intdiv($this->numerator, $this->denominator);
-        $rem = $this->numerator % $this->denominator;
-        return [$int, new self($rem, $this->denominator)];
-    }
-
-    /**
-     * Convert the rational number to a string. (Stringable implementation.)
-     *
-     * @return string The string representation of the rational number.
-     */
-    #[Override]
-    public function __toString(): string
-    {
-        return $this->numerator . ($this->denominator === 1 ? '' : '/' . $this->denominator);
     }
 
     #endregion

@@ -115,7 +115,7 @@ final class Matrix implements Stringable
                 }
 
                 // Convert the value to a float and store it in the matrix.
-                $dataRow[] = (float)$value;
+                $dataRow[] = (float) $value;
             }
 
             $data[] = $dataRow;
@@ -140,6 +140,65 @@ final class Matrix implements Stringable
         for ($i = 0; $i < $size; $i++) {
             $result->set($i, $i, 1);
         }
+        return $result;
+    }
+
+    #endregion
+
+    #region Conversion methods
+
+    /**
+     * Get a copy of the matrix data as a rectangular array.
+     *
+     * @return list<list<float>> Rectangular array of matrix elements.
+     */
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Convert the matrix to a string representation using box-drawing characters.
+     *
+     * @return string String representation of the Matrix.
+     */
+    public function __toString(): string
+    {
+        if ($this->rowCount === 0 || $this->columnCount === 0) {
+            return '┌ ┐' . "\n" . '└ ┘';
+        }
+
+        // Format every cell up front so column widths are calculated against the same strings that get rendered.
+        $cells = [];
+        $maxWidth = 0;
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            $cells[$i] = [];
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $cell = (string) $this->data[$i][$j];
+                $cells[$i][$j] = $cell;
+                $maxWidth = max($maxWidth, strlen($cell));
+            }
+        }
+
+        // Top border.
+        $innerWidth = $this->columnCount * ($maxWidth + 2);
+        $result = '┌' . str_repeat(' ', $innerWidth) . '┐' . "\n";
+
+        // Data rows.
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            $result .= '│ ';
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                if ($j > 0) {
+                    $result .= '  ';
+                }
+                $result .= str_pad($cells[$i][$j], $maxWidth, ' ', STR_PAD_LEFT);
+            }
+            $result .= ' │' . "\n";
+        }
+
+        // Bottom border.
+        $result .= '└' . str_repeat(' ', $innerWidth) . '┘';
+
         return $result;
     }
 
@@ -245,7 +304,7 @@ final class Matrix implements Stringable
             if (!Numbers::isNumber($v)) {
                 throw new InvalidArgumentException('Cannot set row: non-numeric element found.');
             }
-            $data[] = (float)$v;
+            $data[] = (float) $v;
         }
 
         // Set values.
@@ -312,7 +371,7 @@ final class Matrix implements Stringable
             if (!Numbers::isNumber($v)) {
                 throw new InvalidArgumentException('Cannot set column: non-numeric element found.');
             }
-            $values[] = (float)$v;
+            $values[] = (float) $v;
         }
 
         // Set values.
@@ -651,7 +710,7 @@ final class Matrix implements Stringable
                 $result = $result->mul($base);
             }
             $base = $base->mul($base);
-            $power = (int)($power / 2);
+            $power = (int) ($power / 2);
         }
 
         assert($result instanceof self);
@@ -893,67 +952,6 @@ final class Matrix implements Stringable
             }
         }
         return $minor;
-    }
-
-    #endregion
-
-    #region Conversion methods
-
-    /**
-     * Get a copy of the matrix data as a rectangular array.
-     *
-     * @return list<list<float>> Rectangular array of matrix elements.
-     */
-    public function toArray(): array
-    {
-        return $this->data;
-    }
-
-    /**
-     * Convert the matrix to a string representation using box-drawing characters.
-     *
-     * @return string String representation of the Matrix.
-     */
-    public function __toString(): string
-    {
-        if ($this->rowCount === 0 || $this->columnCount === 0) {
-            return '┌ ┐' . "\n" . '└ ┘';
-        }
-
-        // Format every cell up front so column widths are calculated against the same strings that get rendered.
-        // Floats::format() trims floating-point representation noise (so 0.1 + 0.2 displays as '0.3' instead of
-        // '0.30000000000000004').
-        $cells = [];
-        $maxWidth = 0;
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            $cells[$i] = [];
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $cell = Floats::format($this->data[$i][$j]);
-                $cells[$i][$j] = $cell;
-                $maxWidth = max($maxWidth, strlen($cell));
-            }
-        }
-
-        // Top border.
-        $innerWidth = $this->columnCount * ($maxWidth + 2);
-        $result = '┌' . str_repeat(' ', $innerWidth) . '┐' . "\n";
-
-        // Data rows.
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            $result .= '│ ';
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                if ($j > 0) {
-                    $result .= '  ';
-                }
-                $result .= str_pad($cells[$i][$j], $maxWidth, ' ', STR_PAD_LEFT);
-            }
-            $result .= ' │' . "\n";
-        }
-
-        // Bottom border.
-        $result .= '└' . str_repeat(' ', $innerWidth) . '┘';
-
-        return $result;
     }
 
     #endregion

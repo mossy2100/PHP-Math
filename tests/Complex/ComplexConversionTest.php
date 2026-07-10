@@ -18,13 +18,40 @@ class ComplexConversionTest extends TestCase
     public function testToStringReal(): void
     {
         $z = new Complex(5, 0);
-        $this->assertSame('5', (string)$z);
+        $this->assertSame('5', (string) $z);
 
         $z2 = new Complex(-3.14, 0);
-        $this->assertSame('-3.14', (string)$z2);
+        $this->assertSame('-3.14', (string) $z2);
 
         $z3 = new Complex(0, 0);
-        $this->assertSame('0', (string)$z3);
+        $this->assertSame('0', (string) $z3);
+
+        // Small numbers, still within fixed-point range.
+        $this->assertSame('0.1', (string) new Complex(0.1, 0));
+        $this->assertSame('0.0001', (string) new Complex(0.0001, 0));
+
+        // Small numbers that tip over into scientific notation.
+        $this->assertSame('1.0E-5', (string) new Complex(1e-5, 0));
+        $this->assertSame('1.0E-8', (string) new Complex(1e-8, 0));
+        $this->assertSame('-1.0E-5', (string) new Complex(-1e-5, 0));
+
+        // Large numbers, still within fixed-point range.
+        $this->assertSame('100000', (string) new Complex(1e5, 0));
+        $this->assertSame('10000000', (string) new Complex(1e7, 0));
+        $this->assertSame('10000000000', (string) new Complex(1e10, 0));
+        $this->assertSame('-10000000', (string) new Complex(-1e7, 0));
+        $this->assertSame('123456789', (string) new Complex(123456789, 0));
+
+        // Large numbers that tip over into scientific notation.
+        $this->assertSame('1.23456789E+100', (string) new Complex(1.23456789e100, 0));
+        $this->assertSame('-9.87654321E-200', (string) new Complex(-9.87654321e-200, 0));
+
+        // Floating-point rounding noise, suppressed by the default strong formatting.
+        $this->assertSame('0.3', (string) new Complex(0.1 + 0.2, 0));
+        $this->assertSame('-0.3', (string) new Complex(-(0.1 + 0.2), 0));
+
+        // A tiny non-zero residue from a subtraction, rendered in scientific notation.
+        $this->assertSame('5.5511151231258E-17', (string) new Complex(0.1 + 0.2 - 0.3, 0));
     }
 
     /**
@@ -33,16 +60,16 @@ class ComplexConversionTest extends TestCase
     public function testToStringPureImaginary(): void
     {
         $z1 = new Complex(0, 1);
-        $this->assertSame('i', (string)$z1);
+        $this->assertSame('i', (string) $z1);
 
         $z2 = new Complex(0, -1);
-        $this->assertSame('-i', (string)$z2);
+        $this->assertSame('-i', (string) $z2);
 
         $z3 = new Complex(0, 5);
-        $this->assertSame('5i', (string)$z3);
+        $this->assertSame('5i', (string) $z3);
 
         $z4 = new Complex(0, -3.5);
-        $this->assertSame('-3.5i', (string)$z4);
+        $this->assertSame('-3.5i', (string) $z4);
     }
 
     /**
@@ -51,23 +78,23 @@ class ComplexConversionTest extends TestCase
     public function testToStringComplex(): void
     {
         $z1 = new Complex(3, 4);
-        $this->assertSame('3 + 4i', (string)$z1);
+        $this->assertSame('3 + 4i', (string) $z1);
 
         $z2 = new Complex(3, -4);
-        $this->assertSame('3 - 4i', (string)$z2);
+        $this->assertSame('3 - 4i', (string) $z2);
 
         $z3 = new Complex(-3, 4);
-        $this->assertSame('-3 + 4i', (string)$z3);
+        $this->assertSame('-3 + 4i', (string) $z3);
 
         $z4 = new Complex(-3, -4);
-        $this->assertSame('-3 - 4i', (string)$z4);
+        $this->assertSame('-3 - 4i', (string) $z4);
 
         // Test with coefficient of 1
         $z5 = new Complex(5, 1);
-        $this->assertSame('5 + i', (string)$z5);
+        $this->assertSame('5 + i', (string) $z5);
 
         $z6 = new Complex(5, -1);
-        $this->assertSame('5 - i', (string)$z6);
+        $this->assertSame('5 - i', (string) $z6);
     }
 
     /**
@@ -80,23 +107,23 @@ class ComplexConversionTest extends TestCase
         // 0.1 + 0.2 is the canonical IEEE-754 surprise: PHP's (string) cast renders it as
         // '0.30000000000000004' because serialize_precision is 17.
         $z = new Complex(0.1 + 0.2, 0);
-        $this->assertSame('0.3', (string)$z);
+        $this->assertSame('0.3', (string) $z);
 
         // Same noise on the imaginary part.
         $z = new Complex(0, 0.1 + 0.2);
-        $this->assertSame('0.3i', (string)$z);
+        $this->assertSame('0.3i', (string) $z);
 
         // Both parts noisy at once.
         $z = new Complex(0.1 + 0.2, 0.1 + 0.2);
-        $this->assertSame('0.3 + 0.3i', (string)$z);
+        $this->assertSame('0.3 + 0.3i', (string) $z);
 
         // A subtraction that produces a tiny non-zero residue. Without rounding, the imaginary
         // part would render as something like '4.4408920985006e-16'. With Floats::format()'s
         // default 'g' precision of 7, it gets formatted in scientific notation but cleanly.
         $z = new Complex(1.0, 0.1 + 0.2 - 0.3);
         // The imaginary part is ~5.55e-17 — still non-zero, so isReal() returns false.
-        $this->assertStringStartsWith('1 + ', (string)$z);
-        $this->assertStringEndsWith('i', (string)$z);
+        $this->assertStringStartsWith('1 + ', (string) $z);
+        $this->assertStringEndsWith('i', (string) $z);
     }
 
     /**

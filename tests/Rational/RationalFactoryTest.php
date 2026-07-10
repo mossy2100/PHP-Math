@@ -230,7 +230,7 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatPhpIntMax(): void
     {
-        $r = Rational::fromFloat((float)PHP_INT_MAX);
+        $r = Rational::fromFloat((float) PHP_INT_MAX);
         $this->assertSame(PHP_INT_MAX, $r->numerator);
         $this->assertSame(1, $r->denominator);
     }
@@ -250,7 +250,7 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatPhpIntMin(): void
     {
-        $r = Rational::fromFloat((float)PHP_INT_MIN);
+        $r = Rational::fromFloat((float) PHP_INT_MIN);
         $this->assertSame(-PHP_INT_MAX, $r->numerator);
         $this->assertSame(1, $r->denominator);
     }
@@ -294,7 +294,7 @@ class RationalFactoryTest extends TestCase
     public function testFromFloatVeryLargeThrows(): void
     {
         $this->expectException(OverflowException::class);
-        Rational::fromFloat((float)PHP_INT_MAX * 2);
+        Rational::fromFloat((float) PHP_INT_MAX * 2);
     }
 
     /**

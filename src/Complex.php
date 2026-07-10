@@ -265,14 +265,14 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
         // Handle pure real numbers (no imaginary part).
         if (is_numeric($str)) {
-            return new self((float)$str, 0.0);
+            return new self((float) $str, 0.0);
         }
 
         // Handle pure imaginary numbers with or without a coefficient: i, 3i, -2.5j, etc.
         $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
         if (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
             // Handle cases where coefficient is omitted (like i or -i).
-            $imag = $matches[2] === '' ? 1.0 : (float)$matches[2];
+            $imag = $matches[2] === '' ? 1.0 : (float) $matches[2];
 
             // Apply signs to get final value.
             if ($matches[1] === '-') {
@@ -297,10 +297,10 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         }
 
         // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).
-        $imag = $imagVal === '' ? 1.0 : (float)$imagVal;
+        $imag = $imagVal === '' ? 1.0 : (float) $imagVal;
 
         // Get the real part.
-        $real = (float)$realVal;
+        $real = (float) $realVal;
 
         // Apply signs to get final values.
         if ($imagSign === '-') {
@@ -372,7 +372,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      */
     public function toObject(): stdClass
     {
-        return (object)$this->__serialize();
+        return (object) $this->__serialize();
     }
 
     /**
@@ -396,7 +396,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     {
         // Handle case for 0 imaginary part.
         if ($this->isReal()) {
-            return Floats::format($this->real);
+            return (string) $this->real;
         }
 
         // Handle case for 0 real part and non-zero imaginary part.
@@ -407,14 +407,12 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
             if ($this->imaginary === -1.0) {
                 return '-i';
             }
-            return Floats::format($this->imaginary) . 'i';
+            return $this->imaginary . 'i';
         }
 
         // Construct the string for the a + bi or a - bi form.
-        $op = $this->imaginary > 0 ? ' + ' : ' - ';
         $abs = abs($this->imaginary);
-        $imag = $abs === 1.0 ? '' : Floats::format($abs);
-        return Floats::format($this->real) . $op . $imag . 'i';
+        return $this->real . ' ' . ($this->imaginary > 0 ? '+' : '-') . ' ' . ($abs === 1.0 ? '' : $abs) . 'i';
     }
 
     #endregion

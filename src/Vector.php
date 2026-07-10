@@ -106,7 +106,7 @@ final class Vector implements Stringable, ArrayAccess
             }
 
             // Convert the value to a float.
-            $data[] = (float)$value;
+            $data[] = (float) $value;
         }
 
         // Create the Vector.
@@ -114,6 +114,62 @@ final class Vector implements Stringable, ArrayAccess
         $vector->data = $data;
 
         return $vector;
+    }
+
+    #endregion
+
+    #region Conversion methods
+
+    /**
+     * Get a copy of the vector data as an array.
+     *
+     * @return list<float> Array of vector elements.
+     */
+    public function toArray(): array
+    {
+        return $this->data;
+    }
+
+    /**
+     * Convert this vector to a Matrix.
+     *
+     * By default, returns an n×1 column matrix. If $asRow is true, returns a 1×n row matrix.
+     * NB: You can also get a row vector by calling $vec->toMatrix()->transpose()
+     *
+     * @param bool $asRow If true, return a 1×n row matrix; if false (default), return an n×1 column matrix.
+     * @return Matrix The matrix representation.
+     */
+    public function toMatrix(bool $asRow = false): Matrix
+    {
+        $matrixData = $asRow ? [$this->data] : array_map(static fn ($x) => [$x], $this->data);
+        return Matrix::fromArray($matrixData);
+    }
+
+    /**
+     * Format the vector as a string.
+     *
+     * @param bool $asRow If true, format as a row vector; if false (default), format as a column vector.
+     * @return string String representation of the Vector.
+     */
+    public function format(bool $asRow = false): string
+    {
+        return $this->toMatrix($asRow)->__toString();
+    }
+
+    /**
+     * Convert the vector to a string representation.
+     *
+     * By default, this will format the Vector as a column vector.
+     * If you want to format the column as a row vector, you can use:
+     * @example echo $vec->toMatrix(true);
+     * OR
+     * @example echo $vec->format(true);
+     *
+     * @return string String representation of the Vector.
+     */
+    public function __toString(): string
+    {
+        return $this->format();
     }
 
     #endregion
@@ -400,62 +456,6 @@ final class Vector implements Stringable, ArrayAccess
     {
         assert($this->magnitude !== null);
         return $this->div($this->magnitude);
-    }
-
-    #endregion
-
-    #region Conversion methods
-
-    /**
-     * Get a copy of the vector data as an array.
-     *
-     * @return list<float> Array of vector elements.
-     */
-    public function toArray(): array
-    {
-        return $this->data;
-    }
-
-    /**
-     * Convert this vector to a Matrix.
-     *
-     * By default, returns an n×1 column matrix. If $asRow is true, returns a 1×n row matrix.
-     * NB: You can also get a row vector by calling $vec->toMatrix()->transpose()
-     *
-     * @param bool $asRow If true, return a 1×n row matrix; if false (default), return an n×1 column matrix.
-     * @return Matrix The matrix representation.
-     */
-    public function toMatrix(bool $asRow = false): Matrix
-    {
-        $matrixData = $asRow ? [$this->data] : array_map(static fn ($x) => [$x], $this->data);
-        return Matrix::fromArray($matrixData);
-    }
-
-    /**
-     * Format the vector as a string.
-     *
-     * @param bool $asRow If true, format as a row vector; if false (default), format as a column vector.
-     * @return string String representation of the Vector.
-     */
-    public function format(bool $asRow = false): string
-    {
-        return $this->toMatrix($asRow)->__toString();
-    }
-
-    /**
-     * Convert the vector to a string representation.
-     *
-     * By default, this will format the Vector as a column vector.
-     * If you want to format the column as a row vector, you can use:
-     * @example echo $vec->toMatrix(true);
-     * OR
-     * @example echo $vec->format(true);
-     *
-     * @return string String representation of the Vector.
-     */
-    public function __toString(): string
-    {
-        return $this->format();
     }
 
     #endregion

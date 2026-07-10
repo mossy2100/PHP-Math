@@ -146,7 +146,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromArrayWithCast(): void
     {
         $z = new Complex(3, 4);
-        $a = (array)$z;
+        $a = (array) $z;
         $result = Complex::fromArray($a);
         $this->assertSame(3.0, $result->real);
         $this->assertSame(4.0, $result->imaginary);

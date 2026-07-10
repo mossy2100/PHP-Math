@@ -97,7 +97,7 @@ class VectorConversionTest extends TestCase
     public function testToStringDelegatesToFormat(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $this->assertSame($v->format(), (string)$v);
+        $this->assertSame($v->format(), (string) $v);
     }
 
     /**
