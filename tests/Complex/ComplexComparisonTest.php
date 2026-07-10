@@ -13,6 +13,87 @@ use stdClass;
 #[CoversClass(Complex::class)]
 class ComplexComparisonTest extends TestCase
 {
+    #region Identity tests
+
+    /**
+     * Test identical returns true for a Complex with the same real and imaginary parts.
+     */
+    public function testIdentical(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(3, 4);
+
+        $this->assertTrue($z1->identical($z2));
+    }
+
+    /**
+     * Test identical is reflexive: a value is always identical to itself.
+     */
+    public function testIdenticalReflexive(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->identical($z));
+    }
+
+    /**
+     * Test identical returns false for a Complex with different real and/or imaginary parts.
+     */
+    public function testIdenticalDifferentValues(): void
+    {
+        $z1 = new Complex(3, 4);
+
+        $this->assertFalse($z1->identical(new Complex(3, 5)));
+        $this->assertFalse($z1->identical(new Complex(4, 4)));
+        $this->assertFalse($z1->identical(new Complex(4, 5)));
+    }
+
+    /**
+     * Test identical returns false for values equal() would accept but that aren't Complex
+     * instances -- int, float, string, array, and object.
+     */
+    public function testIdenticalWithNonComplexReturnsFalse(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertFalse($z->identical(3));
+        $this->assertFalse($z->identical(3.0));
+        $this->assertFalse($z->identical('3+4i'));
+        $this->assertFalse($z->identical([3, 4]));
+        $this->assertFalse($z->identical((object)['real' => 3, 'imaginary' => 4]));
+    }
+
+    /**
+     * Test identical returns false for other unrelated types.
+     */
+    public function testIdenticalWithInvalidTypeReturnsFalse(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertFalse($z->identical(null));
+        $this->assertFalse($z->identical([]));
+        $this->assertFalse($z->identical(new stdClass()));
+        $this->assertFalse($z->identical(true));
+    }
+
+    /**
+     * Test identical treats -0.0 and 0.0 as identical, matching PHP's own -0.0 === 0.0 behavior.
+     */
+    public function testIdenticalNegativeZero(): void
+    {
+        $z1 = new Complex(-0.0, 0);
+        $z2 = new Complex(0.0, 0);
+
+        $this->assertTrue($z1->identical($z2));
+
+        $z3 = new Complex(0, -0.0);
+        $z4 = new Complex(0, 0.0);
+
+        $this->assertTrue($z3->identical($z4));
+    }
+
+    #endregion
+
     #region Exact equality tests
 
     /**
@@ -151,6 +232,52 @@ class ComplexComparisonTest extends TestCase
         $this->assertFalse($z->equal([]));
         $this->assertFalse($z->equal(new stdClass()));
         $this->assertFalse($z->equal(true));
+    }
+
+    /**
+     * Test equality with a parseable string, converted via toComplex().
+     */
+    public function testEqualWithString(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->equal('3+4i'));
+        $this->assertFalse($z->equal('3+5i'));
+        $this->assertFalse($z->equal('not a number'));
+    }
+
+    /**
+     * Test equality with a 2-element array (list or associative), converted via toComplex().
+     */
+    public function testEqualWithArray(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->equal([3, 4]));
+        $this->assertTrue($z->equal([
+            'real'      => 3,
+            'imaginary' => 4,
+        ]));
+        $this->assertFalse($z->equal([3, 5]));
+        $this->assertFalse($z->equal([1, 2, 3]));
+    }
+
+    /**
+     * Test equality with a plain object with numeric real/imaginary properties, converted via
+     * toComplex().
+     */
+    public function testEqualWithObject(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->equal((object) [
+            'real'      => 3,
+            'imaginary' => 4,
+        ]));
+        $this->assertFalse($z->equal((object) [
+            'real'      => 3,
+            'imaginary' => 5,
+        ]));
     }
 
     /**
@@ -307,6 +434,48 @@ class ComplexComparisonTest extends TestCase
         $this->assertFalse($z->approxEqual([]));
         $this->assertFalse($z->approxEqual(new stdClass()));
         $this->assertFalse($z->approxEqual(true));
+    }
+
+    /**
+     * Test approximate equality with a parseable string, converted via toComplex().
+     */
+    public function testApproxEqualWithString(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->approxEqual('3.0000000001+4.0000000001i'));
+        $this->assertFalse($z->approxEqual('3.5+4i'));
+        $this->assertFalse($z->approxEqual('not a number'));
+    }
+
+    /**
+     * Test approximate equality with a 2-element array (list or associative), converted via
+     * toComplex().
+     */
+    public function testApproxEqualWithArray(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->approxEqual([3.0000000001, 4.0000000001]));
+        $this->assertFalse($z->approxEqual([3.5, 4]));
+    }
+
+    /**
+     * Test approximate equality with a plain object with numeric real/imaginary properties,
+     * converted via toComplex().
+     */
+    public function testApproxEqualWithObject(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertTrue($z->approxEqual((object) [
+            'real'      => 3.0000000001,
+            'imaginary' => 4.0000000001,
+        ]));
+        $this->assertFalse($z->approxEqual((object) [
+            'real'      => 3.5,
+            'imaginary' => 4,
+        ]));
     }
 
     /**

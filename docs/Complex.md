@@ -278,7 +278,36 @@ var_dump($z2->isReal());  // false
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package. `identical()` is specific to `Complex`.
+
+### identical()
+
+```php
+public function identical(mixed $other): bool
+```
+
+Check if this complex number is identical to another value: same type (`Complex`, not merely something
+convertible to one) and exactly equal (`===`) real and imaginary parts.
+
+Stricter than `equal()`, which accepts anything `toComplex()` can convert (`int`, `float`, `string`,
+`array`, `object`). `identical()` only returns `true` for an actual `Complex` instance — mirroring the
+distinction between PHP's `==` and `===`.
+
+**Parameters:**
+- `$other` (mixed) - The value to compare with.
+
+**Returns:**
+- `bool` - True if `$other` is a `Complex` with identical real and imaginary parts, false otherwise.
+
+**Examples:**
+```php
+$z1 = new Complex(3, 4);
+$z2 = new Complex(3, 4);
+
+var_dump($z1->identical($z2));    // true
+var_dump($z1->identical(3));      // false (not a Complex)
+var_dump($z1->identical('3+4i')); // false (not a Complex, even though equal() would accept it)
+```
 
 ### equal()
 
@@ -288,10 +317,13 @@ public function equal(mixed $other): bool
 
 Check if this complex number exactly equals another value.
 
-Compares both real and imaginary parts using exact equality (`===`). Returns `false` for invalid types instead of throwing.
+Compares both real and imaginary parts using exact equality (`===`). `$other` is converted via
+`toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, a 2-element
+`array`, or an `object` with numeric `real`/`imaginary` properties — can be compared. Returns `false`
+for anything `toComplex()` can't convert, instead of throwing.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (Complex, int, or float)
+- `$other` (mixed) - The value to compare with (anything `toComplex()` accepts)
 
 **Returns:**
 - `bool` - True if exactly equal, false otherwise
@@ -311,9 +343,15 @@ $z4 = new Complex(5, 0);
 var_dump($z4->equal(5));    // true
 var_dump($z4->equal(5.0));  // true
 
-// Invalid types return false
-var_dump($z1->equal('string'));  // false
-var_dump($z1->equal(null));      // false
+// Also accepts anything toComplex() can convert: strings, arrays, and objects
+var_dump($z1->equal('3+4i'));                              // true
+var_dump($z1->equal([3, 4]));                               // true
+var_dump($z1->equal(['real' => 3, 'imaginary' => 4]));      // true
+var_dump($z1->equal((object)['real' => 3, 'imaginary' => 4])); // true
+
+// Values that can't be converted return false
+var_dump($z1->equal('not a number'));  // false
+var_dump($z1->equal(null));            // false
 ```
 
 ### approxEqual()
@@ -328,10 +366,10 @@ public function approxEqual(
 
 Check if this complex number approximately equals another value within specified tolerances.
 
-Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately. Returns `false` for invalid types instead of throwing.
+Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately. `$other` is converted via `toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, a 2-element `array`, or an `object` with numeric `real`/`imaginary` properties — can be compared. Returns `false` for anything `toComplex()` can't convert, instead of throwing.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (Complex, int, or float)
+- `$other` (mixed) - The value to compare with (anything `toComplex()` accepts)
 - `$relTol` (float) - Relative tolerance (default: 1e-9)
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
 
@@ -347,12 +385,12 @@ Uses combined relative and absolute tolerance approach, comparing both real and 
 **Examples:**
 ```php
 $z1 = new Complex(3, 4);
-$z2 = new Complex(3.00000001, 4.00000001);
+$z2 = new Complex(3.0000000001, 4.0000000001);
 
 // Within default tolerance
 var_dump($z1->approxEqual($z2));  // true
 
-// With tight tolerance
+// With a tolerance too tight for the same difference
 var_dump($z1->approxEqual($z2, 1e-15, 1e-15));  // false
 
 // With zero tolerances (exact match required)
@@ -363,8 +401,11 @@ var_dump($z1->approxEqual($z2, 0.0, 0.0));  // false
 $z3 = new Complex(5, 0);
 var_dump($z3->approxEqual(5.0000001, 1e-6));  // true
 
-// Invalid types return false
-var_dump($z1->approxEqual('string'));  // false
+// Also accepts anything toComplex() can convert: strings, arrays, and objects
+var_dump($z1->approxEqual('3.0000000001+4.0000000001i'));  // true
+
+// Values that can't be converted return false
+var_dump($z1->approxEqual('not a number'));  // false
 ```
 
 ---

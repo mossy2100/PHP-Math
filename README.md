@@ -1,4 +1,4 @@
-# OceanMoon PHP Math
+# OceanMoon PHP Math package
 
 Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 

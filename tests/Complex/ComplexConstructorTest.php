@@ -100,6 +100,6 @@ class ComplexConstructorTest extends TestCase
     public function testConstructorNonFloatThrows(): void
     {
         $this->expectException(TypeError::class);
-        new Complex('3', '4');
+        new Complex('3', '4'); // @phpstan-ignore argument.type, argument.type
     }
 }

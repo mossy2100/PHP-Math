@@ -7,6 +7,7 @@ namespace OceanMoon\Math;
 use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
+use Exception;
 use InvalidArgumentException;
 use JsonSerializable;
 use LengthException;
@@ -16,6 +17,7 @@ use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
+use OceanMoon\Core\Types;
 use OutOfRangeException;
 use Override;
 use stdClass;
@@ -434,38 +436,59 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     #region Comparison methods
 
     /**
-     * Check if this Complex has equal value to another number, which may be int, float, or Complex.
+     * Check if this Complex is identical to another, i.e. same type (Complex) and exactly equal values for the real and
+     * imaginary parts.
      *
-     * @param mixed $other The real or complex number to compare with.
+     * We're not using a `self` type hint on the parameter, as that would cause the method to throw a TypeError if a
+     * Complex isn't passed, whereas we want the method to return false in this case.
+     *
+     * @param mixed $other The value to compare with.
+     * @return bool True if the values are identical.
+     */
+    public function identical(mixed $other): bool
+    {
+        // We use Types::same() instead of instanceof because instanceof will also return true for subclasses.
+        if (!Types::same($this, $other)) {
+            return false;
+        }
+        assert($other instanceof self); // for phpstan
+
+        // Verify the real and imaginary parts are exactly equal.
+        return $this->real === $other->real && $this->imaginary === $other->imaginary;
+    }
+
+    /**
+     * Check if this Complex is equal to another value, which may be Complex, int, float, string, array, or object;
+     * i.e. anything that can be accepted by toComplex().
+     *
+     * @param mixed $other The value to compare with.
      * @return bool True if the numbers are equal.
      */
     /** @disregard P1128 */
     #[Override]
     public function equal(mixed $other): bool
     {
-        // Convert int or float to Complex.
-        if (Numbers::isNumber($other)) {
-            $other = new self($other);
-        }
-
-        // Check if other is Complex.
-        if (!$other instanceof self) {
+        // Convert the argument to a Complex if possible.
+        try {
+            $other = self::toComplex($other);
+        } catch (Exception) {
             return false;
         }
 
-        // Check if the real and imaginary parts are equal.
-        return $this->real === $other->real && $this->imaginary === $other->imaginary;
+        // Check the values are identical.
+        return $this->identical($other);
     }
 
     /**
-     * Check if this complex number approximately equals another, within a given tolerance.
+     * Check if this complex number is approximately equal to another value, which may be Complex, int, float, string,
+     * array, or object; i.e. anything that can be accepted by toComplex().
      *
      * The comparison will use the absolute tolerance first, and if that fails, the relative tolerance.
      * To compare purely by absolute difference, set the relative tolerance to zero.
      * To compare purely by relative difference, set the absolute tolerance to zero.
      * @see Floats::approxEqual()
      *
-     * @param mixed $other The real or complex number to compare with.
+     * @param mixed $other The value to compare with.
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
      * @return bool True if the numbers are equal within the given tolerances, otherwise false.
@@ -476,11 +499,10 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        if (Numbers::isNumber($other)) {
-            // Convert int or float to Complex.
-            $other = new self($other);
-        } elseif (!$other instanceof self) {
-            // Check if other is Complex.
+        // Convert the argument to a Complex if possible.
+        try {
+            $other = self::toComplex($other);
+        } catch (Exception) {
             return false;
         }
 

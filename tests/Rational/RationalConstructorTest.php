@@ -48,8 +48,7 @@ class RationalConstructorTest extends TestCase
     public function testConstructorWithFloatThrows(): void
     {
         $this->expectException(TypeError::class);
-        /** @phpstan-ignore-next-line argument.type */
-        new Rational(0.5);
+        new Rational(0.5); // @phpstan-ignore argument.type
     }
 
     /**
