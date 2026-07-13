@@ -63,6 +63,24 @@ class ComplexPolarTest extends TestCase
     }
 
     /**
+     * Test fromPolar with an infinite magnitude throws exception.
+     */
+    public function testFromPolarInfiniteMagnitude(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromPolar(INF, M_PI / 4);
+    }
+
+    /**
+     * Test fromPolar with an infinite phase throws exception.
+     */
+    public function testFromPolarInfinitePhase(): void
+    {
+        $this->expectException(DomainException::class);
+        Complex::fromPolar(5, INF);
+    }
+
+    /**
      * Test fromPolar accepts int or float.
      */
     public function testFromPolarIntFloat(): void

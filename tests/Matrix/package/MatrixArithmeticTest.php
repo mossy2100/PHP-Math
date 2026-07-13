@@ -207,6 +207,33 @@ class MatrixArithmeticTest extends TestCase
     }
 
     /**
+     * Test multiplying a 0-column matrix by an empty Vector returns a zero vector matching the
+     * matrix's row count. This exercises Vector::toColumnMatrix()'s handling of an empty vector,
+     * which must produce a genuine n×1 (here 0×1) matrix rather than a 0×0 one, or the inner matrix
+     * multiplication silently produces the wrong shape.
+     */
+    public function testMulByEmptyVectorWithZeroColumnMatrix(): void
+    {
+        $m = new Matrix(3, 0);
+        $v = new Vector(0);
+        $result = $m->mul($v);
+        $this->assertInstanceOf(Vector::class, $result);
+        $this->assertSame(3, $result->size);
+        $this->assertSame([0.0, 0.0, 0.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a matrix with a non-zero column count by an empty Vector throws
+     * LengthException, since the dimensions are genuinely incompatible.
+     */
+    public function testMulByEmptyVectorWithIncompatibleMatrixThrows(): void
+    {
+        $m = new Matrix(3, 2);
+        $this->expectException(LengthException::class);
+        $m->mul(new Vector(0));
+    }
+
+    /**
      * Test dividing a matrix by a scalar.
      */
     public function testDivByScalar(): void
@@ -251,6 +278,37 @@ class MatrixArithmeticTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
         $this->assertEqualsWithDelta(0.5, $result->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test the Hadamard (element-wise) product of two matrices.
+     */
+    public function testHadamard(): void
+    {
+        $a = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $b = Matrix::fromArray([
+            [5, 6],
+            [7, 8],
+        ]);
+        $result = $a->hadamard($b);
+        $this->assertEqualsWithDelta(5.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(12.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(21.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(32.0, $result->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test the Hadamard product of matrices with different dimensions throws LengthException.
+     */
+    public function testHadamardWithDifferentDimensionsThrows(): void
+    {
+        $a = new Matrix(2, 2);
+        $b = new Matrix(3, 3);
+        $this->expectException(LengthException::class);
+        $a->hadamard($b);
     }
 
     /**
@@ -326,6 +384,21 @@ class MatrixArithmeticTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
         $this->assertEqualsWithDelta(1.0, $result->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test power with an exponent of 1 returns an equal but distinct instance (a clone, not $this).
+     */
+    public function testPowOne(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 3],
+            [4, 5],
+        ]);
+        $result = $m->pow(1);
+
+        $this->assertNotSame($m, $result);
+        $this->assertTrue($m->equal($result));
     }
 
     /**

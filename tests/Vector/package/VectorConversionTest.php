@@ -30,74 +30,55 @@ class VectorConversionTest extends TestCase
     }
 
     /**
-     * Test toMatrix returns a column matrix by default.
+     * Test toColumnMatrix returns a single-column matrix.
      */
-    public function testToMatrixDefaultColumnMatrix(): void
+    public function testToColumnMatrix(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $m = $v->toMatrix();
+        $m = $v->toColumnMatrix();
         $this->assertInstanceOf(Matrix::class, $m);
         $this->assertSame(3, $m->rowCount);
         $this->assertSame(1, $m->columnCount);
     }
 
     /**
-     * Test toMatrix with asRow=true returns a row matrix.
+     * Test toRowMatrix returns a single-row matrix.
      */
-    public function testToMatrixAsRow(): void
+    public function testToRowMatrix(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $m = $v->toMatrix(asRow: true);
+        $m = $v->toRowMatrix();
         $this->assertInstanceOf(Matrix::class, $m);
         $this->assertSame(1, $m->rowCount);
         $this->assertSame(3, $m->columnCount);
     }
 
     /**
-     * Test toMatrix with an empty vector.
+     * Test toColumnMatrix/toRowMatrix with an empty vector still produce a properly-shaped n×1 or
+     * 1×n matrix (0×1 and 1×0 respectively), not a degenerate 0×0 matrix.
      */
     public function testToMatrixWithEmptyVector(): void
     {
         $v = new Vector(0);
-        $m = $v->toMatrix();
-        $this->assertInstanceOf(Matrix::class, $m);
-        $this->assertSame(0, $m->rowCount);
+
+        $col = $v->toColumnMatrix();
+        $this->assertInstanceOf(Matrix::class, $col);
+        $this->assertSame(0, $col->rowCount);
+        $this->assertSame(1, $col->columnCount);
+
+        $row = $v->toRowMatrix();
+        $this->assertInstanceOf(Matrix::class, $row);
+        $this->assertSame(1, $row->rowCount);
+        $this->assertSame(0, $row->columnCount);
     }
 
     /**
-     * Test format() defaults to column vector with box-drawing characters.
+     * Test __toString uses ordered tuple notation with mathematical angle brackets.
      */
-    public function testFormatDefaultColumn(): void
+    public function testToString(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $str = $v->format();
-        $this->assertStringContainsString('┌', $str);
-        $this->assertStringContainsString('│', $str);
-        $this->assertStringContainsString('└', $str);
-        // Column vector should have 3 data rows.
-        $lines = explode("\n", $str);
-        $this->assertCount(5, $lines); // top + 3 data + bottom
-    }
-
-    /**
-     * Test format() with asRow=true renders as a row vector.
-     */
-    public function testFormatAsRow(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $str = $v->format(asRow: true);
-        // Row vector should have 1 data row.
-        $lines = explode("\n", $str);
-        $this->assertCount(3, $lines); // top + 1 data + bottom
-    }
-
-    /**
-     * Test __toString delegates to format().
-     */
-    public function testToStringDelegatesToFormat(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $this->assertSame($v->format(), (string) $v);
+        $this->assertSame('⟨1, 2, 3⟩', (string) $v);
     }
 
     /**

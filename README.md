@@ -95,17 +95,14 @@ Mutable two-dimensional matrix with support for:
 
 ## Constants
 
-### [constants.php](src/constants.php)
+### [globals.php](src/globals.php)
 
-Composer's PSR-4 autoloading only handles classes — a file that just declares a constant has
-nothing for it to load on demand, so `constants.php` is registered separately via Composer's
-[`files` autoload](https://getcomposer.org/doc/04-schema.md#files) mechanism, which includes it
-unconditionally whenever the package is loaded.
+Composer's PSR-4 autoloading only handles classes — a file that declares global constants or functions has nothing for it to load on demand. To solve this, a dedicated file `globals.php` is loaded from the `bootstrap.php` file whenever the Math extension is not present. The `bootstrap.php` file is registered via Composer's [`files` autoload](https://getcomposer.org/doc/04-schema.md#files) mechanism, which includes it unconditionally whenever the package is loaded.
 
-- **`I`** (`OceanMoon\Math\I`) - The imaginary unit, a `Complex(0, 1)` instance. Import it with `use const OceanMoon\Math\I;`.
+- **`M_I`** - Representing the imaginary unit `i` as a `Complex(0, 1)` instance. Import it with `use const OceanMoon\Math\M_I;`.
   This is not a class constant because PHP only permits object constants to be created using the `const` keyword (not `define`) outside of a class.
 
-There are no other constants at this time, but more may be added here in the future if needed.
+There are no other global constants or functions at this time, but more may be added to this file in the future if needed.
 
 ---
 

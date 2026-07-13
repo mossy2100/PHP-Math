@@ -27,15 +27,25 @@
     },
     "require": {
         "php": "^8.4",
-        "oceanmoon/core": "^2.0"
+        "oceanmoon/core": "dev-main as 2.99.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "oceanmoon/coding-standard": "^2.0"
+        "oceanmoon/coding-standard": "dev-main as 2.99.0"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../CodingStandard"
+        },
+        {
+            "type": "path",
+            "url": "../Core"
+        }
+    ],
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
@@ -46,7 +56,7 @@
             "OceanMoon\\Math\\": "src/"
         },
         "files": [
-            "src/constants.php"
+            "src/bootstrap.php"
         ]
     },
     "autoload-dev": {
@@ -61,6 +71,7 @@
         "analyze": "scripts/analyze",
         "test": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
         "coverage": "php scripts/coverage-check.php",
+        "coverage-report": "open build/coverage/index.html",
         "quality": [
             "@fix",
             "@check",

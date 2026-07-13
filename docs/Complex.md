@@ -81,7 +81,9 @@ $z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
 $z4 = new Complex();            // 0 + 0i (zero)
 ```
 
-**Note:** To create a complex number from a string, use the `parse()` method.
+**Note:** To create a complex number from a string, use the `fromString()` method.
+
+**Throws:** `DomainException` if either part is not finite (±INF or NAN).
 
 ---
 
@@ -105,10 +107,9 @@ $z = Complex::fromArray([3, 4]);                             // 3 + 4i
 $z = Complex::fromArray(['real' => 3, 'imaginary' => 4]);    // 3 + 4i
 ```
 
-**Throws:**
-- `LengthException` if the array is a list and doesn't contain exactly two elements.
-- `DomainException` if the array is missing the `'real'` or `'imaginary'` key, or if either value is
-  not numeric.
+**Throws:** `ConversionException` if the array is empty, a list array doesn't contain exactly two
+elements, an associative array is missing the `'real'` or `'imaginary'` key, or either value is not a
+finite number.
 
 ### fromObject()
 
@@ -124,8 +125,34 @@ $obj = (object)['real' => 3, 'imaginary' => 4];
 $z = Complex::fromObject($obj);  // 3 + 4i
 ```
 
-**Throws:** `DomainException` if the object is missing the `real` or `imaginary` property, or if
-either value is not numeric.
+**Throws:** `ConversionException` if the object is missing the `real` or `imaginary` property, or if
+either value is not a finite number.
+
+### fromString()
+
+```php
+public static function fromString(string $str): self
+```
+
+Create a Complex from a string. Supports various formats.
+
+**Supported formats:**
+- Real numbers: `"5"`, `"-3.14"`
+- Pure imaginary: `"i"`, `"j"`, `"3i"`, `"-2.5j"`
+- Complex (real first): `"3+4i"`, `"5-2j"`, `"-1+i"`
+- Complex (imaginary first): `"4i+3"`, `"-2j+5"`, `"i-1"`
+- Whitespace tolerant: `" 3 + 4i "`, `"5 - 2j"`
+- Case insensitive: `"I"`, `"J"`
+
+**Examples:**
+```php
+$z1 = Complex::fromString("3+4i");
+$z2 = Complex::fromString("-2.5j");
+$z3 = Complex::fromString("i");
+$z4 = Complex::fromString("4i+3");
+```
+
+**Throws:** `ConversionException` if the string is empty or does not match a supported format.
 
 ### fromPolar()
 
@@ -145,31 +172,8 @@ Create a complex number from polar coordinates (magnitude and phase).
 $z1 = Complex::fromPolar(5, M_PI / 4);
 ```
 
-### parse()
-
-```php
-public static function parse(string $str): self
-```
-
-Parse a complex number from a string. Supports various formats.
-
-**Supported formats:**
-- Real numbers: `"5"`, `"-3.14"`
-- Pure imaginary: `"i"`, `"j"`, `"3i"`, `"-2.5j"`
-- Complex (real first): `"3+4i"`, `"5-2j"`, `"-1+i"`
-- Complex (imaginary first): `"4i+3"`, `"-2j+5"`, `"i-1"`
-- Whitespace tolerant: `" 3 + 4i "`, `"5 - 2j"`
-- Case insensitive: `"I"`, `"J"`
-
-**Examples:**
-```php
-$z1 = Complex::parse("3+4i");
-$z2 = Complex::parse("-2.5j");
-$z3 = Complex::parse("i");
-$z4 = Complex::parse("4i+3");
-```
-
-**Throws:** [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if the string is invalid.
+**Throws:** `DomainException` if the magnitude or phase is not finite (±INF or NAN), or if the
+magnitude is negative.
 
 ### toComplex()
 
@@ -180,7 +184,7 @@ public static function toComplex(mixed $value): self
 Convert a value to a Complex, if it isn't one already. This is the general-purpose conversion
 method used internally by the arithmetic methods to accept `self|float` arguments, but it accepts
 a broader range of types directly: an existing `Complex` is returned unchanged; an `int` or `float`
-becomes a real Complex; a `string` is parsed via `parse()`; an `array` is converted via `fromArray()`
+becomes a real Complex; a `string` is converted via `fromString()`; an `array` is converted via `fromArray()`
 (list or associative); and an `object` is converted via `fromObject()`.
 
 **Examples:**
@@ -191,11 +195,10 @@ $z3 = Complex::toComplex([3, 4]);       // 3 + 4i
 $z4 = Complex::toComplex((object)['real' => 3, 'imaginary' => 4]);  // 3 + 4i
 ```
 
-**Throws:**
-- `InvalidArgumentException` if the value's type cannot be converted to a Complex.
-- `LengthException` if the value is a list array and doesn't contain exactly two elements.
-- `DomainException` if an array or object does not have the required structure.
-- [`FormatException`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Exceptions/FormatException.md) if a string cannot be parsed.
+**Throws:** `ConversionException` if the value's type cannot be converted to a Complex, or if it can
+but the value itself is invalid (e.g. a malformed string, a list array of the wrong length, or a
+non-finite number) — see `fromArray()`, `fromObject()`, and `fromString()` above for the specific
+failure conditions.
 
 ---
 
@@ -278,7 +281,7 @@ var_dump($z2->isReal());  // false
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package. `identical()` is specific to `Complex`.
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package. `identical()` is also provided by that trait (via [`Equatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/Equatable.md)) — its behavior below is entirely generic (`Types::same($this, $other) && $this->equal($other)`), not custom to `Complex`.
 
 ### identical()
 
@@ -318,15 +321,18 @@ public function equal(mixed $other): bool
 Check if this complex number exactly equals another value.
 
 Compares both real and imaginary parts using exact equality (`===`). `$other` is converted via
-`toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, a 2-element
-`array`, or an `object` with numeric `real`/`imaginary` properties — can be compared. Returns `false`
-for anything `toComplex()` can't convert, instead of throwing.
+`toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, an
+`array` with the right elements, or an `object` with numeric `real`/`imaginary` properties — can be
+compared. To catch bugs from comparing values that can't meaningfully be compared, this throws rather
+than silently returning `false` for a value `toComplex()` can't convert.
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with (anything `toComplex()` accepts)
 
 **Returns:**
 - `bool` - True if exactly equal, false otherwise
+
+**Throws:** `ConversionException` if `$other` cannot be converted to a Complex.
 
 **Examples:**
 ```php
@@ -349,9 +355,9 @@ var_dump($z1->equal([3, 4]));                               // true
 var_dump($z1->equal(['real' => 3, 'imaginary' => 4]));      // true
 var_dump($z1->equal((object)['real' => 3, 'imaginary' => 4])); // true
 
-// Values that can't be converted return false
-var_dump($z1->equal('not a number'));  // false
-var_dump($z1->equal(null));            // false
+// Values that can't be converted throw, rather than silently returning false
+$z1->equal('not a number');  // throws ConversionException
+$z1->equal(null);            // throws ConversionException
 ```
 
 ### approxEqual()
@@ -366,7 +372,7 @@ public function approxEqual(
 
 Check if this complex number approximately equals another value within specified tolerances.
 
-Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately. `$other` is converted via `toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, a 2-element `array`, or an `object` with numeric `real`/`imaginary` properties — can be compared. Returns `false` for anything `toComplex()` can't convert, instead of throwing.
+Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately. `$other` is converted via `toComplex()`, so anything that method accepts — `Complex`, `int`, `float`, a parseable `string`, an `array` with the right elements, or an `object` with numeric `real`/`imaginary` properties — can be compared. To catch bugs from comparing values that can't meaningfully be compared, this throws rather than silently returning `false` for a value `toComplex()` can't convert.
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with (anything `toComplex()` accepts)
@@ -375,6 +381,8 @@ Uses combined relative and absolute tolerance approach, comparing both real and 
 
 **Returns:**
 - `bool` - True if approximately equal within tolerances, false otherwise
+
+**Throws:** `ConversionException` if `$other` cannot be converted to a Complex.
 
 **How tolerance works:**
 - For each component, checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
@@ -404,8 +412,8 @@ var_dump($z3->approxEqual(5.0000001, 1e-6));  // true
 // Also accepts anything toComplex() can convert: strings, arrays, and objects
 var_dump($z1->approxEqual('3.0000000001+4.0000000001i'));  // true
 
-// Values that can't be converted return false
-var_dump($z1->approxEqual('not a number'));  // false
+// Values that can't be converted throw, rather than silently returning false
+$z1->approxEqual('not a number');  // throws ConversionException
 ```
 
 ---
@@ -475,6 +483,8 @@ $z2 = new Complex(1, 2);
 $sum = $z1->add($z2);  // 4 + 6i
 ```
 
+**Throws:** `ConversionException` if `$other` is a non-finite float (±INF or NAN).
+
 ### sub()
 
 ```php
@@ -489,6 +499,8 @@ $z1 = new Complex(5, 7);
 $z2 = new Complex(2, 3);
 $diff = $z1->sub($z2);  // 3 + 4i
 ```
+
+**Throws:** `ConversionException` if `$other` is a non-finite float (±INF or NAN).
 
 ### mul()
 
@@ -508,6 +520,8 @@ $z2 = new Complex(3, 4);
 $product = $z1->mul($z2);  // -5 + 10i
 ```
 
+**Throws:** `ConversionException` if `$other` is a non-finite float (±INF or NAN).
+
 ### div()
 
 ```php
@@ -526,7 +540,9 @@ $z2 = new Complex(3, 4);
 $quotient = $z1->div($z2);
 ```
 
-**Throws:** `DivisionByZeroError` if dividing by zero.
+**Throws:**
+- `ConversionException` if `$other` is a non-finite float (±INF or NAN).
+- `DivisionByZeroError` if dividing by zero.
 
 ---
 
@@ -545,13 +561,17 @@ Raise this complex number to a power.
 $z = new Complex(3, 4);
 $result = $z->pow(2);  // -7 + 24i
 
-$result = I->pow(2);  // -1 + 0i
+$result = M_I->pow(2);  // -1 + 0i
 ```
 
 **Special cases:**
 - z^0 = 1 for any z (including 0 by convention)
 - 0^(positive) = 0
 - 0^(negative or complex) throws `DomainException`
+
+**Throws:**
+- `ConversionException` if `$other` is a non-finite float (±INF or NAN).
+- `DomainException` if attempting 0 raised to a negative or complex power.
 
 ### roots()
 
@@ -657,6 +677,7 @@ $result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
 ```
 
 **Throws:**
+- `ConversionException` if `$base` is a non-finite float (±INF or NAN).
 - `DomainException` if base is 0 or 1
 - `DomainException` if the number is zero
 
@@ -927,12 +948,14 @@ echo $z->phase;      // 0.785... (π/4)
 ### Euler's Identities
 
 ```php
+use const OceanMoon\Core\M_TAU;
+
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
 $result = $z->exp();  // -1 + 0i
 
 // e^(iτ) = 1
-$z = new Complex(0, Floats::TAU);
+$z = new Complex(0, M_TAU);
 $result = $z->exp();  // 1 + 0i
 ```
 
@@ -971,4 +994,5 @@ $sum = $sin2->add($cos2);  // 1 + 0i
 - **[Rational](Rational.md)** - Exact rational number arithmetic
 - **[Matrix](Matrix.md)** - Matrix operations (can contain complex-valued computations)
 - **[Vector](Vector.md)** - Vector operations
-- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including `TAU` constant and approximate comparison
+- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison
+- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`

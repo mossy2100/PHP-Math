@@ -8,15 +8,58 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+> **Version not yet decided.** This batch includes several breaking changes (exception types
+> changed throughout, two `Vector` methods removed, `fromArray()` behavior change) that likely
+> warrant a major version bump — to be decided before this is tagged as a release.
+
 ### Added
 
+- **`OceanMoon\Core\Exceptions\ConversionException`** is now the unified exception thrown by
+  essentially every `fromX()`/`toX()` conversion method across `Complex`, `Rational`, `Vector`, and
+  `Matrix`, replacing a previously inconsistent mix of `DomainException`, `LengthException`,
+  `InvalidArgumentException`, `FormatException`, `UnderflowException`, `OverflowException`, and (for
+  `Rational::compare()`) the now-removed `IncomparableTypesException`. See Changed/Removed below.
 - **`Complex::fromArray()`** now also accepts an associative array with `'real'` and `'imaginary'`
   keys (order-independent), in addition to the existing `[real, imaginary]` list form. This
   includes the result of `(array) $complex`, whose extra `'magnitude'`/`'phase'` keys are ignored.
   `Complex::toComplex()` inherits this via its existing delegation to `fromArray()`.
+- **`Complex::equal()`/`approxEqual()`**, **`Rational::equal()`/`approxEqual()`/`compare()`/
+  `approxCompare()`**, **`Vector::equal()`/`approxEqual()`**, and **`Matrix::equal()`/
+  `approxEqual()`** now throw `ConversionException` for a value that can't be converted to the
+  comparison type, rather than silently returning `false`. Catching bugs from comparing values that
+  can't meaningfully be compared is worth more than a convenient `false`.
+- **`Vector::toVector()`** — general-purpose conversion to `Vector`, accepting an existing `Vector`,
+  an `array`, or a single-column `Matrix`.
+- **`Matrix::toMatrix()`** — general-purpose conversion to `Matrix`, accepting an existing `Matrix`,
+  a `Vector`, a flat list of numbers, or a rectangular array of arrays.
+- **`Vector::toRowMatrix()`**, **`Vector::toColumnMatrix()`** — explicit row/column matrix
+  conversions, replacing the removed `toMatrix(bool $asRow)` (see Removed).
+- **`Vector::hadamard()`**, **`Matrix::hadamard()`** — element-wise (Hadamard) product of two
+  same-shaped vectors/matrices.
+- **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
+- **`Matrix::copy()`** — extract a rectangular sub-matrix.
+- **`Matrix::paste()`** — copy another matrix's elements into this one in place, at a given offset.
+- **`Matrix::resize()`** — return a new matrix with different dimensions, built from `copy()`/
+  `paste()`, zero-filling on growth and truncating on shrink.
+- **`Vector`** and **`Matrix`** now implement `Countable`: `count()` returns `size` for `Vector`, and
+  `rowCount * columnCount` for `Matrix`.
+- **`Complex::add()`/`sub()`/`mul()`/`div()`/`pow()`/`log()`** now explicitly document (and
+  correctly throw) `ConversionException` for a non-finite float argument (±INF or NAN) — previously
+  an undocumented gap, since `INF`/`NAN` are valid `float` values that still fail conversion.
 
 ### Changed
 
+- **`OceanMoon\Math\I`** is now **`OceanMoon\Math\M_I`**, matching Core's `M_TAU` naming convention.
+  Code using `Floats::TAU` should use the new `OceanMoon\Core\M_TAU` constant directly instead
+  (moved out of `Floats`).
+- **`Vector::fromArray()`** and **`Matrix::fromArray()`** now reject arrays with non-sequential keys
+  (`ConversionException`) instead of silently re-indexing them. If you were relying on the
+  re-indexing behavior, call `array_values()` explicitly before passing the array in.
+- **`Rational::compare()`** (and therefore `equal()`, `lessThan()`, etc.) now accepts Rational-format
+  strings (e.g. `'1/2'`) via `toRational()`, not just plain numeric strings — a capability expansion.
+- **`Complex::fromArray()`** (and `toComplex()`, which delegates to it) now throws
+  `ConversionException` for every failure mode, including a list array that doesn't contain exactly
+  two elements (previously `LengthException`, and before that `DomainException`).
 - Consolidated the float-comparison tolerance used throughout the test suite into a single global
   `EPSILON` constant (`tests/bootstrap.php`), replacing the `Complex::EPSILON` class constant and
   various ad-hoc tolerance values scattered across individual test files.
@@ -26,22 +69,40 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   behavior wasn't being exercised by any of the seven call sites it had here (all in a similar,
   modest magnitude range), so the switch is a simplification, not a loss of coverage. The trait
   itself is untouched in Core.
-- **`Complex::fromArray()`** (and `toComplex()`, which delegates to it) now throws `LengthException`
-  rather than `DomainException` when a list array doesn't contain exactly two elements, matching how
-  `LengthException` is used elsewhere in this package. Code that specifically catches
-  `DomainException` around these calls to handle a wrong-length array will need to catch
-  `LengthException` instead; catching the broader `Exception` or `Throwable` is unaffected.
+
+### Fixed
+
+- **`Vector::toColumnMatrix()`** — an empty vector previously converted to a degenerate 0×0 matrix
+  instead of the correct 0×1, because it routed through `Matrix::fromArray()`, whose empty-array
+  shortcut can't distinguish the two shapes. Now constructs the matrix directly, always producing a
+  proper n×1 shape. This also fixes a downstream bug in **`Matrix::mul(Vector)`**: multiplying a
+  0-column matrix by an empty vector previously threw a spurious `OutOfRangeException` instead of
+  returning the correct zero-length-result `Vector`.
 
 ### Removed
 
+- **`Vector::toMatrix(bool $asRow)`**, **`Vector::format(bool $asRow)`** — replaced by
+  `toRowMatrix()`/`toColumnMatrix()`. `__toString()` no longer delegates to `format()`; it now
+  renders directly using ordered tuple notation (`⟨1, 2, 3⟩`) instead of box-drawing characters.
 - `Complex::EPSILON` — superseded by the global `EPSILON` constant, above.
-- **`Complex::i()`** — redundant now that `Complex::i()` and the `OceanMoon\Math\I` constant did
-  exactly the same thing; use the `I` constant directly.
+- **`Complex::i()`** — redundant now that the `OceanMoon\Math\M_I` constant does the same thing; use
+  the constant directly.
 - **`Complex::fromVector()`**, **`Complex::toVector()`**, and the `Vector` branch of
   **`Complex::toComplex()`** — `Complex` no longer has any dependency on `Vector`, so the extension
   currently in development (which implements `Complex` but not the rest of the package) can support
   it standalone. Convert via `toArray()`/`fromArray()` and `Vector::toArray()`/`Vector::fromArray()`
   instead.
+
+### Documentation
+
+- Rewrote `Complex.md`, `Rational.md`, `Vector.md`, and `Matrix.md` to match the current API:
+  updated all exception types, added documentation for every new method above, removed
+  documentation for removed methods, and reorganised section order to match each class's source
+  region order (most notably moving "Conversion Methods" in `Rational.md`/`Matrix.md`, and
+  splitting the old "Element Access"/"Get/Set Matrix Elements" headings into separate
+  Inspection/Modification sections).
+- Fixed a pre-existing doc bug in all four files: `equal()`/`approxEqual()` docs claimed to "return
+  false" for unconvertible values; corrected to document the (correct, existing) throwing behavior.
 
 ---
 

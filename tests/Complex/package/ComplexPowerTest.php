@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Complex;
+namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
 use OceanMoon\Core\Floats;
@@ -10,7 +10,7 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-use const OceanMoon\Math\I;
+use const OceanMoon\Math\M_I;
 
 #[CoversClass(Complex::class)]
 class ComplexPowerTest extends TestCase
@@ -44,7 +44,7 @@ class ComplexPowerTest extends TestCase
      */
     public function testISquared(): void
     {
-        $result = I->sqr();
+        $result = M_I->sqr();
 
         $this->assertEqualsWithDelta(-1.0, $result->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
@@ -55,7 +55,7 @@ class ComplexPowerTest extends TestCase
      */
     public function testISquaredViaPow(): void
     {
-        $result = I->pow(2);
+        $result = M_I->pow(2);
 
         $this->assertEqualsWithDelta(-1.0, $result->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);

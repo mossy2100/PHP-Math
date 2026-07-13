@@ -1,19 +1,20 @@
 # Vector
 
-Numeric vector with element-wise arithmetic, dot and cross products, and array-style access.
+Numeric vector with element-wise arithmetic, dot/cross/Hadamard products, aggregation, and array-style access.
 
 ---
 
 ## Overview
 
 The `Vector` class provides a general-purpose numeric vector with support for:
-- Element-wise arithmetic (addition, subtraction, scalar multiplication, scalar division)
-- Dot product and cross product operations
+- Element-wise arithmetic (addition, subtraction, scalar multiplication, scalar division, Hadamard product)
+- Dot product, cross product, and normalization
+- Aggregation (sum, product)
 - Exact and approximate equality comparison
-- Conversion to arrays and matrices
-- Array-style element access via the `ArrayAccess` interface
+- Conversion to arrays and to row/column matrices
+- Array-style element access via the `ArrayAccess` interface, and element counting via `Countable`
 
-Vectors are directionless (neither row nor column). When converted to a `Matrix`, a vector is treated as a column vector by default.
+Vectors are directionless (neither row nor column). When converted to a `Matrix`, use `toColumnMatrix()` or `toRowMatrix()` to pick the orientation explicitly.
 
 Size-0 vectors are allowed.
 
@@ -27,7 +28,8 @@ Size-0 vectors are allowed.
 public float $magnitude { get; }
 ```
 
-The magnitude (Euclidean norm) of the vector, computed on every access.
+The magnitude (Euclidean norm) of the vector. Automatically computed and cached on first access, and
+invalidated whenever the vector is mutated via `set()`.
 
 For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 
@@ -73,27 +75,121 @@ $v2 = new Vector(0);    // [] (empty vector)
 public static function fromArray(array $arr): self
 ```
 
-Create a vector from an array of numbers. Integer values are cast to float. Array keys are ignored; values are re-indexed from zero.
+Create a vector from an array of numbers. The array must be a list (sequential integer keys starting
+at 0); a non-sequential array is rejected rather than silently re-indexed. Integer values are cast to
+float.
 
 **Parameters:**
-- `$arr` (array<array-key, int|float>) - Array of numbers.
+- `$arr` (array<array-key, mixed>) - List of numbers.
 
 **Returns:**
 - `self` - A new vector containing the array values.
 
-**Throws:**
-- `InvalidArgumentException` if any element is not a number.
+**Throws:** `ConversionException` if the array is not a list, or any element is not a number.
 
 **Examples:**
 ```php
 $v1 = Vector::fromArray([1, 2, 3]);
 $v2 = Vector::fromArray([3.14, -1, 0]);
 $v3 = Vector::fromArray([]);  // Size-0 vector
+
+// Non-sequential arrays are rejected, not re-indexed
+Vector::fromArray([5 => 10, 10 => 20]);  // throws ConversionException
+```
+
+### toVector()
+
+```php
+public static function toVector(mixed $value): self
+```
+
+Convert a value to a Vector, if it isn't one already. Accepts an existing `Vector` (returned
+unchanged), an `array` (converted via `fromArray()`), or a `Matrix` with exactly one column
+(converted via `getColumn(0)`, matching the column-vector convention used elsewhere in this package).
+
+**Examples:**
+```php
+$v1 = Vector::toVector([1, 2, 3]);              // [1.0, 2.0, 3.0]
+
+$col = new Matrix(3, 1);
+$col->setColumn(0, [4, 5, 6]);
+$v2 = Vector::toVector($col);                   // [4.0, 5.0, 6.0]
+```
+
+**Throws:** `ConversionException` if the value's type cannot be converted to a Vector, or it's a
+Matrix that doesn't have exactly one column.
+
+---
+
+## Conversion Methods
+
+### toArray()
+
+```php
+public function toArray(): array
+```
+
+Get a copy of the vector data as an array.
+
+**Returns:**
+- `list<float>` - Array of vector elements.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$array = $v->toArray();  // [1.0, 2.0, 3.0]
+```
+
+### toRowMatrix()
+
+```php
+public function toRowMatrix(): Matrix
+```
+
+Convert this vector to a single-row (1×n) Matrix.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$row = $v->toRowMatrix();
+// [[1, 2, 3]]  (1 row, 3 columns)
+```
+
+### toColumnMatrix()
+
+```php
+public function toColumnMatrix(): Matrix
+```
+
+Convert this vector to a single-column (n×1) Matrix.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$col = $v->toColumnMatrix();
+// [[1],
+//  [2],
+//  [3]]  (3 rows, 1 column)
+```
+
+### \_\_toString()
+
+```php
+public function __toString(): string
+```
+
+Convert the vector to a string representation, using ordered tuple notation and mathematical angle
+brackets.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+echo $v;  // "⟨1, 2, 3⟩"
 ```
 
 ---
 
-## Element Access
+## Inspection Methods
 
 ### get()
 
@@ -109,8 +205,7 @@ Get a vector element by index.
 **Returns:**
 - `float` - Value of the vector element.
 
-**Throws:**
-- `OutOfRangeException` if the index is outside the valid range.
+**Throws:** `OutOfRangeException` if the index is outside the valid range.
 
 **Examples:**
 ```php
@@ -119,20 +214,23 @@ echo $v->get(0);  // 10.0
 echo $v->get(2);  // 30.0
 ```
 
+---
+
+## Modification Methods
+
 ### set()
 
 ```php
 public function set(int $index, float $value): void
 ```
 
-Set a vector element by index. Integer values are cast to float.
+Set a vector element by index. Integer values are cast to float. Invalidates the cached `magnitude`.
 
 **Parameters:**
 - `$index` (int) - Element index (0-based).
 - `$value` (float) - Value to set.
 
-**Throws:**
-- `OutOfRangeException` if the index is outside the valid range.
+**Throws:** `OutOfRangeException` if the index is outside the valid range.
 
 **Examples:**
 ```php
@@ -155,13 +253,19 @@ public function equal(mixed $other): bool
 
 Check if this vector exactly equals another value.
 
-Two vectors are equal if they have the same size and all corresponding elements are exactly equal. Returns `false` for non-Vector values.
+Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
+`$other` is converted via `toVector()`, so anything that method accepts — `Vector`, an `array` of
+numbers, or a single-column `Matrix` — can be compared. To catch bugs from comparing values that can't
+meaningfully be compared, this throws rather than silently returning `false` for a value `toVector()`
+can't convert.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with.
+- `$other` (mixed) - The value to compare with (anything `toVector()` accepts).
 
 **Returns:**
 - `bool` - True if the vectors are the same size and all elements are exactly equal.
+
+**Throws:** `ConversionException` if `$other` cannot be converted to a Vector.
 
 **Examples:**
 ```php
@@ -172,9 +276,12 @@ $v3 = Vector::fromArray([1.0000000001, 2, 3]);
 var_dump($v1->equal($v2));  // true (exact match)
 var_dump($v1->equal($v3));  // false (not exact)
 
-// Invalid types return false
-var_dump($v1->equal('string'));  // false
-var_dump($v1->equal(null));      // false
+// Also accepts a plain array
+var_dump($v1->equal([1, 2, 3]));  // true
+
+// Values that can't be converted throw, rather than silently returning false
+$v1->equal('string');  // throws ConversionException
+$v1->equal(null);      // throws ConversionException
 ```
 
 ### approxEqual()
@@ -189,10 +296,13 @@ public function approxEqual(
 
 Check if this vector approximately equals another value within specified tolerances.
 
-Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first, then relative tolerance. Returns `false` for non-Vector values.
+Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute
+tolerance first, then relative tolerance. `$other` is converted via `toVector()`, so anything that
+method accepts can be compared. To catch bugs from comparing values that can't meaningfully be
+compared, this throws rather than silently returning `false` for a value `toVector()` can't convert.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with.
+- `$other` (mixed) - The value to compare with (anything `toVector()` accepts).
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
 
@@ -200,6 +310,7 @@ Each pair of corresponding elements is compared using `Floats::approxEqual()`, w
 - `bool` - True if the vectors are the same size and all elements are approximately equal.
 
 **Throws:**
+- `ConversionException` if `$other` cannot be converted to a Vector.
 - `DomainException` if either tolerance is negative.
 
 **Examples:**
@@ -213,8 +324,8 @@ var_dump($v1->approxEqual($v2));  // true
 // With tight tolerance
 var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
 
-// Invalid types return false
-var_dump($v1->approxEqual('string'));  // false
+// Values that can't be converted throw, rather than silently returning false
+$v1->approxEqual('string');  // throws ConversionException
 ```
 
 ---
@@ -330,6 +441,30 @@ $v = Vector::fromArray([6, 9, 12]);
 $result = $v->div(3);  // [2, 3, 4]
 ```
 
+### hadamard()
+
+```php
+public function hadamard(self $other): self
+```
+
+Calculate the Hadamard product (element-wise product) of this vector with another.
+
+**Parameters:**
+- `$other` (Vector) - Vector to multiply element-wise with.
+
+**Returns:**
+- `self` - New vector representing the Hadamard product.
+
+**Throws:**
+- `LengthException` if vectors have different sizes.
+
+**Examples:**
+```php
+$v1 = Vector::fromArray([1, 2, 3]);
+$v2 = Vector::fromArray([4, 5, 6]);
+$result = $v1->hadamard($v2);  // [4, 10, 18]
+```
+
 ---
 
 ## Linear Algebra Methods
@@ -407,103 +542,56 @@ echo $unit->get(1);     // 0.8
 
 ---
 
-## Conversion Methods
+## Aggregation Methods
 
-### toArray()
+### sum()
 
 ```php
-public function toArray(): array
+public function sum(): float
 ```
 
-Get a copy of the vector data as an array.
+Calculate the sum of all elements in the vector.
 
 **Returns:**
-- `list<float>` - Array of vector elements.
+- `float` - The sum. `0.0` for an empty vector (the additive identity).
 
 **Examples:**
 ```php
-$v = Vector::fromArray([1, 2, 3]);
-$array = $v->toArray();  // [1.0, 2.0, 3.0]
+$v = Vector::fromArray([1, 2, 3, 4]);
+echo $v->sum();  // 10.0
 ```
 
-### toMatrix()
+### prod()
 
 ```php
-public function toMatrix(bool $asRow = false): Matrix
+public function prod(): float
 ```
 
-Convert this vector to a Matrix.
-
-By default, returns an n x 1 column matrix. If `$asRow` is true, returns a 1 x n row matrix.
-
-**Parameters:**
-- `$asRow` (bool) - If true, return a 1 x n row matrix; if false (default), return an n x 1 column matrix.
+Calculate the product of all elements in the vector.
 
 **Returns:**
-- `Matrix` - The matrix representation.
+- `float` - The product. `1.0` for an empty vector (the multiplicative identity).
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3, 4]);
+echo $v->prod();  // 24.0
+```
+
+### count()
+
+```php
+public function count(): int
+```
+
+Get the number of elements in the vector, via the `Countable` interface. Equivalent to the `size`
+property.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
-
-// Column matrix (default)
-$col = $v->toMatrix();
-// [[1],
-//  [2],
-//  [3]]
-
-// Row matrix
-$row = $v->toMatrix(true);
-// [[1, 2, 3]]
-```
-
-### format()
-
-```php
-public function format(bool $asRow = false): string
-```
-
-Format the vector as a string using box-drawing characters.
-
-**Parameters:**
-- `$asRow` (bool) - If true, format as a row vector; if false (default), format as a column vector.
-
-**Returns:**
-- `string` - The formatted string.
-
-**Examples:**
-```php
-$v = Vector::fromArray([1, 2, 3]);
-echo $v->format();
-// ┌     ┐
-// │ 1.0 │
-// │ 2.0 │
-// │ 3.0 │
-// └     ┘
-
-echo $v->format(true);
-// ┌               ┐
-// │ 1.0  2.0  3.0 │
-// └               ┘
-```
-
-### \_\_toString()
-
-```php
-public function __toString(): string
-```
-
-Convert the vector to a string representation. Delegates to `format()`, rendering as a column vector by default.
-
-**Examples:**
-```php
-$v = Vector::fromArray([1, 2, 3]);
-echo $v;
-// ┌     ┐
-// │ 1.0 │
-// │ 2.0 │
-// │ 3.0 │
-// └     ┘
+echo $v->count();  // 3
+echo count($v);    // 3 (via the global count() function)
 ```
 
 ---

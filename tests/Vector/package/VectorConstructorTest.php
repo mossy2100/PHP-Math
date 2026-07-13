@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Vector;
 
 use DomainException;
-use InvalidArgumentException;
+use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -59,6 +59,35 @@ class VectorConstructorTest extends TestCase
     }
 
     /**
+     * Test count() matches size for a non-empty vector.
+     */
+    public function testCount(): void
+    {
+        $v = new Vector(5);
+        $this->assertSame(5, $v->count());
+        $this->assertSame($v->size, $v->count());
+    }
+
+    /**
+     * Test count() with an empty vector.
+     */
+    public function testCountWithEmptyVector(): void
+    {
+        $v = new Vector(0);
+        $this->assertSame(0, $v->count());
+    }
+
+    /**
+     * Test the global count() function works via the Countable interface.
+     */
+    public function testGlobalCountFunction(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $this->assertCount(3, $v);
+        $this->assertSame(3, count($v));
+    }
+
+    /**
      * Test fromArray with integer values.
      */
     public function testFromArrayWithInts(): void
@@ -97,26 +126,25 @@ class VectorConstructorTest extends TestCase
     }
 
     /**
-     * Test fromArray with non-numeric values throws InvalidArgumentException.
+     * Test fromArray with non-numeric values throws ConversionException.
      */
     public function testFromArrayWithNonNumericThrows(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        Vector::fromArray([1, 'hello', 3]); // @phpstan-ignore argument.type
+        $this->expectException(ConversionException::class);
+        Vector::fromArray([1, 'hello', 3]);
     }
 
     /**
-     * Test fromArray re-indexes non-sequential arrays.
+     * Test fromArray with a non-sequential (non-list) array throws ConversionException.
      */
-    public function testFromArrayReindexesNonSequentialArrays(): void
+    public function testFromArrayWithNonSequentialArrayThrows(): void
     {
-        $v = Vector::fromArray([
+        $this->expectException(ConversionException::class);
+        Vector::fromArray([
             5  => 10,
             10 => 20,
             15 => 30,
         ]);
-        $this->assertSame([10.0, 20.0, 30.0], $v->toArray());
-        $this->assertSame(3, $v->size);
     }
 
     /**

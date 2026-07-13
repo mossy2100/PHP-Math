@@ -138,6 +138,28 @@ class VectorArithmeticTest extends TestCase
     }
 
     /**
+     * Test the Hadamard (element-wise) product of two vectors.
+     */
+    public function testHadamard(): void
+    {
+        $a = Vector::fromArray([1, 2, 3]);
+        $b = Vector::fromArray([4, 5, 6]);
+        $result = $a->hadamard($b);
+        $this->assertEqualsWithDelta([4.0, 10.0, 18.0], $result->toArray(), EPSILON);
+    }
+
+    /**
+     * Test the Hadamard product of vectors with different sizes throws LengthException.
+     */
+    public function testHadamardWithDifferentSizesThrows(): void
+    {
+        $a = Vector::fromArray([1, 2, 3]);
+        $b = Vector::fromArray([1, 2]);
+        $this->expectException(LengthException::class);
+        $a->hadamard($b);
+    }
+
+    /**
      * Test dot product of two vectors.
      */
     public function testDot(): void
@@ -246,6 +268,55 @@ class VectorArithmeticTest extends TestCase
         $v = new Vector(3);
         $this->expectException(DivisionByZeroError::class);
         $v->normalize();
+    }
+
+    #endregion
+
+    #region sum()/prod() tests
+
+    /**
+     * Test sum of a vector's elements.
+     */
+    public function testSum(): void
+    {
+        $v = Vector::fromArray([1, 2, 3, 4]);
+        $this->assertEqualsWithDelta(10.0, $v->sum(), EPSILON);
+    }
+
+    /**
+     * Test sum of an empty vector is 0 (the additive identity).
+     */
+    public function testSumWithEmptyVector(): void
+    {
+        $v = new Vector(0);
+        $this->assertSame(0.0, $v->sum());
+    }
+
+    /**
+     * Test product of a vector's elements.
+     */
+    public function testProd(): void
+    {
+        $v = Vector::fromArray([1, 2, 3, 4]);
+        $this->assertEqualsWithDelta(24.0, $v->prod(), EPSILON);
+    }
+
+    /**
+     * Test product of a vector containing a zero element is 0.
+     */
+    public function testProdWithZeroElement(): void
+    {
+        $v = Vector::fromArray([1, 2, 0, 4]);
+        $this->assertSame(0.0, $v->prod());
+    }
+
+    /**
+     * Test product of an empty vector is 1 (the multiplicative identity).
+     */
+    public function testProdWithEmptyVector(): void
+    {
+        $v = new Vector(0);
+        $this->assertSame(1.0, $v->prod());
     }
 
     #endregion

@@ -6,10 +6,8 @@ namespace OceanMoon\Math;
 
 use DivisionByZeroError;
 use DomainException;
-use InvalidArgumentException;
 use JsonSerializable;
-use OceanMoon\Core\Exceptions\FormatException;
-use OceanMoon\Core\Exceptions\IncomparableTypesException;
+use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Integers;
 use OceanMoon\Core\Numbers;
@@ -17,6 +15,7 @@ use OceanMoon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
 use Stringable;
+use Throwable;
 use UnderflowException;
 
 /**
@@ -29,7 +28,7 @@ use UnderflowException;
  *
  * NB: The valid range of the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
  * Therefore, neither the numerator nor the denominator can be PHP_INT_MIN.
- * The reason is that PHP_INT_MIN equals -(PHP_INT_MAX + 1), i.e. it can't be negated without overflowing.
+ * The reason is that PHP_INT_MIN equals -(PHP_INT_MAX + 1), i.e. it cannot be negated without overflowing.
  * Allowing the numerator or the denominator to equal PHP_INT_MIN therefore complicates negation, reciprocal,
  * subtraction, and simplification methods.
  * So, while it's technically possible, supporting this edge case inflates the code for little gain.
@@ -40,6 +39,8 @@ final class Rational implements Stringable, JsonSerializable
     use ApproxComparable;
 
     #region Properties
+
+    #region Public properties (readonly)
 
     /**
      * The numerator.
@@ -53,6 +54,8 @@ final class Rational implements Stringable, JsonSerializable
 
     #endregion
 
+    #endregion
+
     #region Constructor
 
     /**
@@ -61,24 +64,23 @@ final class Rational implements Stringable, JsonSerializable
      * @param int $num The numerator. Defaults to 0.
      * @param int $den The denominator. Defaults to 1.
      * @throws DivisionByZeroError If the denominator is zero.
-     * @throws DomainException If the ratio involves PHP_INT_MIN in a way that can't be exactly
-     * simplified (PHP_INT_MIN paired with an odd or otherwise incompatible counterpart). This is not
-     * a magnitude problem — the resulting value may well be within the representable range — it's
-     * specifically this exact integer ratio that can't be reduced, because PHP_INT_MIN can't be
-     * safely negated. Use fromFloat() if an approximation is acceptable instead.
+     * @throws DomainException If the ratio involves PHP_INT_MIN in a way that cannot be exactly simplified (PHP_INT_MIN
+     * paired with an odd or otherwise incompatible counterpart). This is not a magnitude problem — the resulting value
+     * may well be within the representable range — it's specifically this exact integer ratio that cannot be reduced,
+     * because PHP_INT_MIN cannot be safely negated. Use fromFloat() if an approximation is acceptable instead.
      */
     public function __construct(int $num = 0, int $den = 1)
     {
         // Check for zero denominator.
         if ($den === 0) {
-            throw new DivisionByZeroError('Cannot create a rational number with a zero denominator.');
+            throw new DivisionByZeroError('Cannot create a Rational with a denominator of zero.');
         }
 
         try {
             // Simplify the ratio to canonical form.
             [$num, $den] = self::simplify($num, $den);
         } catch (DomainException) {
-            throw new DomainException("Cannot exactly represent the ratio $num/$den as a Rational.");
+            throw new DomainException("Cannot express the ratio $num/$den as a Rational.");
         }
 
         // Store the simplified values.
@@ -108,21 +110,19 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param float $value The float to convert.
      * @return self The equivalent (or closest approximating) Rational.
-     * @throws DomainException If the value is not finite (±INF or NAN).
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
+     * @throws ConversionException If the float could not be converted to a Rational.
      */
     public static function fromFloat(float $value): self
     {
         // Check for non-finite values.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot convert a non-finite value to a rational number.');
+            throw new ConversionException($value, self::class, 'Value must be a finite number.');
         }
 
         $absValue = abs($value);
         $sign = Numbers::sign($value, false);
 
-        // Check if the float equals a valid integer.
+        // Check if the absolute value of the float equals a valid integer.
         $i = Floats::tryConvertToInt($absValue);
         if ($i !== null) {
             return new self($sign * $i, 1);
@@ -132,12 +132,12 @@ final class Rational implements Stringable, JsonSerializable
         $min = 1.0 / PHP_INT_MAX;
         $max = (float) PHP_INT_MAX;
         if ($absValue < $min) {
-            throw new UnderflowException("The value $value is too small to be expressed as a rational number.");
+            throw new ConversionException($value, self::class, "Value $value is too small.");
         } elseif ($absValue > $max) {
-            throw new OverflowException("The value $value is too large to be expressed as a rational number.");
+            throw new ConversionException($value, self::class, "Value $value is too large.");
         }
 
-        // Check for limits of range, which can't be handled by the continued fraction algorithm.
+        // Check for limits of range, which cannot be handled by the continued fraction algorithm.
         if ($absValue === $min) {
             return new self($sign, PHP_INT_MAX);
         } elseif ($absValue === $max) {
@@ -207,7 +207,7 @@ final class Rational implements Stringable, JsonSerializable
     }
 
     /**
-     * Parse a string into a rational number.
+     * Convert a string into a rational number.
      *
      * It will accept string values of the following form:
      * - int, e.g. "123", "-456"
@@ -222,47 +222,47 @@ final class Rational implements Stringable, JsonSerializable
      * - " 123.456", "-456.789 ", etc.
      * - " 1/2", "-3/4 ", " 5 / 6", etc.
      *
-     * @param string $str The string to parse.
-     * @return self The parsed rational number.
-     * @throws FormatException If the string cannot be parsed into a rational number.
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
+     * @param string $str The string to convert.
+     * @return self A new Rational.
+     * @throws ConversionException If the string could not be converted to a Rational.
      */
-    public static function parse(string $str): self
+    public static function fromString(string $str): self
     {
-        // Remove all whitespace.
-        $str = preg_replace('/\s+/', '', $str);
-        // preg_replace() can return null on error, but we know the pattern is valid.
-        assert(is_string($str));
+        // Trim whitespace.
+        $str = trim($str);
 
         // Handle empty string
         if ($str === '') {
-            throw new FormatException('Cannot parse empty string as rational number.');
+            throw new ConversionException($str, self::class, 'String must not be empty.');
         }
 
-        // Check for a string that looks like an integer.
-        $n = filter_var($str, FILTER_VALIDATE_INT);
-        if (is_int($n)) {
-            return new self($n);
-        }
-
-        // Check for a string that looks like a float.
-        $n = filter_var($str, FILTER_VALIDATE_FLOAT);
-        if (is_float($n)) {
-            return self::fromFloat($n);
-        }
-
-        // Check for a string that looks like a fraction (int/int).
-        $parts = explode('/', $str);
-        if (count($parts) === 2) {
-            $n = filter_var($parts[0], FILTER_VALIDATE_INT);
-            $d = filter_var($parts[1], FILTER_VALIDATE_INT);
-            if (is_int($n) && is_int($d)) {
-                return new self($n, $d);
+        try {
+            // Check for a string that looks like an integer.
+            $n = filter_var($str, FILTER_VALIDATE_INT);
+            if (is_int($n)) {
+                return new self($n);
             }
+
+            // Check for a string that looks like a float.
+            $n = filter_var($str, FILTER_VALIDATE_FLOAT);
+            if (is_float($n)) {
+                return self::fromFloat($n);
+            }
+
+            // Check for a string that looks like a fraction (int/int).
+            $parts = explode('/', $str);
+            if (count($parts) === 2) {
+                $n = filter_var(trim($parts[0]), FILTER_VALIDATE_INT);
+                $d = filter_var(trim($parts[1]), FILTER_VALIDATE_INT);
+                if (is_int($n) && is_int($d)) {
+                    return new self($n, $d);
+                }
+            }
+        } catch (Throwable $e) {
+            ConversionException::rethrow($str, self::class, $e);
         }
 
-        throw new FormatException("Cannot parse '$str' as rational number.");
+        throw new ConversionException($str, self::class, 'String has invalid format.');
     }
 
     /**
@@ -273,11 +273,7 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param mixed $value The number to convert.
      * @return self The equivalent Rational.
-     * @throws DomainException If the argument is a non-finite float (±INF or NAN), or a string that doesn't represent a
-     * valid rational.
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
-     * @throws InvalidArgumentException If the value is not a Rational, int, float, or string.
+     * @throws ConversionException If the value could not be converted to a Rational.
      */
     public static function toRational(mixed $value): self
     {
@@ -286,25 +282,27 @@ final class Rational implements Stringable, JsonSerializable
             return $value;
         }
 
-        // Check for int.
-        if (is_int($value)) {
-            return new self($value);
-        }
+        try {
+            // Check for int.
+            if (is_int($value)) {
+                return new self($value);
+            }
 
-        // Check for float.
-        if (is_float($value)) {
-            return self::fromFloat($value);
-        }
+            // Check for float.
+            if (is_float($value)) {
+                return self::fromFloat($value);
+            }
 
-        // Check for string.
-        if (is_string($value)) {
-            return self::parse($value);
+            // Check for string.
+            if (is_string($value)) {
+                return self::fromString($value);
+            }
+        } catch (Throwable $e) {
+            ConversionException::rethrow($value, self::class, $e);
         }
 
         // The value has a type that cannot be converted to Rational.
-        throw new InvalidArgumentException(
-            'Cannot convert value to Rational. Value must be Rational, int, float, or string.'
-        );
+        throw new ConversionException($value, self::class, 'Unsupported conversion.');
     }
 
     #endregion
@@ -364,7 +362,7 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @return string The string representation of the rational number.
      */
-    #[Override]
+    #[Override] // Stringable
     public function __toString(): string
     {
         return $this->numerator . ($this->denominator === 1 ? '' : '/' . $this->denominator);
@@ -379,41 +377,33 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param mixed $other The number to compare with.
      * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
-     * @throws IncomparableTypesException If the value being compared has an incompatible type for comparison.
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
+     * @throws ConversionException If the value cannot be converted to a Rational.
      */
     /** @disregard P1128 */
-    #[Override]
+    #[Override] // Comparable
     public function compare(mixed $other): int
     {
-        // Check the types are comparable.
-        if (!Numbers::isNumber($other) && !$other instanceof self) {
-            throw new IncomparableTypesException($this, $other);
-        }
-
-        // Convert int to Rational if it can be done without error.
-        if (is_int($other) && $other > PHP_INT_MIN) {
-            $other = new self($other);
-        }
-
-        // Convert float to Rational if it can be done without error.
-        if (is_float($other)) {
-            $iOther = Floats::tryConvertToInt($other);
-            if ($iOther !== null && $iOther > PHP_INT_MIN) {
-                $other = new self($iOther);
+        // Convert int to Rational or float.
+        if (is_int($other)) {
+            try {
+                $other = new self($other);
+            } catch (Throwable) {
+                $other = (float) $other;
             }
         }
 
-        // If $other is still an int or float, it's quicker (and should be sufficiently precise) to compare $this and
-        // $other as floats than it would be to call fromFloat() and compare two Rationals.
-        if (!$other instanceof self) {
+        // If $other is still a number, then either it's not a whole number or it's outside the valid range.
+        // In this case it's quicker to compare $this and $other as floats than it would be to convert the value to a
+        // Rational via fromFloat().
+        if (Numbers::isNumber($other)) {
             $left = $this->toFloat();
-            $right = (float) $other;
+            $right = $other;
         } else {
-            /** @var self $other */
+            // Get other value as a Rational.
+            $other = self::toRational($other);
+
+            // If the denominators are equal, just compare numerators.
             if ($this->denominator === $other->denominator) {
-                // If the denominators are equal, just compare numerators.
                 $left = $this->numerator;
                 $right = $other->numerator;
             } else {
@@ -452,23 +442,19 @@ final class Rational implements Stringable, JsonSerializable
      * @param float $relTol The maximum allowed relative difference (default: 1e-9).
      * @param float $absTol The maximum allowed absolute difference (default: PHP_FLOAT_EPSILON).
      * @return bool True if the values are equal within the given tolerances, false otherwise.
+     * @throws ConversionException If the value cannot be converted to a Rational.
      * @see Floats::approxEqual() For the tolerance algorithm details.
      */
+    /** @disregard P1128 */
+    #[Override] // ApproxEquatable
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        // Get the other value as a float.
-        if (is_int($other)) {
-            $other = (float) $other;
-        } elseif ($other instanceof self) {
-            $other = $other->toFloat();
-        }
-
-        // If the other value's type is not float at this point, the values are inequal.
-        if (!is_float($other)) {
-            return false;
+        // Get the other value as a number, if not already.
+        if (!Numbers::isNumber($other)) {
+            $other = self::toRational($other)->toFloat();
         }
 
         // Compare as floats.
@@ -527,10 +513,12 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param int|float|self $other The value to add.
      * @return self A new rational number representing the sum.
+     * @throws ConversionException If the value cannot be converted to a Rational.
      * @throws OverflowException If the result overflows an integer.
      */
     public function add(int|float|self $other): self
     {
+        // Get other value as a Rational.
         $other = self::toRational($other);
 
         // (a/b) + (c/d) = (ad + bc) / (bd)
@@ -547,11 +535,14 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param int|float|self $other The value to subtract.
      * @return self A new rational number representing the difference.
+     * @throws ConversionException If the value cannot be converted to a Rational.
      * @throws OverflowException If the result overflows an integer.
      */
     public function sub(int|float|self $other): self
     {
+        // Get other value as a Rational.
         $other = self::toRational($other);
+
         return $this->add($other->neg());
     }
 
@@ -560,10 +551,12 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param int|float|self $other The value to multiply by.
      * @return self A new rational number representing the product.
-     *
+     * @throws ConversionException If the value cannot be converted to a Rational.
+     * @throws OverflowException If the result overflows an integer.
      */
     public function mul(int|float|self $other): self
     {
+        // Get other value as a Rational.
         $other = self::toRational($other);
 
         // Cross-cancel before multiplying: (a/b) * (c/d)
@@ -589,15 +582,16 @@ final class Rational implements Stringable, JsonSerializable
      *
      * @param int|float|self $other The value to divide by.
      * @return self A new rational number representing the quotient.
+     * @throws ConversionException If the value cannot be converted to a Rational.
      * @throws DivisionByZeroError If dividing by zero.
-     * @throws UnderflowException If the other value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the other value is non-zero but too large to represent as a Rational, or if the
-     * result overflows an integer.
+     * @throws OverflowException If the result overflows an integer.
      */
     public function div(int|float|self $other): self
     {
-        // Guard.
+        // Get other value as a Rational.
         $other = self::toRational($other);
+
+        // Guard against division by 0.
         if ($other->numerator === 0) {
             throw new DivisionByZeroError('Cannot divide by zero.');
         }
@@ -810,7 +804,7 @@ final class Rational implements Stringable, JsonSerializable
      * @param int $num The numerator.
      * @param int $den The denominator.
      * @return list<int> The simplified numerator and denominator.
-     * @throws DomainException If the numerator or denominator equals PHP_INT_MIN and the rational can't be simplified.
+     * @throws DomainException If the numerator or denominator equals PHP_INT_MIN and the rational cannot be simplified.
      */
     private static function simplify(int $num, int $den): array
     {

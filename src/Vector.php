@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace OceanMoon\Math;
 
 use ArrayAccess;
+use Countable;
 use DivisionByZeroError;
 use DomainException;
 use InvalidArgumentException;
 use LengthException;
 use LogicException;
+use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
@@ -23,9 +25,11 @@ use Stringable;
  *
  * @implements ArrayAccess<int, float>
  */
-final class Vector implements Stringable, ArrayAccess
+final class Vector implements Stringable, Countable, ArrayAccess
 {
     use ApproxEquatable;
+
+    #region Properties
 
     #region Private properties
 
@@ -38,7 +42,7 @@ final class Vector implements Stringable, ArrayAccess
 
     #endregion
 
-    #region Public properties
+    #region Public properties (readonly)
 
     /**
      * The number of elements in the vector.
@@ -47,7 +51,7 @@ final class Vector implements Stringable, ArrayAccess
 
     #endregion
 
-    #region Property hooks
+    #region Public properties (computed, readonly)
 
     /**
      * The magnitude (norm) of the vector. Cached on first access and invalidated on mutation.
@@ -65,6 +69,8 @@ final class Vector implements Stringable, ArrayAccess
 
     #endregion
 
+    #endregion
+
     #region Constructor
 
     /**
@@ -76,7 +82,7 @@ final class Vector implements Stringable, ArrayAccess
     public function __construct(int $size)
     {
         if ($size < 0) {
-            throw new DomainException("Cannot create a vector with negative size: $size.");
+            throw new DomainException("Cannot create a Vector with negative size: $size.");
         }
 
         $this->size = $size;
@@ -90,19 +96,29 @@ final class Vector implements Stringable, ArrayAccess
     /**
      * Create a vector from an array.
      *
-     * @param array<array-key, int|float> $arr Array of numbers.
+     * @param array<array-key, mixed> $arr Array of numbers.
      * @return self
-     * @throws InvalidArgumentException If any array items are not numbers.
+     * @throws ConversionException If the array could not be converted to a Vector.
      */
     public static function fromArray(array $arr): self
     {
+        // Handle empty input.
+        if (empty($arr)) {
+            return new self(0);
+        }
+
         $data = [];
 
-        // Check if all elements are numbers.
+        // Check for list.
+        if (!array_is_list($arr)) {
+            throw new ConversionException($arr, self::class, 'Array must be a list.');
+        }
+
+        // Check all elements are numbers.
         foreach ($arr as $value) {
             // Check if the value is a number.
             if (!Numbers::isNumber($value)) {
-                throw new InvalidArgumentException('Cannot use non-numeric elements in a vector.');
+                throw new ConversionException($arr, self::class, 'All elements must be numbers.');
             }
 
             // Convert the value to a float.
@@ -114,6 +130,41 @@ final class Vector implements Stringable, ArrayAccess
         $vector->data = $data;
 
         return $vector;
+    }
+
+    /**
+     * Convert the input value to a Vector, if not already, and if possible.
+     *
+     * A Matrix can be converted to a Vector only if it has exactly 1 column, matching the
+     * column-vector convention used elsewhere (e.g. Matrix::toMatrix(), Matrix::mul()).
+     *
+     * @param mixed $value The value to convert.
+     * @return self The equivalent Vector.
+     * @throws ConversionException If the value cannot be converted to a Vector.
+     */
+    public static function toVector(mixed $value): self
+    {
+        // Check for Vector.
+        if ($value instanceof self) {
+            return $value;
+        }
+
+        // Check for array and convert to Vector if possible.
+        if (is_array($value)) {
+            return self::fromArray($value);
+        }
+
+        // Check for Matrix with exactly one column.
+        if ($value instanceof Matrix) {
+            // If the Matrix has only one column, get the column as a Vector.
+            if ($value->columnCount === 1) {
+                return $value->getColumn(0);
+            }
+            throw new ConversionException($value, self::class, 'Matrix must have exactly one column.');
+        }
+
+        // The value has a type that cannot be converted to Vector.
+        throw new ConversionException($value, self::class);
     }
 
     #endregion
@@ -131,50 +182,49 @@ final class Vector implements Stringable, ArrayAccess
     }
 
     /**
-     * Convert this vector to a Matrix.
+     * Convert this vector to a single-row Matrix.
      *
-     * By default, returns an n×1 column matrix. If $asRow is true, returns a 1×n row matrix.
-     * NB: You can also get a row vector by calling $vec->toMatrix()->transpose()
-     *
-     * @param bool $asRow If true, return a 1×n row matrix; if false (default), return an n×1 column matrix.
      * @return Matrix The matrix representation.
      */
-    public function toMatrix(bool $asRow = false): Matrix
+    public function toRowMatrix(): Matrix
     {
-        $matrixData = $asRow ? [$this->data] : array_map(static fn ($x) => [$x], $this->data);
-        return Matrix::fromArray($matrixData);
+        return Matrix::fromArray([$this->data]);
     }
 
     /**
-     * Format the vector as a string.
+     * Convert this vector to a single-column Matrix.
      *
-     * @param bool $asRow If true, format as a row vector; if false (default), format as a column vector.
-     * @return string String representation of the Vector.
+     * Built directly rather than via Matrix::fromArray(), because fromArray([]) can't distinguish a
+     * 0×0 matrix from a 0×1 one: for an empty vector, array_map() over $this->data would produce [],
+     * which fromArray() treats as its 0×0 empty-matrix shortcut. Constructing directly guarantees this
+     * always returns an n×1 matrix, even when n is 0.
+     *
+     * @return Matrix The matrix representation.
      */
-    public function format(bool $asRow = false): string
+    public function toColumnMatrix(): Matrix
     {
-        return $this->toMatrix($asRow)->__toString();
+        $result = new Matrix($this->size, 1);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, 0, $this->data[$i]);
+        }
+        return $result;
     }
 
     /**
      * Convert the vector to a string representation.
-     *
-     * By default, this will format the Vector as a column vector.
-     * If you want to format the column as a row vector, you can use:
-     * @example echo $vec->toMatrix(true);
-     * OR
-     * @example echo $vec->format(true);
+     * This format uses ordered tuple notation and mathematical angle brackets.
      *
      * @return string String representation of the Vector.
      */
+    #[Override] // Stringable
     public function __toString(): string
     {
-        return $this->format();
+        return '⟨' . implode(', ', $this->data) . '⟩';
     }
 
     #endregion
 
-    #region Element access
+    #region Inspection methods
 
     /**
      * Get a vector element.
@@ -194,6 +244,10 @@ final class Vector implements Stringable, ArrayAccess
 
         return $this->data[$index];
     }
+
+    #endregion
+
+    #region Modification methods
 
     /**
      * Set a vector element.
@@ -220,22 +274,21 @@ final class Vector implements Stringable, ArrayAccess
     #region Comparison methods
 
     /**
-     * Check if this vector equals another.
+     * Check if this vector equals another value, which may be Vector, an array of numbers, or a single-column
+     * Matrix; i.e. anything that can be accepted by toVector().
      *
      * Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
-     * Returns false for non-Vector values.
      *
      * @param mixed $other The value to compare with.
      * @return bool True if the vectors are the same size and all elements are equal.
+     * @throws ConversionException If the value cannot be converted to a Vector.
      */
     /** @disregard P1128 */
-    #[Override]
+    #[Override] // Equatable
     public function equal(mixed $other): bool
     {
-        // Check both are Vector objects.
-        if (!$other instanceof self) {
-            return false;
-        }
+        // Get other value as a Vector.
+        $other = self::toVector($other);
 
         // Check sizes are equal.
         if ($this->size !== $other->size) {
@@ -253,7 +306,8 @@ final class Vector implements Stringable, ArrayAccess
     }
 
     /**
-     * Check if this vector approximately equals another, within given tolerances.
+     * Check if this vector approximately equals another value, within given tolerances. The other value may be
+     * Vector, an array of numbers, or a single-column Matrix; i.e. anything that can be accepted by toVector().
      *
      * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks
      * absolute tolerance first, then relative tolerance.
@@ -262,19 +316,18 @@ final class Vector implements Stringable, ArrayAccess
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
      * @return bool True if the vectors are the same size and all elements are approximately equal.
+     * @throws ConversionException If the value cannot be converted to a Vector.
      * @throws DomainException If either tolerance is negative.
      * @see Floats::approxEqual()
      */
-    #[Override]
+    #[Override] // ApproxEquatable
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        // Check both are Vector objects.
-        if (!$other instanceof self) {
-            return false;
-        }
+        // Get other value as a Vector.
+        $other = self::toVector($other);
 
         // Check sizes are equal.
         if ($this->size !== $other->size) {
@@ -395,6 +448,29 @@ final class Vector implements Stringable, ArrayAccess
         return $result;
     }
 
+    /**
+     * Calculate the Hadamard product (element-wise product) of this vector with another.
+     *
+     * @param self $other Vector to multiply element-wise with.
+     * @return self New vector representing the Hadamard product.
+     * @throws LengthException If vectors have different sizes.
+     */
+    public function hadamard(self $other): self
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException('Cannot compute Hadamard product of vectors with different sizes.');
+        }
+
+        // Multiply the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] * $other->data[$i]);
+        }
+
+        return $result;
+    }
+
     #endregion
 
     #region Linear algebra methods
@@ -460,6 +536,41 @@ final class Vector implements Stringable, ArrayAccess
 
     #endregion
 
+    #region Aggregation methods
+
+    /**
+     * Calculate the sum of all elements in the vector.
+     *
+     * @return float The sum. 0.0 for an empty vector (the additive identity).
+     */
+    public function sum(): float
+    {
+        return array_sum($this->data);
+    }
+
+    /**
+     * Calculate the product of all elements in the vector.
+     *
+     * @return float The product. 1.0 for an empty vector (the multiplicative identity).
+     */
+    public function prod(): float
+    {
+        return array_product($this->data);
+    }
+
+    /**
+     * Get the number of elements in the vector.
+     *
+     * @return int
+     */
+    #[Override] // Countable
+    public function count(): int
+    {
+        return $this->size;
+    }
+
+    #endregion
+
     #region ArrayAccess methods
 
     /**
@@ -468,6 +579,7 @@ final class Vector implements Stringable, ArrayAccess
      * @param mixed $offset Index to check.
      * @return bool
      */
+    #[Override] // ArrayAccess
     public function offsetExists(mixed $offset): bool
     {
         return is_int($offset) && $offset >= 0 && $offset < $this->size;
@@ -480,6 +592,7 @@ final class Vector implements Stringable, ArrayAccess
      * @return float
      * @throws OutOfRangeException If the offset is invalid.
      */
+    #[Override] // ArrayAccess
     public function offsetGet(mixed $offset): float
     {
         // Check offset exists.
@@ -499,6 +612,7 @@ final class Vector implements Stringable, ArrayAccess
      * @throws OutOfRangeException If offset is outside valid range.
      * @throws InvalidArgumentException If value is not a number.
      */
+    #[Override] // ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
         // Check offset exists.
@@ -521,6 +635,7 @@ final class Vector implements Stringable, ArrayAccess
      * @param mixed $offset Index.
      * @throws LogicException Always throws.
      */
+    #[Override] // ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         throw new LogicException('Cannot unset elements in a vector.');

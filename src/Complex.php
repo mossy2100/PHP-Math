@@ -7,21 +7,20 @@ namespace OceanMoon\Math;
 use ArrayAccess;
 use DivisionByZeroError;
 use DomainException;
-use Exception;
-use InvalidArgumentException;
 use JsonSerializable;
-use LengthException;
 use LogicException;
-use OceanMoon\Core\Exceptions\FormatException;
+use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
-use OceanMoon\Core\Types;
 use OutOfRangeException;
 use Override;
 use stdClass;
 use Stringable;
+use Throwable;
+
+use const OceanMoon\Core\M_TAU;
 
 /**
  * Encapsulates a complex number and provides a number of useful methods.
@@ -33,6 +32,8 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     use ApproxEquatable;
 
     #region Properties
+
+    #region Public properties (readonly)
 
     /**
      * The real part of the complex number.
@@ -50,7 +51,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
     #endregion
 
-    #region Property hooks
+    #region Computed properties (public, readonly)
 
     /**
      * The magnitude (a.k.a. absolute value or modulus) of this complex number.
@@ -95,6 +96,8 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
     #endregion
 
+    #endregion
+
     #region Constructor
 
     /**
@@ -107,8 +110,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     public function __construct(float $real = 0, float $imag = 0)
     {
         // Check for non-finite values.
-        if (!is_finite($real) || !is_finite($imag)) {
-            throw new DomainException('Cannot create a complex number from non-finite values.');
+        if (!is_finite($real)) {
+            throw new DomainException('Cannot create Complex. Real part must be finite.');
+        }
+        if (!is_finite($imag)) {
+            throw new DomainException('Cannot create Complex. Imaginary part must be finite.');
         }
 
         // Set the properties.
@@ -121,7 +127,38 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     #region Factory methods
 
     /**
-     * Create a Complex from a 2-element array.
+     * Validate a candidate real/imaginary pair and construct a Complex from them.
+     *
+     * Shared by fromArray(), fromObject(), and fromString(). Each extracts $real and $imag from its own input
+     * format, then delegates here for the validation and construction common to all three, so that a non-numeric or
+     * non-finite value is reported as a ConversionException referencing the original input, rather than letting the
+     * constructor's own DomainException leak through unwrapped.
+     *
+     * @param mixed $orig The original value being converted (for the exception message only).
+     * @param mixed $real The candidate real part.
+     * @param mixed $imag The candidate imaginary part.
+     * @return self The equivalent Complex.
+     * @throws ConversionException If $real or $imag is not a finite number.
+     */
+    private static function make(mixed $orig, mixed $real, mixed $imag): self
+    {
+        // Check values are numbers.
+        if (!Numbers::isNumber($real)) {
+            throw new ConversionException($orig, self::class, 'Real part must be a number (int or float).');
+        }
+        if (!Numbers::isNumber($imag)) {
+            throw new ConversionException($orig, self::class, 'Imaginary part must be a number (int or float).');
+        }
+
+        try {
+            return new self($real, $imag);
+        } catch (Throwable $e) {
+            ConversionException::rethrow($orig, self::class, $e);
+        }
+    }
+
+    /**
+     * Create a Complex from an array.
      *
      * The array must contain two numeric elements that will be interpreted as the real and imaginary parts.
      *
@@ -136,50 +173,37 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param array<array-key, mixed> $arr The array to convert.
      * @return self The equivalent Complex.
-     * @throws LengthException If the array is a list and doesn't have two elements.
-     * @throws DomainException If the array does not have the right structure.
+     * @throws ConversionException If the array could not be converted to a Complex.
      */
     public static function fromArray(array $arr): self
     {
-        // Check for list: [real, imaginary]
+        // Handle empty input.
+        if (empty($arr)) {
+            throw new ConversionException($arr, self::class, 'Array cannot be empty.');
+        }
+
         if (array_is_list($arr)) {
-            // Check for exactly two elements.
+            // List array: [real, imaginary]. Check for exactly two elements.
             if (count($arr) !== 2) {
-                throw new LengthException('Cannot convert array to Complex. Array must contain exactly two elements.');
+                throw new ConversionException($arr, self::class, 'List array must contain exactly two elements.');
             }
 
-            // Check both elements are numeric (int or float).
-            if (!Numbers::isNumber($arr[0])) {
-                throw new DomainException(
-                    'Cannot convert array to Complex. Element at index 0 must be numeric (int or float).'
-                );
+            $real = $arr[0];
+            $imag = $arr[1];
+        } else {
+            // Associative array: ['real' => ..., 'imaginary' => ...]. Check for properties.
+            if (!array_key_exists('real', $arr)) {
+                throw new ConversionException($arr, self::class, 'Associative array must include key "real".');
             }
-            if (!Numbers::isNumber($arr[1])) {
-                throw new DomainException(
-                    'Cannot convert array to Complex. Element at index 1 must be numeric (int or float).'
-                );
+            if (!array_key_exists('imaginary', $arr)) {
+                throw new ConversionException($arr, self::class, 'Associative array must include key "imaginary".');
             }
-            return new self($arr[0], $arr[1]);
+
+            $real = $arr['real'];
+            $imag = $arr['imaginary'];
         }
 
-        // Associative array: ['real' => ..., 'imaginary' => ...]
-        if (!array_key_exists('real', $arr)) {
-            throw new DomainException('Cannot convert array to Complex. Array is missing key "real".');
-        }
-        if (!array_key_exists('imaginary', $arr)) {
-            throw new DomainException('Cannot convert array to Complex. Array is missing key "imaginary".');
-        }
-        if (!Numbers::isNumber($arr['real'])) {
-            throw new DomainException(
-                'Cannot convert array to Complex. Value for key "real" must be numeric (int or float).'
-            );
-        }
-        if (!Numbers::isNumber($arr['imaginary'])) {
-            throw new DomainException(
-                'Cannot convert array to Complex. Value for key "imaginary" must be numeric (int or float).'
-            );
-        }
-        return new self($arr['real'], $arr['imaginary']);
+        return self::make($arr, $real, $imag);
     }
 
     /**
@@ -187,28 +211,73 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param object $obj The object to convert.
      * @return self The equivalent Complex.
-     * @throws DomainException If the object does not have the required numeric properties.
+     * @throws ConversionException If the object could not be converted to a Complex.
      */
     public static function fromObject(object $obj): self
     {
+        // Check properties exist.
         if (!property_exists($obj, 'real')) {
-            throw new DomainException('Cannot convert object to Complex. Object is missing property "real".');
+            throw new ConversionException($obj, self::class, 'Object must have property "real".');
         }
         if (!property_exists($obj, 'imaginary')) {
-            throw new DomainException('Cannot convert object to Complex. Object is missing property "imaginary".');
-        }
-        if (!Numbers::isNumber($obj->real)) {
-            throw new DomainException(
-                'Cannot convert object to Complex. Value for property "real" must be numeric (int or float).'
-            );
-        }
-        if (!Numbers::isNumber($obj->imaginary)) {
-            throw new DomainException(
-                'Cannot convert object to Complex. Value for property "imaginary" must be numeric (int or float).'
-            );
+            throw new ConversionException($obj, self::class, 'Object must have property "imaginary".');
         }
 
-        return new self($obj->real, $obj->imaginary);
+        return self::make($obj, $obj->real, $obj->imaginary);
+    }
+
+    /**
+     * Create a Complex from a string.
+     *
+     * Supports various formats:
+     * - Real numbers: "5", "-3.14", "0"
+     * - Pure imaginary: "i", "-i", "3i", "-2.5j", "I", "J"
+     * - Complex: "3+4i", "5-2j", "-1+i", "2.5-3.7I"
+     * - Spaces allowed: "3 + 4i", "5 - 2j"
+     * - Either order: "4i+3", "-2j+5"
+     *
+     * @param string $str The string to convert.
+     * @return self The equivalent Complex.
+     * @throws ConversionException If the string could not be converted to a Complex.
+     */
+    public static function fromString(string $str): self
+    {
+        // Trim whitespace.
+        $str = trim($str);
+
+        // Handle empty string
+        if ($str === '') {
+            throw new ConversionException($str, self::class, 'String must not be empty.');
+        }
+
+        $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
+        if (preg_match("/^([+-]?)($rxNum)$/", $str, $matches)) {
+            // Pattern: ±a (real only)
+            [, $realSign, $realVal] = $matches;
+            $imagSign = '';
+            $imagVal = 0;
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
+            // Pattern: ±bi (imaginary only)
+            [, $imagSign, $imagVal] = $matches;
+            $realSign = '';
+            $realVal = 0;
+        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)[ijIJ]\$/", $str, $matches)) {
+            // Pattern: ±a ± bi (real + imag)
+            [, $realSign, $realVal, $imagSign, $imagVal] = $matches;
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
+            // Pattern: ±bi ± a (imag + real)
+            [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
+        } else {
+            throw new ConversionException($str, self::class, 'Invalid format.');
+        }
+
+        // Get the real part.
+        $real = ($realSign === '-' ? -1 : 1) * (float) $realVal;
+
+        // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).
+        $imag = ($imagSign === '-' ? -1 : 1) * ($imagVal === '' ? 1.0 : (float) $imagVal);
+
+        return self::make($str, $real, $imag);
     }
 
     /**
@@ -216,14 +285,22 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param float $mag The magnitude (distance from origin).
      * @param float $phase The phase angle in radians.
-     * @return self A new complex number.
+     * @return self The equivalent Complex.
      * @throws DomainException If the magnitude is not positive.
      */
     public static function fromPolar(float $mag, float $phase): self
     {
+        // Check for non-finite values.
+        if (!is_finite($mag)) {
+            throw new DomainException('Cannot create Complex. Magnitude must be finite.');
+        }
+        if (!is_finite($phase)) {
+            throw new DomainException('Cannot create Complex. Phase must be finite.');
+        }
+
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException("Cannot create complex number with negative magnitude: $mag.");
+            throw new DomainException("Cannot create Complex. Magnitude must not be negative: $mag.");
         }
 
         // Get the phase as radians in the normal range (-pi, pi]
@@ -240,82 +317,6 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Parse a string representation of a complex number.
-     *
-     * Supports various formats:
-     * - Real numbers: "5", "-3.14", "0"
-     * - Pure imaginary: "i", "-i", "3i", "-2.5j", "I", "J"
-     * - Complex: "3+4i", "5-2j", "-1+i", "2.5-3.7I"
-     * - Spaces allowed: "3 + 4i", "5 - 2j"
-     * - Either order: "4i+3", "-2j+5"
-     *
-     * @param string $str The string to parse
-     * @return self The parsed complex number
-     * @throws FormatException If the string cannot be parsed.
-     */
-    public static function parse(string $str): self
-    {
-        // Remove all whitespace.
-        $str = preg_replace('/\s+/', '', $str);
-        // preg_replace() can return null on error, but we know the pattern is valid.
-        assert(is_string($str));
-
-        // Handle empty string
-        if ($str === '') {
-            throw new FormatException('Cannot parse empty string as complex number.');
-        }
-
-        // Handle pure real numbers (no imaginary part).
-        if (is_numeric($str)) {
-            return new self((float) $str, 0.0);
-        }
-
-        // Handle pure imaginary numbers with or without a coefficient: i, 3i, -2.5j, etc.
-        $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
-        if (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
-            // Handle cases where coefficient is omitted (like i or -i).
-            $imag = $matches[2] === '' ? 1.0 : (float) $matches[2];
-
-            // Apply signs to get final value.
-            if ($matches[1] === '-') {
-                $imag = -$imag;
-            }
-
-            return new self(0.0, $imag);
-        }
-
-        // Handle complex numbers with both real and imaginary parts.
-        // Pattern real±imag.
-        $rxRealFirst = "/^([+-]?)($rxNum)([+-])((?:$rxNum)?)[ijIJ]\$/";
-        // Pattern imag±real.
-        $rxImagFirst = "/^([+-]?)((?:$rxNum)?)[ijIJ]([+-])($rxNum)\$/";
-
-        if (preg_match($rxRealFirst, $str, $matches)) {
-            [, $realSign, $realVal, $imagSign, $imagVal] = $matches;
-        } elseif (preg_match($rxImagFirst, $str, $matches)) {
-            [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
-        } else {
-            throw new FormatException("Cannot parse '$str' as complex number.");
-        }
-
-        // Get the imaginary part. Handle cases where the imaginary coefficient is omitted (like +i or -i).
-        $imag = $imagVal === '' ? 1.0 : (float) $imagVal;
-
-        // Get the real part.
-        $real = (float) $realVal;
-
-        // Apply signs to get final values.
-        if ($imagSign === '-') {
-            $imag = -$imag;
-        }
-        if ($realSign === '-') {
-            $real = -$real;
-        }
-
-        return new self($real, $imag);
-    }
-
-    /**
      * Convert the input value to a Complex, if not already, and if possible.
      *
      * NB:
@@ -326,9 +327,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param mixed $value The value to convert.
      * @return self The equivalent Complex.
-     * @throws InvalidArgumentException If the value has a type that cannot be converted to a Complex.
-     * @throws DomainException If the value does not have the required structure for conversion.
-     * @throws FormatException If the value is a string that cannot be parsed as a Complex.
+     * @throws ConversionException If the value could not be converted to a Complex.
      */
     public static function toComplex(mixed $value): self
     {
@@ -339,12 +338,16 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
         // Check for number (int or float).
         if (Numbers::isNumber($value)) {
-            return new self($value);
+            try {
+                return new self($value);
+            } catch (DomainException) {
+                throw new ConversionException($value, self::class, 'Value must be a finite number.');
+            }
         }
 
-        // Check for string. This will throw a FormatException if the string is not a valid complex number.
+        // Check for string and convert to Complex if possible.
         if (is_string($value)) {
-            return self::parse($value);
+            return self::fromString($value);
         }
 
         // Check for array and convert to Complex if possible.
@@ -358,9 +361,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         }
 
         // The value has a type that cannot be converted to Complex.
-        throw new InvalidArgumentException(
-            'Cannot convert value to Complex. Value must be Complex, int, float, string, array, or object.'
-        );
+        throw new ConversionException($value, self::class);
     }
 
     #endregion
@@ -393,7 +394,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @return string String representation in the form "a", "bi", "a + bi", or "a - bi".
      */
-    #[Override]
+    #[Override] // Stringable
     public function __toString(): string
     {
         // Handle case for 0 imaginary part.
@@ -436,26 +437,13 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     #region Comparison methods
 
     /**
-     * Check if this Complex is identical to another, i.e. same type (Complex) and exactly equal values for the real and
-     * imaginary parts.
-     *
-     * We're not using a `self` type hint on the parameter, as that would cause the method to throw a TypeError if a
-     * Complex isn't passed, whereas we want the method to return false in this case.
-     *
-     * @param mixed $other The value to compare with.
-     * @return bool True if the values are identical.
+     * identical() is inherited from the Equatable trait (via ApproxEquatable): true only if $other
+     * is the same type (checked via Types::same(), not instanceof, so a subclass wouldn't count --
+     * though Complex is final, so that distinction is moot here) and equal() to it. Since equal()
+     * below already does an exact real/imaginary comparison as its baseline case (before any
+     * broader type conversion via toComplex()), the trait default is exactly equivalent to a
+     * hand-written version and needs no override.
      */
-    public function identical(mixed $other): bool
-    {
-        // We use Types::same() instead of instanceof because instanceof will also return true for subclasses.
-        if (!Types::same($this, $other)) {
-            return false;
-        }
-        assert($other instanceof self); // for phpstan
-
-        // Verify the real and imaginary parts are exactly equal.
-        return $this->real === $other->real && $this->imaginary === $other->imaginary;
-    }
 
     /**
      * Check if this Complex is equal to another value, which may be Complex, int, float, string, array, or object;
@@ -463,20 +451,17 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param mixed $other The value to compare with.
      * @return bool True if the numbers are equal.
+     * @throws ConversionException If the value cannot be converted to a Complex.
      */
     /** @disregard P1128 */
-    #[Override]
+    #[Override] // Equatable
     public function equal(mixed $other): bool
     {
-        // Convert the argument to a Complex if possible.
-        try {
-            $other = self::toComplex($other);
-        } catch (Exception) {
-            return false;
-        }
+        // Get other value as a Complex.
+        $other = self::toComplex($other);
 
-        // Check the values are identical.
-        return $this->identical($other);
+        // Check the real and imaginary parts are exactly equal.
+        return $this->real === $other->real && $this->imaginary === $other->imaginary;
     }
 
     /**
@@ -492,19 +477,16 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
      * @return bool True if the numbers are equal within the given tolerances, otherwise false.
+     * @throws ConversionException If the value cannot be converted to a Complex.
      */
-    #[Override]
+    #[Override] // ApproxEquatable
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        // Convert the argument to a Complex if possible.
-        try {
-            $other = self::toComplex($other);
-        } catch (Exception) {
-            return false;
-        }
+        // Get other value as a Complex.
+        $other = self::toComplex($other);
 
         // Compare real and imaginary parts.
         return Floats::approxEqual($this->real, $other->real, $relTol, $absTol) &&
@@ -554,10 +536,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $other The real or complex number to add.
      * @return self A new complex number representing the sum.
+     * @throws ConversionException If $other is a non-finite float (±INF or NAN).
      */
     public function add(self|float $other): self
     {
-        // Make sure $other is Complex.
+        // Get other value as a Complex.
         $other = self::toComplex($other);
 
         // Do the addition.
@@ -569,10 +552,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $other The real or complex number to subtract.
      * @return self A new complex number representing the difference.
+     * @throws ConversionException If $other is a non-finite float (±INF or NAN).
      */
     public function sub(self|float $other): self
     {
-        // Make sure $other is Complex.
+        // Get other value as a Complex.
         $other = self::toComplex($other);
 
         // Do the subtraction.
@@ -585,10 +569,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $other The real or complex number to multiply by.
      * @return self A new complex number representing the product.
+     * @throws ConversionException If $other is a non-finite float (±INF or NAN).
      */
     public function mul(self|float $other): self
     {
-        // Make sure $other is Complex.
+        // Get other value as a Complex.
         $other = self::toComplex($other);
 
         // Do the multiplication.
@@ -605,11 +590,12 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $other The real or complex number to divide by.
      * @return self A new complex number representing the quotient.
+     * @throws ConversionException If $other is a non-finite float (±INF or NAN).
      * @throws DivisionByZeroError If the divisor is zero.
      */
     public function div(self|float $other): self
     {
-        // Make sure $other is Complex.
+        // Get other value as a Complex.
         $other = self::toComplex($other);
 
         // Check for division by zero.
@@ -646,11 +632,12 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $other The real or complex number to raise this complex number to.
      * @return self A new complex number representing the result.
+     * @throws ConversionException If $other is a non-finite float (±INF or NAN).
      * @throws DomainException If attempting 0 raised to a negative or complex power.
      */
     public function pow(self|float $other): self
     {
-        // Get $other as a Complex.
+        // Get other value as a Complex.
         $other = self::toComplex($other);
 
         // Handle exponent = 0. Any number to power 0 is 1.
@@ -727,7 +714,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         // Calculate all n roots.
         $roots = [];
         $theta = $this->phase / $n;
-        $delta = Floats::TAU / $n;
+        $delta = M_TAU / $n;
         for ($k = 0; $k < $n; $k++) {
             $rootPhase = $theta + $k * $delta;
             $roots[] = self::fromPolar($rootMag, $rootPhase);
@@ -799,7 +786,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
             return new self(-1);
         }
         // e^iτ = 1
-        if ($this->equal(new self(0, Floats::TAU))) {
+        if ($this->equal(new self(0, M_TAU))) {
             return new self(1);
         }
 
@@ -855,11 +842,12 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param self|float $base The base for the logarithm.
      * @return self A new complex number representing log_b(z).
+     * @throws ConversionException If $base is a non-finite float (±INF or NAN).
      * @throws DomainException If the base is 0, 1, or if this number is 0.
      */
     public function log(self|float $base): self
     {
-        // Make sure $base is Complex.
+        // Get base as a Complex.
         $base = self::toComplex($base);
 
         // Check for invalid base values.
@@ -1305,7 +1293,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * @param mixed $offset The offset to check.
      * @return bool True if the offset exists, false otherwise.
      */
-    #[Override]
+    #[Override] // ArrayAccess
     public function offsetExists(mixed $offset): bool
     {
         return $offset === 0 || $offset === 1;
@@ -1318,7 +1306,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * @return float The value at the given offset.
      * @throws OutOfRangeException If the offset is invalid.
      */
-    #[Override]
+    #[Override] // ArrayAccess
     public function offsetGet(mixed $offset): float
     {
         // Guard.
@@ -1338,7 +1326,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * @return void
      * @throws LogicException If called.
      */
-    #[Override]
+    #[Override] // ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
         throw new LogicException('Complex values are immutable.');
@@ -1351,7 +1339,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * @return void
      * @throws LogicException If called.
      */
-    #[Override]
+    #[Override] // ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         throw new LogicException('Complex values are immutable.');

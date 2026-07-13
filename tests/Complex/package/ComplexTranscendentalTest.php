@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
-use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+
+use const OceanMoon\Core\M_TAU;
 
 #[CoversClass(Complex::class)]
 class ComplexTranscendentalTest extends TestCase
@@ -183,7 +184,7 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
 
         // e^τi = 1
-        $result5 = new Complex(0, Floats::TAU)->exp();
+        $result5 = new Complex(0, M_TAU)->exp();
         $this->assertEqualsWithDelta(1, $result5->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
     }

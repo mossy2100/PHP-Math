@@ -8,7 +8,7 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-use const OceanMoon\Math\I;
+use const OceanMoon\Math\M_I;
 
 #[CoversClass(Complex::class)]
 class ComplexPropertiesTest extends TestCase
@@ -224,7 +224,7 @@ class ComplexPropertiesTest extends TestCase
      */
     public function testImaginaryUnitProperties(): void
     {
-        $z = I;
+        $z = M_I;
 
         // Verify real and imaginary parts
         $this->assertSame(0.0, $z->real);

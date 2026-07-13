@@ -4,28 +4,22 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "96beb93c929f6e276420dcbc0b5974c9",
+    "content-hash": "b85dda1b123f21256266740c1e3aa2d9",
     "packages": [
         {
             "name": "oceanmoon/core",
-            "version": "v2.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mossy2100/PHP-Core.git",
-                "reference": "52e7bb76059ba3529edf4dbf3a768623b0c49b74"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mossy2100/PHP-Core/zipball/52e7bb76059ba3529edf4dbf3a768623b0c49b74",
-                "reference": "52e7bb76059ba3529edf4dbf3a768623b0c49b74",
-                "shasum": ""
+                "type": "path",
+                "url": "../Core",
+                "reference": "138ba8bdb95aebe611816ebb571fbb9faa3371f3"
             },
             "require": {
                 "php": "^8.4"
             },
             "require-dev": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "oceanmoon/coding-standard": "^2.0",
+                "oceanmoon/coding-standard": "dev-main as 2.99.0",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
                 "squizlabs/php_codesniffer": "^4.0"
@@ -35,14 +29,45 @@
                 "phpcodesniffer-search-depth": 3
             },
             "autoload": {
-                "files": [
-                    "src/functions.php"
-                ],
                 "psr-4": {
                     "OceanMoon\\Core\\": "src/"
+                },
+                "files": [
+                    "src/globals.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "OceanMoon\\Core\\Tests\\": "tests/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "fix": [
+                    "vendor/bin/phpcbf -vp"
+                ],
+                "check": [
+                    "vendor/bin/phpcs -s"
+                ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
+                ],
+                "analyze": [
+                    "scripts/analyze"
+                ],
+                "test": [
+                    "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result"
+                ],
+                "coverage": [
+                    "php scripts/coverage-check.php"
+                ],
+                "quality": [
+                    "@fix",
+                    "@check",
+                    "@analyze",
+                    "@test",
+                    "@coverage"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -73,7 +98,9 @@
                 "issues": "https://github.com/mossy2100/PHP-Core/issues",
                 "source": "https://github.com/mossy2100/PHP-Core"
             },
-            "time": "2026-06-17T23:56:40+00:00"
+            "transport-options": {
+                "relative": true
+            }
         }
     ],
     "packages-dev": [
@@ -292,17 +319,11 @@
         },
         {
             "name": "oceanmoon/coding-standard",
-            "version": "v2.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mossy2100/PHP-Coding-Standard.git",
-                "reference": "553d0eb786cb3f2896cf5c964251253b2b8eb9ad"
-            },
+            "version": "dev-main",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mossy2100/PHP-Coding-Standard/zipball/553d0eb786cb3f2896cf5c964251253b2b8eb9ad",
-                "reference": "553d0eb786cb3f2896cf5c964251253b2b8eb9ad",
-                "shasum": ""
+                "type": "path",
+                "url": "../CodingStandard",
+                "reference": "553d0eb786cb3f2896cf5c964251253b2b8eb9ad"
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -318,7 +339,29 @@
             "extra": {
                 "phpcodesniffer-search-depth": 3
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "fix": [
+                    "vendor/bin/phpcbf -vp"
+                ],
+                "check": [
+                    "vendor/bin/phpcs -s"
+                ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
+                ],
+                "analyze": [
+                    "scripts/analyze"
+                ],
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "quality": [
+                    "@fix",
+                    "@check",
+                    "@analyze",
+                    "@test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -343,7 +386,9 @@
                 "issues": "https://github.com/mossy2100/PHP-Coding-Standard/issues",
                 "source": "https://github.com/mossy2100/PHP-Coding-Standard"
             },
-            "time": "2026-07-07T13:23:23+00:00"
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "phar-io/manifest",
@@ -465,16 +510,16 @@
         },
         {
             "name": "phpstan/phpdoc-parser",
-            "version": "2.3.2",
+            "version": "2.3.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpdoc-parser.git",
-                "reference": "a004701b11273a26cd7955a61d67a7f1e525a45a"
+                "reference": "fb19eedd2bb67ff8cf7a5502ad329e701d6398a3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/a004701b11273a26cd7955a61d67a7f1e525a45a",
-                "reference": "a004701b11273a26cd7955a61d67a7f1e525a45a",
+                "url": "https://api.github.com/repos/phpstan/phpdoc-parser/zipball/fb19eedd2bb67ff8cf7a5502ad329e701d6398a3",
+                "reference": "fb19eedd2bb67ff8cf7a5502ad329e701d6398a3",
                 "shasum": ""
             },
             "require": {
@@ -506,9 +551,9 @@
             "description": "PHPDoc parser with support for nullable, intersection and generic types",
             "support": {
                 "issues": "https://github.com/phpstan/phpdoc-parser/issues",
-                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.2"
+                "source": "https://github.com/phpstan/phpdoc-parser/tree/2.3.3"
             },
-            "time": "2026-01-25T14:56:51+00:00"
+            "time": "2026-07-08T07:01:06+00:00"
         },
         {
             "name": "phpstan/phpstan",
@@ -2165,9 +2210,25 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "oceanmoon/coding-standard",
+            "version": "dev-main",
+            "alias": "2.99.0",
+            "alias_normalized": "2.99.0.0"
+        },
+        {
+            "package": "oceanmoon/core",
+            "version": "dev-main",
+            "alias": "2.99.0",
+            "alias_normalized": "2.99.0.0"
+        }
+    ],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "oceanmoon/coding-standard": 20,
+        "oceanmoon/core": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {
