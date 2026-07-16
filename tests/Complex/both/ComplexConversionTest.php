@@ -7,7 +7,6 @@ namespace OceanMoon\Math\Tests\Complex;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 #[CoversClass(Complex::class)]
 class ComplexConversionTest extends TestCase
@@ -124,32 +123,5 @@ class ComplexConversionTest extends TestCase
         // The imaginary part is ~5.55e-17 — still non-zero, so isReal() returns false.
         $this->assertStringStartsWith('1 + ', (string) $z);
         $this->assertStringEndsWith('i', (string) $z);
-    }
-
-    /**
-     * Test toArray.
-     */
-    public function testToArray(): void
-    {
-        $z = new Complex(3, 4);
-        $array = $z->toArray();
-
-        $this->assertIsArray($array); // @phpstan-ignore method.alreadyNarrowedType
-        $this->assertCount(2, $array);
-        $this->assertSame(3.0, $array[0]);
-        $this->assertSame(4.0, $array[1]);
-    }
-
-    /**
-     * Test toObject.
-     */
-    public function testToObject(): void
-    {
-        $z = new Complex(3, 4);
-        $obj = $z->toObject();
-
-        $this->assertInstanceOf(stdClass::class, $obj);
-        $this->assertSame(3.0, $obj->real);
-        $this->assertSame(4.0, $obj->imaginary);
     }
 }

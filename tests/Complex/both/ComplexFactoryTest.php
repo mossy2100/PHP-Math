@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use DomainException;
 use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -25,188 +26,6 @@ class ComplexFactoryTest extends TestCase
     {
         $this->assertSame(0.0, M_I->real);
         $this->assertSame(1.0, M_I->imaginary);
-    }
-
-    #endregion
-
-    #region fromArray tests
-
-    /**
-     * Test fromArray() with a valid 2-element list.
-     */
-    public function testFromArray(): void
-    {
-        $result = Complex::fromArray([3, 4]);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromArray() with the result of a cast.
-     */
-    public function testFromArrayWithCast(): void
-    {
-        $z = new Complex(3, 4);
-        $a = (array) $z;
-        $result = Complex::fromArray($a);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromArray() with a list containing the wrong number of elements throws.
-     */
-    public function testFromArrayInvalidCountThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray([1]);
-    }
-
-    /**
-     * Test fromArray() with a list containing non-numeric elements throws.
-     */
-    public function testFromArrayNonNumericThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray(['a', 'b']);
-    }
-
-    /**
-     * Test fromArray() with a valid associative array.
-     */
-    public function testFromArrayAssociative(): void
-    {
-        // Key order shouldn't matter.
-        $result = Complex::fromArray([
-            'imaginary' => 4,
-            'real'      => 3,
-        ]);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromArray() supports the result of (array) $complex, ignoring extra keys.
-     */
-    public function testFromArrayAssociativeIgnoresExtraKeys(): void
-    {
-        $result = Complex::fromArray([
-            'real'      => 3,
-            'imaginary' => 4,
-            'magnitude' => 5,
-            'phase'     => 0.9,
-        ]);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromArray() with an associative array missing the "real" key throws.
-     */
-    public function testFromArrayAssociativeMissingRealKeyThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray([
-            'imaginary' => 4,
-        ]);
-    }
-
-    /**
-     * Test fromArray() with an associative array missing the "imaginary" key throws.
-     */
-    public function testFromArrayAssociativeMissingImaginaryKeyThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray([
-            'real' => 3,
-        ]);
-    }
-
-    /**
-     * Test fromArray() with an associative array containing a non-numeric "real" value throws.
-     */
-    public function testFromArrayAssociativeNonNumericRealThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray([
-            'real'      => 'a',
-            'imaginary' => 4,
-        ]);
-    }
-
-    /**
-     * Test fromArray() with an associative array containing a non-numeric "imaginary" value throws.
-     */
-    public function testFromArrayAssociativeNonNumericImaginaryThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::fromArray([
-            'real'      => 3,
-            'imaginary' => 'b',
-        ]);
-    }
-
-    #endregion
-
-    #region fromObject tests
-
-    /**
-     * Test fromObject() with a valid object.
-     */
-    public function testFromObject(): void
-    {
-        $obj = new stdClass();
-        $obj->real = 3;
-        $obj->imaginary = 4;
-        $result = Complex::fromObject($obj);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test fromObject() with a missing "real" property throws.
-     */
-    public function testFromObjectMissingRealPropertyThrows(): void
-    {
-        $obj = new stdClass();
-        $obj->imaginary = 4;
-        $this->expectException(ConversionException::class);
-        Complex::fromObject($obj);
-    }
-
-    /**
-     * Test fromObject() with a missing "imaginary" property throws.
-     */
-    public function testFromObjectMissingImaginaryPropertyThrows(): void
-    {
-        $obj = new stdClass();
-        $obj->real = 3;
-        $this->expectException(ConversionException::class);
-        Complex::fromObject($obj);
-    }
-
-    /**
-     * Test fromObject() with a non-numeric "real" property throws.
-     */
-    public function testFromObjectNonNumericRealPropertyThrows(): void
-    {
-        $obj = new stdClass();
-        $obj->real = [];
-        $obj->imaginary = 4;
-        $this->expectException(ConversionException::class);
-        Complex::fromObject($obj);
-    }
-
-    /**
-     * Test fromObject() with a non-numeric "imaginary" property throws.
-     */
-    public function testFromObjectNonNumericImaginaryPropertyThrows(): void
-    {
-        $obj = new stdClass();
-        $obj->real = 3;
-        $obj->imaginary = [];
-        $this->expectException(ConversionException::class);
-        Complex::fromObject($obj);
     }
 
     #endregion
@@ -371,12 +190,10 @@ class ComplexFactoryTest extends TestCase
 
     /**
      * Test that a numeric string parsing to a non-finite float (overflow to INF) throws.
-     * The string itself parses fine; it's make()'s finiteness check on the resulting float
-     * that fails, so this exercises the fromString() -> make() rethrow path.
      */
     public function testFromStringOverflowThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Complex::fromString('1e400');
     }
 

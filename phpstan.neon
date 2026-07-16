@@ -3,5 +3,5 @@ parameters:
         - src
         - tests
     excludePaths:
-        - tests/*/extension
+        - tests/*/extension/*
     treatPhpDocTypesAsCertain: false

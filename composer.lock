@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "b85dda1b123f21256266740c1e3aa2d9",
+    "content-hash": "17a8ef2ce3e9ca2d2a6ef7cd970f9c06",
     "packages": [
         {
             "name": "oceanmoon/core",
@@ -33,7 +33,9 @@
                     "OceanMoon\\Core\\": "src/"
                 },
                 "files": [
-                    "src/globals.php"
+                    "src/Globals/constants.php",
+                    "src/Globals/strings.php",
+                    "src/Globals/numbers.php"
                 ]
             },
             "autoload-dev": {
@@ -59,6 +61,9 @@
                 ],
                 "coverage": [
                     "php scripts/coverage-check.php"
+                ],
+                "coverage-report": [
+                    "open build/coverage/index.html"
                 ],
                 "quality": [
                     "@fix",
@@ -2216,20 +2221,14 @@
             "version": "dev-main",
             "alias": "2.99.0",
             "alias_normalized": "2.99.0.0"
-        },
-        {
-            "package": "oceanmoon/core",
-            "version": "dev-main",
-            "alias": "2.99.0",
-            "alias_normalized": "2.99.0.0"
         }
     ],
-    "minimum-stability": "stable",
+    "minimum-stability": "dev",
     "stability-flags": {
         "oceanmoon/coding-standard": 20,
         "oceanmoon/core": 20
     },
-    "prefer-stable": false,
+    "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
         "php": "^8.4"

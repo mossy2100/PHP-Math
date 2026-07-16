@@ -10,6 +10,7 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
+use TypeError;
 
 #[CoversClass(Complex::class)]
 class ComplexComparisonTest extends TestCase
@@ -265,49 +266,33 @@ class ComplexComparisonTest extends TestCase
     }
 
     /**
-     * Test equal with a bool throws ConversionException.
+     * Test equal with a bool throws.
      */
     public function testEqualWithBoolThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(TypeError::class);
         $z = new Complex(3, 4);
         $z->equal(true);
     }
 
     /**
-     * Test equality with a parseable string, converted via toComplex().
+     * Test equality with a string throws.
      */
-    public function testEqualWithString(): void
+    public function testEqualWithStringThrows(): void
     {
+        $this->expectException(TypeError::class);
         $z = new Complex(3, 4);
-
-        $this->assertTrue($z->equal('3+4i'));
-        $this->assertFalse($z->equal('3+5i'));
+        $z->equal('3+4i');
     }
 
     /**
-     * Test equal with a non-parseable string throws ConversionException.
+     * Test equality with an array throws.
      */
-    public function testEqualWithUnparseableStringThrows(): void
+    public function testEqualWithArrayThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(TypeError::class);
         $z = new Complex(3, 4);
-        $z->equal('not a number');
-    }
-
-    /**
-     * Test equality with a 2-element array (list or associative), converted via toComplex().
-     */
-    public function testEqualWithArray(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertTrue($z->equal([3, 4]));
-        $this->assertTrue($z->equal([
-            'real'      => 3,
-            'imaginary' => 4,
-        ]));
-        $this->assertFalse($z->equal([3, 5]));
+        $z->equal([3, 4]);
     }
 
     /**

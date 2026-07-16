@@ -5,18 +5,17 @@ declare(strict_types=1);
 namespace OceanMoon\Math;
 
 use Countable;
-use DivisionByZeroError;
 use DomainException;
 use InvalidArgumentException;
 use LengthException;
-use OceanMoon\Core\Exceptions\ConversionException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
-use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
-use Throwable;
+
+use function OceanMoon\Core\Globals\is_number;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
@@ -85,11 +84,14 @@ final class Matrix implements Stringable, Countable
     #region Factory methods
 
     /**
-     * Create a matrix from a 2D array.
+     * Create a matrix from a rectangular array of numbers.
      *
-     * @param array<array-key, mixed> $arr Rectangular list of rows of numbers.
+     * If $arr is empty, it will have 0 rows and 0 columns.
+     * If $arr is an array of empty arrays, the result will have that many rows and 0 columns.
+     *
+     * @param array<array-key, mixed> $arr Rectangular array of numbers.
      * @return self
-     * @throws ConversionException If the array could not be converted to a Matrix.
+     * @throws DomainException If the array has the wrong shape to be converted to a Matrix.
      */
     public static function fromArray(array $arr): self
     {
@@ -100,7 +102,7 @@ final class Matrix implements Stringable, Countable
 
         // Check the outer array is a list.
         if (!array_is_list($arr)) {
-            throw new ConversionException($arr, self::class, 'Array must be a list.');
+            throw new DomainException('Array must be a list.');
         }
 
         $rowCount = count($arr);
@@ -109,21 +111,16 @@ final class Matrix implements Stringable, Countable
 
         // Validate data and ensure rectangular matrix.
         foreach ($arr as $row) {
-            // Check if each row is an array.
-            if (!is_array($row)) {
-                throw new ConversionException($arr, self::class, 'Each row must be an array.');
-            }
-
-            // Check if the row is a list array.
-            if (!array_is_list($row)) {
-                throw new ConversionException($arr, self::class, 'Each row must be a list array.');
+            // Check each row is a list array.
+            if (!is_array($row) || !array_is_list($row)) {
+                throw new DomainException('Each row must be a list array.');
             }
 
             // Check all rows have the same number of columns.
             if ($columnCount === null) {
                 $columnCount = count($row);
             } elseif (count($row) !== $columnCount) {
-                throw new ConversionException($arr, self::class, 'All rows must have the same number of columns.');
+                throw new DomainException('All rows must have the same number of columns.');
             }
 
             $dataRow = [];
@@ -131,8 +128,8 @@ final class Matrix implements Stringable, Countable
             // Check each row contains only numbers.
             foreach ($row as $value) {
                 // Check if each value is a number.
-                if (!Numbers::isNumber($value)) {
-                    throw new ConversionException($arr, self::class, 'All elements must be numbers.');
+                if (!is_number($value)) {
+                    throw new DomainException('Every element must be a number (int or float).');
                 }
 
                 // Convert the value to a float and store it in the matrix.
@@ -162,49 +159,6 @@ final class Matrix implements Stringable, Countable
             $result->set($i, $i, 1);
         }
         return $result;
-    }
-
-    /**
-     * Convert the input value to a Matrix, if not already, and if possible.
-     *
-     * NB:
-     * - A flat list of numbers is converted to an n×1 column matrix, matching how a bare Vector is treated.
-     * - A Vector is converted to an n×1 column matrix, via Vector::toColumnMatrix().
-     * - A rectangular array of arrays of numbers (all rows the same length) is converted directly, via fromArray().
-     *
-     * @param mixed $value The value to convert.
-     * @return self The equivalent Matrix.
-     * @throws ConversionException If the value cannot be converted to a Matrix.
-     */
-    public static function toMatrix(mixed $value): self
-    {
-        // Check for Matrix.
-        if ($value instanceof self) {
-            return $value;
-        }
-
-        try {
-            // Check for Vector, which becomes a one-column matrix.
-            if ($value instanceof Vector) {
-                return $value->toColumnMatrix();
-            }
-
-            // Check for array and convert to Matrix if possible.
-            if (is_array($value)) {
-                // A list of numbers is also treated as a one-column matrix.
-                if (self::isFlatNumericArray($value)) {
-                    return Vector::fromArray($value)->toColumnMatrix();
-                }
-
-                // Otherwise, treat it as a rectangular array of rows.
-                return self::fromArray($value);
-            }
-        } catch (Throwable $e) {
-            ConversionException::rethrow($value, self::class, $e);
-        }
-
-        // The value has a type that cannot be converted to Matrix.
-        throw new ConversionException($value, self::class);
     }
 
     #endregion
@@ -413,62 +367,42 @@ final class Matrix implements Stringable, Countable
     }
 
     /**
-     * Set a row from a Vector or array.
+     * Set a Matrix row from a row Vector.
      *
      * @param int $row Row index (0-based).
-     * @param Vector|array<int|float> $value The row values.
+     * @param Vector $vec The row Vector.
      * @throws OutOfRangeException If row index is outside valid range.
-     * @throws LengthException If the value has the wrong number of elements.
-     * @throws InvalidArgumentException If any element is not a number.
+     * @throws LengthException If the Vector is the wrong size.
      */
-    public function setRow(int $row, Vector|array $value): void
+    public function setRow(int $row, Vector $vec): void
     {
-        // Convert Vector to array.
-        if ($value instanceof Vector) {
-            $value = $value->toArray();
-        }
-
         // Check if row index is within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
             throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
         }
 
         // Check length.
-        if (count($value) !== $this->columnCount) {
+        $vectorSize = count($vec);
+        if ($vectorSize !== $this->columnCount) {
             throw new LengthException(
-                "Cannot set row: expected {$this->columnCount} elements, got " . count($value) . '.'
+                "Cannot set row due to incorrect Vector size. Expected {$this->columnCount} elements, got $vectorSize."
             );
         }
 
-        // Validate values.
-        $data = [];
-        foreach ($value as $v) {
-            if (!Numbers::isNumber($v)) {
-                throw new InvalidArgumentException('Cannot set row: non-numeric element found.');
-            }
-            $data[] = (float) $v;
-        }
-
         // Set values.
-        $this->data[$row] = $data;
+        $this->data[$row] = $vec->toArray();
     }
 
     /**
      * Set a column from a Vector or array.
      *
      * @param int $col Column index (0-based).
-     * @param Vector|array<int|float> $value The column values.
+     * @param Vector $vec The column values.
      * @throws OutOfRangeException If column index is outside valid range.
      * @throws LengthException If the value has the wrong number of elements.
-     * @throws InvalidArgumentException If any element is not a number.
      */
-    public function setColumn(int $col, Vector|array $value): void
+    public function setColumn(int $col, Vector $vec): void
     {
-        // Convert Vector to array.
-        if ($value instanceof Vector) {
-            $value = $value->toArray();
-        }
-
         // Check if column index is within bounds.
         if ($col < 0 || $col >= $this->columnCount) {
             throw new OutOfRangeException(
@@ -477,33 +411,24 @@ final class Matrix implements Stringable, Countable
         }
 
         // Check length.
-        if (count($value) !== $this->rowCount) {
+        $vectorSize = count($vec);
+        if (count($vec) !== $this->rowCount) {
             throw new LengthException(
-                "Cannot set column: expected {$this->rowCount} elements, got " . count($value) . '.'
+                "Cannot set column due to incorrect Vector size. Expected {$this->rowCount} elements, got $vectorSize."
             );
-        }
-
-        // Validate values.
-        $values = [];
-        foreach ($value as $v) {
-            if (!Numbers::isNumber($v)) {
-                throw new InvalidArgumentException('Cannot set column: non-numeric element found.');
-            }
-            $values[] = (float) $v;
         }
 
         // Set values.
         for ($row = 0; $row < $this->rowCount; $row++) {
             assert($row < count($this->data) && $col < count($this->data[$row]));
-            $this->data[$row][$col] = $values[$row];
+            $this->data[$row][$col] = $vec[$row];
         }
     }
 
     /**
      * Copy the elements of another matrix into this one, starting at the given position.
      *
-     * Unlike most methods in this class, this one mutates the matrix in place, matching set(), setRow(), and
-     * setColumn().
+     * Unlike most methods in this class, this one mutates the matrix in place, matching set().
      *
      * @param self $other The matrix to paste. Must fit within this matrix at the given offset.
      * @param int $row Row at which to place the top-left corner of $other (0-based). Defaults to 0.
@@ -542,21 +467,23 @@ final class Matrix implements Stringable, Countable
     #region Comparison methods
 
     /**
-     * Check if this matrix equals another value, which may be Matrix, Vector, a flat list of numbers, or a
-     * rectangular array of numbers; i.e. anything that can be accepted by toMatrix().
+     * Check if this Matrix equals another.
      *
      * Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal.
      *
-     * @param mixed $other The value to compare with.
-     * @return bool True if the matrices have the same dimensions and all elements are equal.
-     * @throws ConversionException If the value cannot be converted to a Matrix.
+     * @param mixed $other The Matrix to compare with.
+     * @return bool True if the Matrixes have the same dimensions and all elements are equal.
+     * @throws InvalidArgumentException If $other is not a Matrix.
      */
     /** @disregard P1128 */
     #[Override] // Equatable
     public function equal(mixed $other): bool
     {
-        // Get other value as a Matrix.
-        $other = self::toMatrix($other);
+        // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
+        // If we don't have a Matrix, abort.
+        if (!$other instanceof self) {
+            throw new InvalidArgumentException('The value provided for comparison must be a Matrix.');
+        }
 
         // Check sizes are equal.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
@@ -576,18 +503,16 @@ final class Matrix implements Stringable, Countable
     }
 
     /**
-     * Check if this matrix approximately equals another value, within given tolerances. The other value may be
-     * Matrix, Vector, a flat list of numbers, or a rectangular array of numbers; i.e. anything that can be accepted
-     * by toMatrix().
+     * Check if this Matrix approximately equals another.
      *
      * Each pair of corresponding elements is compared using Floats::approxEqual(), which checks absolute tolerance
      * first, then relative tolerance.
      *
-     * @param mixed $other The value to compare with.
+     * @param mixed $other The Matrix to compare with.
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
-     * @return bool True if the matrices have the same dimensions and all elements are approximately equal.
-     * @throws ConversionException If the value cannot be converted to a Matrix.
+     * @return bool True if the Matrixes have the same dimensions and all elements are approximately equal.
+     * @throws InvalidArgumentException If $other is not a Matrix.
      * @throws DomainException If either tolerance is negative.
      * @see Floats::approxEqual()
      */
@@ -597,8 +522,11 @@ final class Matrix implements Stringable, Countable
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
-        // Get other value as a Matrix.
-        $other = self::toMatrix($other);
+        // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
+        // If we don't have a Matrix, abort.
+        if (!$other instanceof self) {
+            throw new InvalidArgumentException('The value provided for comparison must be a Matrix.');
+        }
 
         // Check sizes are equal.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
@@ -665,7 +593,8 @@ final class Matrix implements Stringable, Countable
      * ones.
      *
      * @return self New matrix representing the inverse.
-     * @throws DomainException If matrix is not square or not invertible.
+     * @throws DomainException If matrix is not square.
+     * @throws ArithmeticException If matrix is not invertible (zero determinant).
      */
     public function inv(): self
     {
@@ -677,7 +606,7 @@ final class Matrix implements Stringable, Countable
         // Calculate the inverse using cofactor expansion and the adjugate matrix.
         $det = $this->det();
         if ($det === 0.0) {
-            throw new DomainException('Cannot invert matrix with a zero determinant.');
+            throw new ArithmeticException('Cannot invert matrix with a zero determinant.');
         }
 
         $n = $this->rowCount;
@@ -772,11 +701,13 @@ final class Matrix implements Stringable, Countable
 
         // Multiply matrix by a vector.
         if ($other instanceof Vector) {
-            // Convert the Vector to a single-column matrix.
+            // Multiply the Matrix by the Vector converted to a single-column matrix.
+            // The call to mul() will fail if the Vector size does not equal the number of columns the Matrix.
             $result = $this->mul($other->toColumnMatrix());
+            assert($result instanceof self);
 
             // Since we were given a Vector, return a Vector.
-            assert($result instanceof self);
+            // Convert the first and only column of the resulting Matrix into a Vector.
             return $result->getColumn(0);
         }
 
@@ -806,16 +737,16 @@ final class Matrix implements Stringable, Countable
      *
      * @param float|self $other Number or matrix to divide by.
      * @return self New matrix representing the quotient.
-     * @throws DivisionByZeroError If dividing by zero.
-     * @throws DomainException If dividing by a non-invertible matrix.
+     * @throws ArithmeticException If dividing by zero, or by a non-invertible matrix (zero determinant).
+     * @throws DomainException If dividing by a non-square matrix.
      */
     public function div(float|self $other): self
     {
         // Check if dividing by a scalar.
-        if (Numbers::isNumber($other)) {
+        if (is_float($other)) {
             // Guard against division by zero.
-            if (Numbers::isZero($other)) {
-                throw new DivisionByZeroError('Cannot divide by zero.');
+            if ($other === 0.0) {
+                throw new ArithmeticException('Cannot divide by zero.');
             }
 
             // Divide each element of the matrix by the scalar.
@@ -868,7 +799,8 @@ final class Matrix implements Stringable, Countable
      *
      * @param int $power Power to raise to.
      * @return self New matrix representing the result.
-     * @throws DomainException If matrix is not square, or not invertible for negative powers.
+     * @throws DomainException If matrix is not square.
+     * @throws ArithmeticException If not invertible (zero determinant) for negative powers.
      */
     public function pow(int $power): self
     {
@@ -1063,30 +995,6 @@ final class Matrix implements Stringable, Countable
     #endregion
 
     #region Helper methods
-
-    /**
-     * Check if an array is a flat list of numbers, as opposed to a nested array of arrays.
-     *
-     * @param array<array-key, mixed> $arr The array to check.
-     * @return bool True if every element is a number (vacuously true for an empty array).
-     * @phpstan-assert-if-true list<int|float> $arr
-     */
-    private static function isFlatNumericArray(array $arr): bool
-    {
-        // Check for list.
-        if (!array_is_list($arr)) {
-            return false;
-        }
-
-        // Check all values are numbers.
-        foreach ($arr as $value) {
-            if (!Numbers::isNumber($value)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
 
     /**
      * Recursive helper method to calculate determinant using cofactor expansion.
