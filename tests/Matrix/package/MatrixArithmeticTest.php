@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Matrix;
 
-use DivisionByZeroError;
 use DomainException;
 use LengthException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -250,12 +250,12 @@ class MatrixArithmeticTest extends TestCase
     }
 
     /**
-     * Test dividing a matrix by zero throws DivisionByZeroError.
+     * Test dividing a matrix by zero throws ArithmeticException.
      */
     public function testDivByZeroThrows(): void
     {
         $m = new Matrix(2, 2);
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         $m->div(0);
     }
 
@@ -418,6 +418,24 @@ class MatrixArithmeticTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
         $this->assertEqualsWithDelta(1.0, $product->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test power with exponent PHP_INT_MIN doesn't overflow when negating the exponent.
+     *
+     * Negative exponents are normally handled via inv()->pow(-$exponent), but negating PHP_INT_MIN overflows to a
+     * float in PHP, which would previously cause a TypeError when passed to the int-typed recursive pow() call. The
+     * identity matrix is used as the base because pow() operates on float elements via repeated matrix
+     * multiplication (no OverflowException is possible), so any other base raised to this exponent would produce a
+     * numerically meaningless result (float overflow to INF, or a value with no useful precision) rather than
+     * something this test could assert against exactly.
+     */
+    public function testPowIntMinExponent(): void
+    {
+        $identity = Matrix::identity(2);
+        $result = $identity->pow(PHP_INT_MIN);
+
+        $this->assertTrue($identity->equal($result));
     }
 
     /**

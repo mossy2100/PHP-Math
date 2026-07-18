@@ -4,101 +4,16 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use OceanMoon\Core\Exceptions\ConversionException;
+use InvalidArgumentException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use stdClass;
-use TypeError;
 
 #[CoversClass(Complex::class)]
 class ComplexComparisonTest extends TestCase
 {
-    #region Identity tests
-
-    /**
-     * Test identical returns true for a Complex with the same real and imaginary parts.
-     */
-    public function testIdentical(): void
-    {
-        $z1 = new Complex(3, 4);
-        $z2 = new Complex(3, 4);
-
-        $this->assertTrue($z1->identical($z2));
-    }
-
-    /**
-     * Test identical is reflexive: a value is always identical to itself.
-     */
-    public function testIdenticalReflexive(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertTrue($z->identical($z));
-    }
-
-    /**
-     * Test identical returns false for a Complex with different real and/or imaginary parts.
-     */
-    public function testIdenticalDifferentValues(): void
-    {
-        $z1 = new Complex(3, 4);
-
-        $this->assertFalse($z1->identical(new Complex(3, 5)));
-        $this->assertFalse($z1->identical(new Complex(4, 4)));
-        $this->assertFalse($z1->identical(new Complex(4, 5)));
-    }
-
-    /**
-     * Test identical returns false for values equal() would accept but that aren't Complex
-     * instances -- int, float, string, array, and object.
-     */
-    public function testIdenticalWithNonComplexReturnsFalse(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertFalse($z->identical(3));
-        $this->assertFalse($z->identical(3.0));
-        $this->assertFalse($z->identical('3+4i'));
-        $this->assertFalse($z->identical([3, 4]));
-        $this->assertFalse($z->identical((object) [
-            'real'      => 3,
-            'imaginary' => 4,
-        ]));
-    }
-
-    /**
-     * Test identical returns false for other unrelated types.
-     */
-    public function testIdenticalWithInvalidTypeReturnsFalse(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertFalse($z->identical(null));
-        $this->assertFalse($z->identical([]));
-        $this->assertFalse($z->identical(new stdClass()));
-        $this->assertFalse($z->identical(true));
-    }
-
-    /**
-     * Test identical treats -0.0 and 0.0 as identical, matching PHP's own -0.0 === 0.0 behavior.
-     */
-    public function testIdenticalNegativeZero(): void
-    {
-        $z1 = new Complex(-0.0, 0);
-        $z2 = new Complex(0.0, 0);
-
-        $this->assertTrue($z1->identical($z2));
-
-        $z3 = new Complex(0, -0.0);
-        $z4 = new Complex(0, 0.0);
-
-        $this->assertTrue($z3->identical($z4));
-    }
-
-    #endregion
-
     #region Exact equality tests
 
     /**
@@ -226,101 +141,53 @@ class ComplexComparisonTest extends TestCase
     }
 
     /**
-     * Test equal with a non-parseable string throws ConversionException.
-     */
-    public function testEqualInvalidStringThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $z = new Complex(3, 4);
-        $z->equal('string');
-    }
-
-    /**
-     * Test equal with null throws ConversionException.
-     */
-    public function testEqualWithNullThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $z = new Complex(3, 4);
-        $z->equal(null);
-    }
-
-    /**
-     * Test equal with an empty array throws ConversionException (not exactly two elements).
-     */
-    public function testEqualWithEmptyArrayThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $z = new Complex(3, 4);
-        $z->equal([]);
-    }
-
-    /**
-     * Test equal with an object lacking real/imaginary properties throws ConversionException.
-     */
-    public function testEqualWithInvalidObjectThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $z = new Complex(3, 4);
-        $z->equal(new stdClass());
-    }
-
-    /**
-     * Test equal with a bool throws.
-     */
-    public function testEqualWithBoolThrows(): void
-    {
-        $this->expectException(TypeError::class);
-        $z = new Complex(3, 4);
-        $z->equal(true);
-    }
-
-    /**
-     * Test equality with a string throws.
+     * Test equal with a string throws InvalidArgumentException (strings are not a supported type).
      */
     public function testEqualWithStringThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
         $z->equal('3+4i');
     }
 
     /**
-     * Test equality with an array throws.
+     * Test equal with null throws InvalidArgumentException.
+     */
+    public function testEqualWithNullThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $z = new Complex(3, 4);
+        $z->equal(null);
+    }
+
+    /**
+     * Test equal with an array throws InvalidArgumentException (arrays are not a supported type).
      */
     public function testEqualWithArrayThrows(): void
     {
-        $this->expectException(TypeError::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
         $z->equal([3, 4]);
     }
 
     /**
-     * Test equal with a 3-element array throws ConversionException (not exactly two elements).
+     * Test equal with an object throws InvalidArgumentException (objects are not a supported type).
      */
-    public function testEqualWithWrongSizedArrayThrows(): void
+    public function testEqualWithObjectThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
-        $z->equal([1, 2, 3]);
+        $z->equal(new stdClass());
     }
 
     /**
-     * Test equality with a plain object with numeric real/imaginary properties, converted via
-     * toComplex().
+     * Test equal with a bool throws InvalidArgumentException.
      */
-    public function testEqualWithObject(): void
+    public function testEqualWithBoolThrows(): void
     {
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
-
-        $this->assertTrue($z->equal((object) [
-            'real'      => 3,
-            'imaginary' => 4,
-        ]));
-        $this->assertFalse($z->equal((object) [
-            'real'      => 3,
-            'imaginary' => 5,
-        ]));
+        $z->equal(true);
     }
 
     /**
@@ -465,104 +332,53 @@ class ComplexComparisonTest extends TestCase
     }
 
     /**
-     * Test approxEqual with a non-parseable string throws ConversionException.
+     * Test approxEqual with a string throws InvalidArgumentException (strings are not a supported type).
      */
-    public function testApproxEqualInvalidStringThrows(): void
+    public function testApproxEqualWithStringThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
-        $z->approxEqual('string');
+        $z->approxEqual('3+4i');
     }
 
     /**
-     * Test approxEqual with null throws ConversionException.
+     * Test approxEqual with null throws InvalidArgumentException.
      */
     public function testApproxEqualWithNullThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
         $z->approxEqual(null);
     }
 
     /**
-     * Test approxEqual with an empty array throws ConversionException.
+     * Test approxEqual with an array throws InvalidArgumentException (arrays are not a supported type).
      */
-    public function testApproxEqualWithEmptyArrayThrows(): void
+    public function testApproxEqualWithArrayThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
-        $z->approxEqual([]);
+        $z->approxEqual([3, 4]);
     }
 
     /**
-     * Test approxEqual with an object lacking real/imaginary properties throws ConversionException.
+     * Test approxEqual with an object throws InvalidArgumentException (objects are not a supported type).
      */
-    public function testApproxEqualWithInvalidObjectThrows(): void
+    public function testApproxEqualWithObjectThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
         $z->approxEqual(new stdClass());
     }
 
     /**
-     * Test approxEqual with a bool throws ConversionException.
+     * Test approxEqual with a bool throws InvalidArgumentException.
      */
     public function testApproxEqualWithBoolThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $z = new Complex(3, 4);
         $z->approxEqual(true);
-    }
-
-    /**
-     * Test approximate equality with a parseable string, converted via toComplex().
-     */
-    public function testApproxEqualWithString(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertTrue($z->approxEqual('3.0000000001+4.0000000001i'));
-        $this->assertFalse($z->approxEqual('3.5+4i'));
-    }
-
-    /**
-     * Test approxEqual with a non-parseable string throws ConversionException.
-     */
-    public function testApproxEqualWithUnparseableStringThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $z = new Complex(3, 4);
-        $z->approxEqual('not a number');
-    }
-
-    /**
-     * Test approximate equality with a 2-element array (list or associative), converted via
-     * toComplex().
-     */
-    public function testApproxEqualWithArray(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertTrue($z->approxEqual([3.0000000001, 4.0000000001]));
-        $this->assertFalse($z->approxEqual([3.5, 4]));
-    }
-
-    /**
-     * Test approximate equality with a plain object with numeric real/imaginary properties,
-     * converted via toComplex().
-     */
-    public function testApproxEqualWithObject(): void
-    {
-        $z = new Complex(3, 4);
-
-        $this->assertTrue($z->approxEqual((object) [
-            'real'      => 3.0000000001,
-            'imaginary' => 4.0000000001,
-        ]));
-        $this->assertFalse($z->approxEqual((object) [
-            'real'      => 3.5,
-            'imaginary' => 4,
-        ]));
     }
 
     /**

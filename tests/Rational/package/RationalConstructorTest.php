@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use DivisionByZeroError;
 use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -121,11 +121,11 @@ class RationalConstructorTest extends TestCase
     #region Error handling tests
 
     /**
-     * Test that zero denominator throws DivisionByZeroError.
+     * Test that zero denominator throws ArithmeticException.
      */
     public function testZeroDenominatorThrows(): void
     {
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         new Rational(1, 0);
     }
 

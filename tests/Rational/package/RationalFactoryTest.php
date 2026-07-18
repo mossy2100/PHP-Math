@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use OceanMoon\Core\Exceptions\ConversionException;
+use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -73,98 +75,30 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Test parsing invalid strings throws exception.
+     * Test parsing invalid strings throws FormatException.
      */
     public function testParseInvalidThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(FormatException::class);
         Rational::fromString('abc');
     }
 
     /**
-     * Test parsing empty string throws exception.
+     * Test parsing empty string throws FormatException.
      */
     public function testParseEmptyThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(FormatException::class);
         Rational::fromString('');
     }
 
     /**
-     * Test parsing fraction with zero denominator throws exception.
+     * Test parsing fraction with zero denominator throws ArithmeticException.
      */
     public function testParseFractionZeroDenominatorThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(ArithmeticException::class);
         Rational::fromString('5/0');
-    }
-
-    /**
-     * Test toRational with Rational argument.
-     */
-    public function testToRationalWithRational(): void
-    {
-        $r = new Rational(3, 4);
-        $r2 = Rational::toRational($r);
-
-        $this->assertSame($r, $r2); // Should return same instance
-    }
-
-    /**
-     * Test toRational with integer argument.
-     */
-    public function testToRationalWithInteger(): void
-    {
-        $r = Rational::toRational(5);
-        $this->assertSame(5, $r->numerator);
-        $this->assertSame(1, $r->denominator);
-    }
-
-    /**
-     * Test toRational with float argument.
-     */
-    public function testToRationalWithFloat(): void
-    {
-        $r = Rational::toRational(0.5);
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(2, $r->denominator);
-    }
-
-    /**
-     * Test toRational with string argument.
-     */
-    public function testToRationalWithString(): void
-    {
-        $r = Rational::toRational('3/4');
-        $this->assertSame(3, $r->numerator);
-        $this->assertSame(4, $r->denominator);
-    }
-
-    /**
-     * Test toRational with invalid string throws exception.
-     */
-    public function testToRationalWithInvalidStringThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Rational::toRational('invalid');
-    }
-
-    /**
-     * Test toRational with a value of an unconvertible type throws ConversionException.
-     */
-    public function testToRationalWithInvalidTypeThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Rational::toRational(null);
-    }
-
-    /**
-     * Test toRational with a boolean (not a valid conversion source) throws.
-     */
-    public function testToRationalWithBooleanThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Rational::toRational(true);
     }
 
     /**
@@ -275,20 +209,20 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Test fromFloat with a very small value throws ConversionException.
+     * Test fromFloat with a very small value throws DomainException.
      */
     public function testFromFloatVerySmallThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Rational::fromFloat(1e-20);
     }
 
     /**
-     * Test fromFloat with a very large value throws ConversionException.
+     * Test fromFloat with a very large value throws DomainException.
      */
     public function testFromFloatVeryLargeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Rational::fromFloat((float) PHP_INT_MAX * 2);
     }
 
@@ -319,20 +253,20 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Test fromFloat with infinite or NAN values throws ConversionException.
+     * Test fromFloat with infinite or NAN values throws DomainException.
      */
     public function testFromFloatNonFiniteThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Rational::fromFloat(INF);
     }
 
     /**
-     * Test fromFloat with NAN throws ConversionException.
+     * Test fromFloat with NAN throws DomainException.
      */
     public function testFromFloatNanThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Rational::fromFloat(NAN);
     }
 }

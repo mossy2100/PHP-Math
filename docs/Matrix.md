@@ -15,7 +15,7 @@ The `Matrix` class provides a complete implementation of matrix arithmetic with 
 - Sub-matrix extraction, in-place pasting, and resizing
 - Element and row/column access with bounds checking
 - String representation using box-drawing characters
-- Support for 0⨉0 and 0⨉n empty matrices
+- Support for n⨉0 and 0⨉n empty matrices
 
 Matrix data is stored privately to prevent non-rectangular or non-numeric mutation.
 
@@ -89,8 +89,10 @@ every element must be numeric. Integer values are cast to float.
 
 **Returns:** `self` - New matrix populated with the provided data.
 
-**Throws:** `ConversionException` if the outer array or any row is not a list, rows have differing lengths, or any
-element is not a number.
+**Throws:**
+
+- `DomainException` if the outer array or any row is not a list, or any element is not a number.
+- `LengthException` if the rows don't all have the same number of columns.
 
 **Examples:**
 
@@ -119,6 +121,8 @@ Create an identity matrix of the specified size. The identity matrix has 1s on t
 
 **Returns:** `self` - Identity matrix.
 
+**Throws:** `DomainException` if `$size` is negative.
+
 **Examples:**
 
 ```php
@@ -129,27 +133,6 @@ $i3 = Matrix::identity(3);
 // │ 0.0  0.0  1.0 │
 // └               ┘
 ```
-
-### toMatrix()
-
-```php
-public static function toMatrix(mixed $value): self
-```
-
-Convert a value to a Matrix, if it isn't one already. Accepts an existing `Matrix` (returned unchanged), a `Vector`
-(converted to an n×1 column matrix), a flat list of numbers (also treated as an n×1 column matrix, matching how a bare
-`Vector` is treated), or a rectangular array of arrays of numbers (converted via `fromArray()`).
-
-**Examples:**
-
-```php
-$m1 = Matrix::toMatrix(Vector::fromArray([1, 2, 3]));  // 3x1 column matrix
-$m2 = Matrix::toMatrix([1, 2, 3]);                     // 3x1 column matrix (flat list)
-$m3 = Matrix::toMatrix([[1, 2], [3, 4]]);              // 2x2 matrix (rectangular array)
-```
-
-**Throws:** `ConversionException` if the value's type cannot be converted to a Matrix, or it can but the value itself is
-invalid — see `fromArray()` above for the specific failure conditions.
 
 ---
 
@@ -350,7 +333,10 @@ Set a matrix element by row and column index.
 - `$col` (int) - Column index (0-based)
 - `$value` (float) - Value to set
 
-**Throws:** `OutOfRangeException` if either index is outside the valid range.
+**Throws:**
+
+- `OutOfRangeException` if either index is outside the valid range.
+- `DomainException` if the value is not finite (±INF or NAN).
 
 **Examples:**
 
@@ -363,54 +349,51 @@ $m->set(1, 1, 10);
 ### setRow()
 
 ```php
-public function setRow(int $row, Vector|array $value): void
+public function setRow(int $row, Vector $vec): void
 ```
 
-Set a row from a Vector or array. Integer values are cast to float.
+Set a row from a Vector.
 
 **Parameters:**
 
 - `$row` (int) - Row index (0-based)
-- `$value` (Vector|array) - The row values
+- `$vec` (Vector) - The row Vector
 
 **Throws:**
 
 - `OutOfRangeException` if row index is outside the valid range.
-- `LengthException` if the value has the wrong number of elements.
-- `InvalidArgumentException` if any element is not a number.
+- `LengthException` if the Vector has the wrong number of elements.
 
 **Examples:**
 
 ```php
 $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$m->setRow(0, [7, 8, 9]);
 $m->setRow(1, Vector::fromArray([10, 11, 12]));
 ```
 
 ### setColumn()
 
 ```php
-public function setColumn(int $col, Vector|array $value): void
+public function setColumn(int $col, Vector $vec): void
 ```
 
-Set a column from a Vector or array. Integer values are cast to float.
+Set a column from a Vector.
 
 **Parameters:**
 
 - `$col` (int) - Column index (0-based)
-- `$value` (Vector|array) - The column values
+- `$vec` (Vector) - The column Vector
 
 **Throws:**
 
 - `OutOfRangeException` if column index is outside the valid range.
-- `LengthException` if the value has the wrong number of elements.
-- `InvalidArgumentException` if any element is not a number.
+- `LengthException` if the Vector has the wrong number of elements.
 
 **Examples:**
 
 ```php
 $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$m->setColumn(1, [20, 50]);
+$m->setColumn(1, Vector::fromArray([20, 50]));
 // Matrix is now [[1, 20, 3], [4, 50, 6]]
 ```
 
@@ -448,7 +431,12 @@ $m->paste(Matrix::fromArray([[1, 2], [3, 4]]), 1, 1);
 
 The `equal()` and `approxEqual()` methods are provided by the
 [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait
-from the [Core](https://github.com/mossy2100/PHP-Core) package.
+from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Matrix` supplying its own type-checking logic
+since the trait's parameter is typed `mixed` (see the trait's docs for why).
+
+Both methods accept only a `Matrix` for `$other` — not a `Vector` or a plain array, even though those could plausibly
+represent the same values. Anything else throws `InvalidArgumentException` rather than silently returning `false`, to
+catch bugs from comparing values that can't meaningfully be compared.
 
 ### equal()
 
@@ -458,20 +446,17 @@ public function equal(mixed $other): bool
 
 Check if this matrix exactly equals another value.
 
-Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal. `$other` is
-converted via `toMatrix()`, so anything that method accepts — `Matrix`, `Vector`, a flat list of numbers, or a
-rectangular array of numbers — can be compared. To catch bugs from comparing values that can't meaningfully be compared,
-this throws rather than silently returning `false` for a value `toMatrix()` can't convert.
+Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal.
 
 **Parameters:**
 
-- `$other` (mixed) - The value to compare with (anything `toMatrix()` accepts).
+- `$other` (mixed) - The value to compare with (must be a `Matrix`).
 
 **Returns:**
 
 - `bool` - True if the matrices have the same dimensions and all elements are exactly equal.
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Matrix.
+**Throws:** `InvalidArgumentException` if `$other` is not a `Matrix`.
 
 **Examples:**
 
@@ -483,9 +468,10 @@ $m3 = Matrix::fromArray([[1.0000000001, 2], [3, 4]]);
 var_dump($m1->equal($m2));  // true (exact match)
 var_dump($m1->equal($m3));  // false (not exact)
 
-// Values that can't be converted throw, rather than silently returning false
-$m1->equal('string');  // throws ConversionException
-$m1->equal(null);      // throws ConversionException
+// Anything else throws, rather than silently returning false
+$m1->equal([[1, 2], [3, 4]]);  // throws InvalidArgumentException
+$m1->equal('string');          // throws InvalidArgumentException
+$m1->equal(null);              // throws InvalidArgumentException
 ```
 
 ### approxEqual()
@@ -501,13 +487,11 @@ public function approxEqual(
 Check if this matrix approximately equals another value within specified tolerances.
 
 Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first,
-then relative tolerance. `$other` is converted via `toMatrix()`, so anything that method accepts can be compared. To
-catch bugs from comparing values that can't meaningfully be compared, this throws rather than silently returning `false`
-for a value `toMatrix()` can't convert.
+then relative tolerance.
 
 **Parameters:**
 
-- `$other` (mixed) - The value to compare with (anything `toMatrix()` accepts).
+- `$other` (mixed) - The value to compare with (must be a `Matrix`).
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
 
@@ -517,7 +501,7 @@ for a value `toMatrix()` can't convert.
 
 **Throws:**
 
-- `ConversionException` if `$other` cannot be converted to a Matrix.
+- `InvalidArgumentException` if `$other` is not a `Matrix`.
 - `DomainException` if either tolerance is negative.
 
 **@see** `Floats::approxEqual()`
@@ -534,8 +518,8 @@ var_dump($m1->approxEqual($m2));  // true
 // With tight tolerance
 var_dump($m1->approxEqual($m2, 1e-15, 1e-15));  // false
 
-// Values that can't be converted throw, rather than silently returning false
-$m1->approxEqual('string');  // throws ConversionException
+// Anything else throws, rather than silently returning false
+$m1->approxEqual('string');  // throws InvalidArgumentException
 ```
 
 ---
@@ -614,7 +598,10 @@ will be extremely slow for larger ones.
 
 **Returns:** `self` - New matrix representing the inverse.
 
-**Throws:** `DomainException` if the matrix is not square or not invertible (determinant is zero).
+**Throws:**
+
+- `DomainException` if the matrix is not square.
+- `ArithmeticException` if the matrix is not invertible (determinant is zero).
 
 **Examples:**
 
@@ -735,8 +722,9 @@ Divide this matrix by a scalar or another matrix. Division by a matrix is define
 
 **Throws:**
 
-- `DivisionByZeroError` if dividing by zero.
-- `DomainException` if dividing by a non-invertible matrix.
+- `ArithmeticException` if dividing by zero, or by a non-invertible matrix (zero determinant).
+- `DomainException` if dividing by a non-square matrix.
+- `LengthException` if dividing by a matrix whose dimensions are incompatible for the resulting multiplication.
 
 **Examples:**
 
@@ -787,7 +775,7 @@ $result = $a->hadamard($b);
 ### pow()
 
 ```php
-public function pow(int $power): self
+public function pow(int $exponent): self
 ```
 
 Raise this matrix to an integer power. Uses binary exponentiation for efficiency. Negative powers use the matrix
@@ -798,11 +786,14 @@ never affect the original.
 
 **Parameters:**
 
-- `$power` (int) - Power to raise to
+- `$exponent` (int) - Power to raise to
 
 **Returns:** `self` - New matrix representing the result.
 
-**Throws:** `DomainException` if the matrix is not square, or not invertible for negative powers.
+**Throws:**
+
+- `DomainException` if the matrix is not square.
+- `ArithmeticException` if the matrix is not invertible (zero determinant) for negative powers.
 
 **Examples:**
 

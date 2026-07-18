@@ -4,79 +4,15 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Vector;
 
-use OceanMoon\Core\Exceptions\ConversionException;
+use InvalidArgumentException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 #[CoversClass(Vector::class)]
 class VectorComparisonTest extends TestCase
 {
-    #region Identical tests
-
-    /**
-     * Test identical returns true for a Vector with the same elements.
-     */
-    public function testIdentical(): void
-    {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2, 3]);
-
-        $this->assertTrue($a->identical($b));
-    }
-
-    /**
-     * Test identical is reflexive: a value is always identical to itself.
-     */
-    public function testIdenticalReflexive(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-
-        $this->assertTrue($v->identical($v));
-    }
-
-    /**
-     * Test identical returns false for a Vector with different elements.
-     */
-    public function testIdenticalDifferentValues(): void
-    {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2, 4]);
-
-        $this->assertFalse($a->identical($b));
-    }
-
-    /**
-     * Test identical returns false for values equal() would accept but that aren't Vector instances --
-     * a list of numbers and a single-column Matrix -- even when the values match.
-     */
-    public function testIdenticalWithNonVectorReturnsFalse(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $col = new Matrix(3, 1);
-        $col->setColumn(0, [1, 2, 3]);
-
-        $this->assertFalse($v->identical([1, 2, 3]));
-        $this->assertFalse($v->identical($col));
-    }
-
-    /**
-     * Test identical returns false for other unrelated types, without throwing.
-     */
-    public function testIdenticalWithInvalidTypeReturnsFalse(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-
-        $this->assertFalse($v->identical('not a vector'));
-        $this->assertFalse($v->identical(null));
-        $this->assertFalse($v->identical(42));
-        $this->assertFalse($v->identical(new stdClass()));
-    }
-
-    #endregion
-
     #region Equal tests
 
     /**
@@ -110,92 +46,55 @@ class VectorComparisonTest extends TestCase
     }
 
     /**
-     * Test equal with a list of numbers, converted via toVector().
+     * Test equal with an array throws InvalidArgumentException (arrays are not a supported type).
      */
-    public function testEqualWithArrayOfNumbers(): void
+    public function testEqualWithArrayThrows(): void
     {
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1, 2, 3]);
-
-        $this->assertTrue($v->equal([1, 2, 3]));
-        $this->assertFalse($v->equal([1, 2, 4]));
+        $v->equal([1, 2, 3]);
     }
 
     /**
-     * Test equal with a single-row Matrix throws ConversionException. Only single-column matrices
-     * are convertible to a Vector, matching the column-vector convention used elsewhere; a row
-     * matrix is not.
+     * Test equal with a Matrix throws InvalidArgumentException (Matrix is not a supported type), even
+     * a single-column Matrix that could plausibly represent the same values.
      */
-    public function testEqualWithSingleRowMatrixThrows(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $row = new Matrix(1, 3);
-        $row->setRow(0, [1, 2, 3]);
-
-        $this->expectException(ConversionException::class);
-        $v->equal($row);
-    }
-
-    /**
-     * Test equal with a single-column Matrix, converted via toVector().
-     */
-    public function testEqualWithSingleColumnMatrix(): void
+    public function testEqualWithMatrixThrows(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
         $col = new Matrix(3, 1);
-        $col->setColumn(0, [1, 2, 3]);
+        $col->setColumn(0, Vector::fromArray([1, 2, 3]));
 
-        $this->assertTrue($v->equal($col));
+        $this->expectException(InvalidArgumentException::class);
+        $v->equal($col);
     }
 
     /**
-     * Test equal with a Matrix that has neither one row nor one column throws ConversionException.
-     */
-    public function testEqualWithMultiRowColumnMatrixThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $v = Vector::fromArray([1, 2, 3, 4]);
-        $v->equal(Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]));
-    }
-
-    /**
-     * Test equal with an array containing non-numeric elements throws ConversionException.
-     */
-    public function testEqualWithNonNumericArrayThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $v = Vector::fromArray([1, 2, 3]);
-        $v->equal(['a', 'b', 'c']);
-    }
-
-    /**
-     * Test equal with a string throws ConversionException.
+     * Test equal with a string throws InvalidArgumentException.
      */
     public function testEqualWithStringThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1, 2, 3]);
         $v->equal('not a vector');
     }
 
     /**
-     * Test equal with an int throws ConversionException.
+     * Test equal with an int throws InvalidArgumentException.
      */
     public function testEqualWithIntThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1, 2, 3]);
         $v->equal(42);
     }
 
     /**
-     * Test equal with null throws ConversionException.
+     * Test equal with null throws InvalidArgumentException.
      */
     public function testEqualWithNullThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1, 2, 3]);
         $v->equal(null);
     }
@@ -235,68 +134,55 @@ class VectorComparisonTest extends TestCase
     }
 
     /**
-     * Test approxEqual with a list of numbers, converted via toVector().
+     * Test approxEqual with an array throws InvalidArgumentException (arrays are not a supported type).
      */
-    public function testApproxEqualWithArrayOfNumbers(): void
+    public function testApproxEqualWithArrayThrows(): void
     {
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
-
-        $this->assertTrue($v->approxEqual([1.0 + 1e-12, 2.0, 3.0]));
-        $this->assertFalse($v->approxEqual([1.1, 2.0, 3.0]));
+        $v->approxEqual([1.0, 2.0, 3.0]);
     }
 
     /**
-     * Test approxEqual with a single-column Matrix, converted via toVector().
+     * Test approxEqual with a Matrix throws InvalidArgumentException (Matrix is not a supported type),
+     * even a single-column Matrix that could plausibly represent the same values.
      */
-    public function testApproxEqualWithSingleColumnMatrix(): void
+    public function testApproxEqualWithMatrixThrows(): void
     {
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
         $col = new Matrix(3, 1);
-        $col->setColumn(0, [1.0 + 1e-12, 2.0, 3.0]);
+        $col->setColumn(0, Vector::fromArray([1.0, 2.0, 3.0]));
 
-        $this->assertTrue($v->approxEqual($col));
+        $this->expectException(InvalidArgumentException::class);
+        $v->approxEqual($col);
     }
 
     /**
-     * Test approxEqual with a Matrix that has neither one row nor one column throws
-     * ConversionException.
-     */
-    public function testApproxEqualWithMultiRowColumnMatrixThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        $v = Vector::fromArray([1.0, 2.0, 3.0, 4.0]);
-        $v->approxEqual(Matrix::fromArray([
-            [1.0, 2.0],
-            [3.0, 4.0],
-        ]));
-    }
-
-    /**
-     * Test approxEqual with a string throws ConversionException.
+     * Test approxEqual with a string throws InvalidArgumentException.
      */
     public function testApproxEqualWithStringThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
         $v->approxEqual('not a vector');
     }
 
     /**
-     * Test approxEqual with an int throws ConversionException.
+     * Test approxEqual with an int throws InvalidArgumentException.
      */
     public function testApproxEqualWithIntThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
         $v->approxEqual(42);
     }
 
     /**
-     * Test approxEqual with null throws ConversionException.
+     * Test approxEqual with null throws InvalidArgumentException.
      */
     public function testApproxEqualWithNullThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
         $v->approxEqual(null);
     }

@@ -5,12 +5,11 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
-use OceanMoon\Core\Exceptions\ConversionException;
+use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
-use stdClass;
 
 use const OceanMoon\Math\M_I;
 
@@ -154,14 +153,14 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test parsing invalid input throws ConversionException.
+     * Test parsing invalid input throws FormatException.
      *
      * @param string $input The invalid input string.
      */
     #[DataProvider('invalidInputProvider')]
     public function testFromStringInvalidInput(string $input): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(FormatException::class);
         Complex::fromString($input);
     }
 
@@ -233,144 +232,6 @@ class ComplexFactoryTest extends TestCase
         $this->assertEquals($expected, $result);
         $this->assertEqualsWithDelta($expectedReal, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
-    }
-
-    #endregion
-
-    #region toComplex tests
-
-    /**
-     * Test toComplex() with an existing Complex instance returns it unchanged (same instance).
-     */
-    public function testToComplexWithComplexInstance(): void
-    {
-        $z = new Complex(3, 4);
-        $result = Complex::toComplex($z);
-        $this->assertSame($z, $result);
-    }
-
-    /**
-     * Test toComplex() with int and float values.
-     */
-    public function testToComplexWithNumber(): void
-    {
-        $result = Complex::toComplex(5);
-        $this->assertSame(5.0, $result->real);
-        $this->assertSame(0.0, $result->imaginary);
-
-        $result2 = Complex::toComplex(-3.5);
-        $this->assertSame(-3.5, $result2->real);
-        $this->assertSame(0.0, $result2->imaginary);
-    }
-
-    /**
-     * Test toComplex() with a non-finite float (INF or NAN) throws.
-     */
-    public function testToComplexWithNonFiniteFloatThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex(INF);
-    }
-
-    /**
-     * Test toComplex() with NAN throws.
-     */
-    public function testToComplexWithNanThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex(NAN);
-    }
-
-    /**
-     * Test toComplex() with a valid 2-element array.
-     */
-    public function testToComplexWithArray(): void
-    {
-        $result = Complex::toComplex([3, 4]);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test toComplex() with an array of the wrong length throws.
-     */
-    public function testToComplexWithArrayInvalidCountThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex([3, 4, 5]);
-    }
-
-    /**
-     * Test toComplex() with a non-numeric array element throws.
-     */
-    public function testToComplexWithArrayNonNumericThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex([3, 'four']);
-    }
-
-    /**
-     * Test toComplex() with a plain object with "real" and "imaginary" properties.
-     */
-    public function testToComplexWithObject(): void
-    {
-        $obj = new stdClass();
-        $obj->real = 3;
-        $obj->imaginary = 4;
-        $result = Complex::toComplex($obj);
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
-    }
-
-    /**
-     * Test toComplex() with an object missing the required properties throws.
-     */
-    public function testToComplexWithObjectMissingPropertiesThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex(new stdClass());
-    }
-
-    /**
-     * Test toComplex() with an object whose properties are non-numeric throws.
-     */
-    public function testToComplexWithObjectNonNumericPropertiesThrows(): void
-    {
-        $obj = new stdClass();
-        $obj->real = 'three';
-        $obj->imaginary = 4;
-        $this->expectException(ConversionException::class);
-        Complex::toComplex($obj);
-    }
-
-    /**
-     * Test toComplex() with a value of an unconvertible type throws.
-     */
-    public function testToComplexWithInvalidTypeThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex(null);
-    }
-
-    /**
-     * Test toComplex() with a boolean (not a valid conversion source) throws.
-     */
-    public function testToComplexWithBooleanThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Complex::toComplex(true);
-    }
-
-    /**
-     * Test toComplex() with a parseable string. Lives here rather than in ComplexFactoryTest,
-     * since it exercises toComplex()'s delegation to fromString() specifically, not general factory
-     * behavior.
-     */
-    public function testToComplexWithString(): void
-    {
-        $result = Complex::toComplex('3+4i');
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(4.0, $result->imaginary);
     }
 
     #endregion

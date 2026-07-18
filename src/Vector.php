@@ -18,6 +18,7 @@ use Override;
 use Stringable;
 
 use function OceanMoon\Core\Globals\is_number;
+use function OceanMoon\Core\Globals\to_string;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.
@@ -81,7 +82,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     public function __construct(int $size)
     {
         if ($size < 0) {
-            throw new DomainException("Cannot create a Vector with negative size: $size.");
+            throw new DomainException("Cannot create a Vector with negative size, got $size.");
         }
 
         $this->size = $size;
@@ -110,14 +111,17 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
         // Check for list.
         if (!array_is_list($arr)) {
-            throw new DomainException('Array must be a list.');
+            throw new DomainException('Cannot create a Vector from array. Array must be a list.');
         }
 
         // Check all elements are numbers.
-        foreach ($arr as $value) {
+        foreach ($arr as $index => $value) {
             // Check if the value is a number.
             if (!is_number($value)) {
-                throw new DomainException('Every element must be a number (int or float).');
+                throw new DomainException(
+                    "Cannot create a Vector from array. Element at index $index must be a number (int or float), "
+                    . 'got ' . get_debug_type($value) . '.'
+                );
             }
 
             // Set the vector element.
@@ -219,6 +223,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @param int $index Element index (0-based).
      * @param float $value Value to set.
      * @throws OutOfRangeException If the index is outside the valid range.
+     * @throws DomainException If the value is not finite (±INF or NAN).
      */
     public function set(int $index, float $value): void
     {
@@ -226,6 +231,13 @@ final class Vector implements Stringable, Countable, ArrayAccess
         if ($index < 0 || $index >= count($this->data)) {
             throw new OutOfRangeException(
                 "Vector index $index is outside the valid range 0-" . ($this->size - 1) . '.'
+            );
+        }
+
+        // Check the value is finite.
+        if (!is_finite($value)) {
+            throw new DomainException(
+                "Cannot set element $index. Value must be finite, got " . to_string($value) . '.'
             );
         }
 
@@ -253,7 +265,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
-            throw new InvalidArgumentException('The value provided for comparison must be a Vector.');
+            throw new InvalidArgumentException(
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be a Vector.'
+            );
         }
 
         // Check sizes are equal.
@@ -294,7 +308,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
-            throw new InvalidArgumentException('The value provided for comparison must be a Vector.');
+            throw new InvalidArgumentException(
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be a Vector.'
+            );
         }
 
         // Check sizes are equal.
@@ -379,8 +395,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Multiply this Vector by a float or a Matrix.
      *
-     * @param float $other Float or Matrix to multiply by.
+     * @param float|Matrix $other Float or Matrix to multiply by.
      * @return self New Vector representing the result.
+     * @throws LengthException If $other is a Matrix and its row count doesn't equal this Vector's size.
      */
     public function mul(float|Matrix $other): self
     {
@@ -488,10 +505,10 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors are size 3.
         if ($this->size !== 3) {
-            throw new LengthException('Cannot compute cross product: first operand is not size 3.');
+            throw new LengthException('Cannot compute cross product. First operand is not size 3.');
         }
         if ($other->size !== 3) {
-            throw new LengthException('Cannot compute cross product: second operand is not size 3.');
+            throw new LengthException('Cannot compute cross product. Second operand is not size 3.');
         }
 
         return self::fromArray([
@@ -569,18 +586,23 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param mixed $offset Index to get.
      * @return float
-     * @throws OutOfRangeException If the offset is invalid.
+     * @throws InvalidArgumentException If the offset is not an int.
+     * @throws OutOfRangeException If the offset is outside the valid range.
      */
     #[Override] // ArrayAccess
     public function offsetGet(mixed $offset): float
     {
-        // Check offset exists.
+        // Check offset type.
+        if (!is_int($offset)) {
+            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
+        }
+
+        // Check offset value.
         if (!$this->offsetExists($offset)) {
             throw new OutOfRangeException(
-                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . '.'
+                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . ", got $offset."
             );
         }
-        assert(is_int($offset));
 
         return $this->get($offset);
     }
@@ -596,13 +618,17 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        // Check offset exists.
+        // Check offset type.
+        if (!is_int($offset)) {
+            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
+        }
+
+        // Check offset value.
         if (!$this->offsetExists($offset)) {
             throw new OutOfRangeException(
-                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . '.'
+                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . ", got $offset."
             );
         }
-        assert(is_int($offset));
 
         // Check value is a number.
         if (!is_number($value)) {

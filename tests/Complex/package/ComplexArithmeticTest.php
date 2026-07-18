@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use DivisionByZeroError;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -178,7 +178,7 @@ class ComplexArithmeticTest extends TestCase
     {
         $z = new Complex(3, 4);
 
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         $z->div(0);
     }
 
@@ -189,7 +189,7 @@ class ComplexArithmeticTest extends TestCase
     {
         $z = new Complex(3, 4);
 
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         $z->div(new Complex(0, 0));
     }
 

@@ -124,6 +124,16 @@ class VectorConversionTest extends TestCase
     }
 
     /**
+     * Test offsetGet with a non-integer offset throws InvalidArgumentException.
+     */
+    public function testOffsetGetWithNonIntegerOffsetThrows(): void
+    {
+        $v = Vector::fromArray([10, 20, 30]);
+        $this->expectException(InvalidArgumentException::class);
+        $x = $v['first'];
+    }
+
+    /**
      * Test offsetSet with a valid index and value.
      */
     public function testOffsetSetWithValidIndexAndValue(): void
@@ -141,6 +151,16 @@ class VectorConversionTest extends TestCase
         $v = Vector::fromArray([1, 2, 3]);
         $this->expectException(OutOfRangeException::class);
         $v[5] = 10;
+    }
+
+    /**
+     * Test offsetSet with a non-integer offset throws InvalidArgumentException.
+     */
+    public function testOffsetSetWithNonIntegerOffsetThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $this->expectException(InvalidArgumentException::class);
+        $v['first'] = 10;
     }
 
     /**

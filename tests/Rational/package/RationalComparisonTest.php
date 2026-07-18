@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use OceanMoon\Core\Exceptions\ConversionException;
+use DomainException;
+use InvalidArgumentException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -128,13 +129,23 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test compare with invalid type throws ConversionException.
+     * Test compare with invalid type throws InvalidArgumentException.
      */
     public function testCompareInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->compare('string');
+    }
+
+    /**
+     * Test compare with NAN throws DomainException (NAN has no meaningful ordering).
+     */
+    public function testCompareWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $r = new Rational(3, 4);
+        $r->compare(NAN);
     }
 
     /**
@@ -161,80 +172,6 @@ class RationalComparisonTest extends TestCase
 
         // (float)PHP_INT_MIN is exactly representable, but should still use float comparison path
         $this->assertSame(1, $r->compare((float) PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
-    }
-
-    #endregion
-
-    #region Identical tests
-
-    /**
-     * Test identical returns true for a Rational with the same value.
-     */
-    public function testIdentical(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(3, 4);
-
-        $this->assertTrue($r1->identical($r2));
-    }
-
-    /**
-     * Test identical returns true for equivalent, differently-represented Rationals, since Rational
-     * always reduces to canonical (lowest-terms) form in the constructor.
-     */
-    public function testIdenticalEquivalentRepresentation(): void
-    {
-        $r1 = new Rational(1, 2);
-        $r2 = new Rational(6, 12);
-
-        $this->assertTrue($r1->identical($r2));
-    }
-
-    /**
-     * Test identical is reflexive: a value is always identical to itself.
-     */
-    public function testIdenticalReflexive(): void
-    {
-        $r = new Rational(3, 4);
-
-        $this->assertTrue($r->identical($r));
-    }
-
-    /**
-     * Test identical returns false for a Rational with a different value.
-     */
-    public function testIdenticalDifferentValue(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(3, 5);
-
-        $this->assertFalse($r1->identical($r2));
-    }
-
-    /**
-     * Test identical returns false for values equal() would accept but that aren't Rational instances
-     * -- int and float -- even when the numeric value matches.
-     */
-    public function testIdenticalWithNonRationalReturnsFalse(): void
-    {
-        $r = new Rational(3, 1);
-
-        $this->assertFalse($r->identical(3));
-        $this->assertFalse($r->identical(3.0));
-    }
-
-    /**
-     * Test identical returns false for other unrelated types, without throwing.
-     */
-    public function testIdenticalWithInvalidTypeReturnsFalse(): void
-    {
-        $r = new Rational(3, 4);
-
-        $this->assertFalse($r->identical('string'));
-        $this->assertFalse($r->identical(null));
-        $this->assertFalse($r->identical([]));
-        $this->assertFalse($r->identical(new stdClass()));
-        $this->assertFalse($r->identical(true));
     }
 
     #endregion
@@ -293,7 +230,7 @@ class RationalComparisonTest extends TestCase
     public function testEqualWithInvalidTypeThrows(): void
     {
         $r = new Rational(3, 4);
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->assertFalse($r->equal('string'));
     }
 
@@ -446,41 +383,41 @@ class RationalComparisonTest extends TestCase
     #region Ordering method tests
 
     /**
-     * Test lessThan with invalid type throws ConversionException.
+     * Test lessThan with invalid type throws InvalidArgumentException.
      */
     public function testLessThanInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->lessThan('string');
     }
 
     /**
-     * Test lessThanOrEqual with invalid type throws ConversionException.
+     * Test lessThanOrEqual with invalid type throws InvalidArgumentException.
      */
     public function testLessThanOrEqualInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->lessThanOrEqual([]);
     }
 
     /**
-     * Test greaterThan with invalid type throws ConversionException.
+     * Test greaterThan with invalid type throws InvalidArgumentException.
      */
     public function testGreaterThanInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->greaterThan(new stdClass());
     }
 
     /**
-     * Test greaterThanOrEqual with invalid type throws ConversionException.
+     * Test greaterThanOrEqual with invalid type throws InvalidArgumentException.
      */
     public function testGreaterThanOrEqualInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->greaterThanOrEqual(null);
     }
@@ -642,41 +579,41 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test approxEqual with a non-numeric string throws ConversionException.
+     * Test approxEqual with a non-numeric string throws InvalidArgumentException.
      */
     public function testApproxEqualInvalidStringThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxEqual('string');
     }
 
     /**
-     * Test approxEqual with an array throws ConversionException.
+     * Test approxEqual with an array throws InvalidArgumentException.
      */
     public function testApproxEqualWithArrayThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxEqual([]);
     }
 
     /**
-     * Test approxEqual with an object throws ConversionException.
+     * Test approxEqual with an object throws InvalidArgumentException.
      */
     public function testApproxEqualWithObjectThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxEqual(new stdClass());
     }
 
     /**
-     * Test approxEqual with null throws ConversionException.
+     * Test approxEqual with null throws InvalidArgumentException.
      */
     public function testApproxEqualWithNullThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxEqual(null);
     }
@@ -799,11 +736,11 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
-     * Test approxCompare with invalid type throws ConversionException.
+     * Test approxCompare with invalid type throws InvalidArgumentException.
      */
     public function testApproxCompareInvalidTypeThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxCompare('string');
     }

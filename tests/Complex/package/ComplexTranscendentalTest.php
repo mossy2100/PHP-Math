@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -140,6 +141,28 @@ class ComplexTranscendentalTest extends TestCase
     {
         $this->expectException(DomainException::class);
         new Complex(5)->log(1);
+    }
+
+    /**
+     * Test log of zero throws ArithmeticException, whether the base is real or complex.
+     *
+     * With a real base, the "use built-in log() function when arguments are real" shortcut would otherwise compute
+     * log(0, base) === -INF and construct a non-finite Complex, which throws DomainException from the constructor
+     * instead of the documented ArithmeticException. This must be caught before that shortcut is reached.
+     */
+    public function testLogThisZeroWithRealBase(): void
+    {
+        $this->expectException(ArithmeticException::class);
+        new Complex(0)->log(2);
+    }
+
+    /**
+     * Test log of zero throws ArithmeticException with a complex base.
+     */
+    public function testLogThisZeroWithComplexBase(): void
+    {
+        $this->expectException(ArithmeticException::class);
+        new Complex(0)->log(new Complex(2, 1));
     }
 
     /**

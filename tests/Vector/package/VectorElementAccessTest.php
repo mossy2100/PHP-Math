@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Vector;
 
+use DomainException;
 use OceanMoon\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -101,6 +102,39 @@ class VectorElementAccessTest extends TestCase
         $v = new Vector(0);
         $this->expectException(OutOfRangeException::class);
         $v->set(0, 5);
+    }
+
+    /**
+     * Test set() with a non-finite value throws DomainException.
+     */
+    public function testSetNonFiniteValueThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+
+        $this->expectException(DomainException::class);
+        $v->set(0, INF);
+    }
+
+    /**
+     * Test set() with NAN throws DomainException.
+     */
+    public function testSetNanValueThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+
+        $this->expectException(DomainException::class);
+        $v->set(0, NAN);
+    }
+
+    /**
+     * Test set() with negative infinity throws DomainException.
+     */
+    public function testSetNegativeInfinityValueThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+
+        $this->expectException(DomainException::class);
+        $v->set(0, -INF);
     }
 
     /**

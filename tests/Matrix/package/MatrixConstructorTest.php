@@ -5,9 +5,8 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
-use OceanMoon\Core\Exceptions\ConversionException;
+use LengthException;
 use OceanMoon\Math\Matrix;
-use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -181,31 +180,31 @@ class MatrixConstructorTest extends TestCase
     }
 
     /**
-     * Test fromArray with a non-array row throws ConversionException.
+     * Test fromArray with a non-array row throws DomainException.
      */
     public function testFromArrayWithNonArrayRowThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Matrix::fromArray([1, 2, 3]);
     }
 
     /**
-     * Test fromArray with non-numeric values throws ConversionException.
+     * Test fromArray with non-numeric values throws DomainException.
      */
     public function testFromArrayWithNonNumericValuesThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Matrix::fromArray([
             [1, 'two', 3],
         ]);
     }
 
     /**
-     * Test fromArray with ragged rows throws ConversionException.
+     * Test fromArray with ragged rows throws LengthException.
      */
     public function testFromArrayWithRaggedRowsThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(LengthException::class);
         Matrix::fromArray([
             [1, 2, 3],
             [4, 5],
@@ -213,11 +212,11 @@ class MatrixConstructorTest extends TestCase
     }
 
     /**
-     * Test fromArray with the outer array not a list (non-sequential keys) throws ConversionException.
+     * Test fromArray with the outer array not a list (non-sequential keys) throws DomainException.
      */
     public function testFromArrayWithNonListOuterArrayThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Matrix::fromArray([
             5 => [1, 2],
             9 => [3, 4],
@@ -225,11 +224,11 @@ class MatrixConstructorTest extends TestCase
     }
 
     /**
-     * Test fromArray with a row that is not a list (non-sequential keys) throws ConversionException.
+     * Test fromArray with a row that is not a list (non-sequential keys) throws DomainException.
      */
     public function testFromArrayWithNonListRowThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Matrix::fromArray([
             [1, 2],
             [
@@ -269,113 +268,5 @@ class MatrixConstructorTest extends TestCase
                 }
             }
         }
-    }
-
-    /**
-     * Test toMatrix with a Matrix instance returns it unchanged (same instance).
-     */
-    public function testToMatrixWithMatrixInstance(): void
-    {
-        $m = new Matrix(2, 2);
-        $result = Matrix::toMatrix($m);
-        $this->assertSame($m, $result);
-    }
-
-    /**
-     * Test toMatrix with a Vector converts it to a single-column matrix.
-     */
-    public function testToMatrixWithVector(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $m = Matrix::toMatrix($v);
-
-        $this->assertSame(3, $m->rowCount);
-        $this->assertSame(1, $m->columnCount);
-        $this->assertSame([
-            [1.0],
-            [2.0],
-            [3.0],
-        ], $m->toArray());
-    }
-
-    /**
-     * Test toMatrix with a flat list of numbers converts it to a single-column matrix, matching how
-     * a bare Vector is treated.
-     */
-    public function testToMatrixWithFlatArray(): void
-    {
-        $m = Matrix::toMatrix([1, 2, 3]);
-
-        $this->assertSame(3, $m->rowCount);
-        $this->assertSame(1, $m->columnCount);
-        $this->assertSame([
-            [1.0],
-            [2.0],
-            [3.0],
-        ], $m->toArray());
-    }
-
-    /**
-     * Test toMatrix with a non-list array of numbers throws ConversionException. This exercises
-     * isFlatNumericArray()'s array_is_list() check specifically: the array contains only numbers, but
-     * its keys are non-sequential, so it fails the flat-numeric-array check and falls through to
-     * fromArray(), which then also rejects it for not being a list.
-     */
-    public function testToMatrixWithNonListNumericArrayThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Matrix::toMatrix([
-            5 => 1,
-            9 => 2,
-            3 => 3,
-        ]);
-    }
-
-    /**
-     * Test toMatrix with a rectangular array of rows delegates to fromArray().
-     */
-    public function testToMatrixWithRectangularArray(): void
-    {
-        $m = Matrix::toMatrix([
-            [1, 2],
-            [3, 4],
-        ]);
-
-        $this->assertSame(2, $m->rowCount);
-        $this->assertSame(2, $m->columnCount);
-        $this->assertSame([
-            [1.0, 2.0],
-            [3.0, 4.0],
-        ], $m->toArray());
-    }
-
-    /**
-     * Test toMatrix with a ragged array throws ConversionException, rethrown from fromArray().
-     */
-    public function testToMatrixWithRaggedArrayThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Matrix::toMatrix([
-            [1, 2],
-            [3],
-        ]);
-    }
-
-    /**
-     * Test toMatrix with a value of an unconvertible type throws ConversionException.
-     */
-    public function testToMatrixWithInvalidTypeThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Matrix::toMatrix(null);
-    }
-
-    /**
-     * Test toMatrix with a string (not a valid conversion source) throws ConversionException.
-     */
-    public function testToMatrixWithStringThrows(): void
-    {
-        $this->expectException(ConversionException::class);
-        Matrix::toMatrix('not a matrix');
     }
 }

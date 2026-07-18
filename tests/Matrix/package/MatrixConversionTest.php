@@ -75,10 +75,11 @@ class MatrixConversionTest extends TestCase
     }
 
     /**
-     * Test that __toString() suppresses floating-point representation noise from arithmetic
-     * by routing each cell through Floats::format() instead of casting directly to string.
-     * Without this, IEEE-754 quirks like 0.1 + 0.2 == 0.30000000000000004 would render as
-     * 17-digit garbage and dominate the column-width calculation.
+     * Test that __toString() doesn't render floating-point representation noise from arithmetic.
+     * PHP's default (string) cast on a float is governed by the `precision` ini setting (14 by
+     * default), which already collapses IEEE-754 quirks like 0.1 + 0.2 == 0.30000000000000004 down
+     * to '0.3' rather than rendering 17-digit garbage that would dominate the column-width
+     * calculation.
      */
     public function testToStringSuppressesFloatingPointNoise(): void
     {

@@ -16,6 +16,7 @@ use Override;
 use Stringable;
 
 use function OceanMoon\Core\Globals\is_number;
+use function OceanMoon\Core\Globals\to_string;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
@@ -70,7 +71,9 @@ final class Matrix implements Stringable, Countable
     {
         // Check if dimensions are non-negative.
         if ($rowCount < 0 || $columnCount < 0) {
-            throw new DomainException('Cannot create a matrix with negative dimensions.');
+            throw new DomainException(
+                "Cannot create a matrix with negative dimensions: $rowCount rows, $columnCount columns."
+            );
         }
 
         // Initialize matrix properties.
@@ -91,7 +94,8 @@ final class Matrix implements Stringable, Countable
      *
      * @param array<array-key, mixed> $arr Rectangular array of numbers.
      * @return self
-     * @throws DomainException If the array has the wrong shape to be converted to a Matrix.
+     * @throws DomainException If the array or a row isn't a list, or an element isn't a number.
+     * @throws LengthException If the rows don't all have the same number of columns.
      */
     public static function fromArray(array $arr): self
     {
@@ -102,7 +106,7 @@ final class Matrix implements Stringable, Countable
 
         // Check the outer array is a list.
         if (!array_is_list($arr)) {
-            throw new DomainException('Array must be a list.');
+            throw new DomainException('Cannot create a Matrix from array. Array must be a list.');
         }
 
         $rowCount = count($arr);
@@ -110,26 +114,32 @@ final class Matrix implements Stringable, Countable
         $data = [];
 
         // Validate data and ensure rectangular matrix.
-        foreach ($arr as $row) {
+        foreach ($arr as $i => $row) {
             // Check each row is a list array.
             if (!is_array($row) || !array_is_list($row)) {
-                throw new DomainException('Each row must be a list array.');
+                throw new DomainException("Cannot create a Matrix from array. Row at index $i must be a list array.");
             }
 
             // Check all rows have the same number of columns.
             if ($columnCount === null) {
                 $columnCount = count($row);
             } elseif (count($row) !== $columnCount) {
-                throw new DomainException('All rows must have the same number of columns.');
+                throw new LengthException(
+                    "Cannot create a Matrix from array: row at index $i has " . count($row) . ' columns, expected '
+                    . "$columnCount."
+                );
             }
 
             $dataRow = [];
 
             // Check each row contains only numbers.
-            foreach ($row as $value) {
+            foreach ($row as $j => $value) {
                 // Check if each value is a number.
                 if (!is_number($value)) {
-                    throw new DomainException('Every element must be a number (int or float).');
+                    throw new DomainException(
+                        "Cannot create a Matrix from array: element at row $i, column $j must be a number (int or "
+                        . 'float), got ' . get_debug_type($value) . '.'
+                    );
                 }
 
                 // Convert the value to a float and store it in the matrix.
@@ -151,6 +161,7 @@ final class Matrix implements Stringable, Countable
      *
      * @param int $size Size of the identity matrix.
      * @return self Identity matrix.
+     * @throws DomainException If $size is negative.
      */
     public static function identity(int $size): self
     {
@@ -349,6 +360,7 @@ final class Matrix implements Stringable, Countable
      * @param int $col Column index (0-based).
      * @param float $value Value to set.
      * @throws OutOfRangeException If indexes are outside valid range.
+     * @throws DomainException If the value is not finite (±INF or NAN).
      */
     public function set(int $row, int $col, float $value): void
     {
@@ -359,6 +371,13 @@ final class Matrix implements Stringable, Countable
         if ($col < 0 || $col >= $this->columnCount) {
             throw new OutOfRangeException(
                 "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
+            );
+        }
+
+        // Check the value is finite.
+        if (!is_finite($value)) {
+            throw new DomainException(
+                "Cannot set element ($row, $col). Value must be finite, got " . to_string($value) . '.'
             );
         }
 
@@ -412,7 +431,7 @@ final class Matrix implements Stringable, Countable
 
         // Check length.
         $vectorSize = count($vec);
-        if (count($vec) !== $this->rowCount) {
+        if ($vectorSize !== $this->rowCount) {
             throw new LengthException(
                 "Cannot set column due to incorrect Vector size. Expected {$this->rowCount} elements, got $vectorSize."
             );
@@ -482,7 +501,9 @@ final class Matrix implements Stringable, Countable
         // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
         // If we don't have a Matrix, abort.
         if (!$other instanceof self) {
-            throw new InvalidArgumentException('The value provided for comparison must be a Matrix.');
+            throw new InvalidArgumentException(
+                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be a Matrix.'
+            );
         }
 
         // Check sizes are equal.
@@ -525,7 +546,9 @@ final class Matrix implements Stringable, Countable
         // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
         // If we don't have a Matrix, abort.
         if (!$other instanceof self) {
-            throw new InvalidArgumentException('The value provided for comparison must be a Matrix.');
+            throw new InvalidArgumentException(
+                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be a Matrix.'
+            );
         }
 
         // Check sizes are equal.
@@ -739,6 +762,8 @@ final class Matrix implements Stringable, Countable
      * @return self New matrix representing the quotient.
      * @throws ArithmeticException If dividing by zero, or by a non-invertible matrix (zero determinant).
      * @throws DomainException If dividing by a non-square matrix.
+     * @throws LengthException If dividing by a matrix whose dimensions are incompatible for the resulting
+     * multiplication.
      */
     public function div(float|self $other): self
     {
@@ -797,12 +822,12 @@ final class Matrix implements Stringable, Countable
     /**
      * Raise this matrix to a power.
      *
-     * @param int $power Power to raise to.
+     * @param int $exponent Power to raise to.
      * @return self New matrix representing the result.
      * @throws DomainException If matrix is not square.
      * @throws ArithmeticException If not invertible (zero determinant) for negative powers.
      */
-    public function pow(int $power): self
+    public function pow(int $exponent): self
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
@@ -810,30 +835,37 @@ final class Matrix implements Stringable, Countable
         }
 
         // Handle power of 0.
-        if ($power === 0) {
+        if ($exponent === 0) {
             return self::identity($this->rowCount);
         }
 
         // Handle power of 1.
-        if ($power === 1) {
+        if ($exponent === 1) {
             return clone $this;
         }
 
+        // Handle exponent = PHP_INT_MIN.
+        if ($exponent === PHP_INT_MIN) {
+            $result = $this->pow(PHP_INT_MAX)->mul($this);
+            assert($result instanceof self);
+            return $result->inv();
+        }
+
         // Handle negative powers.
-        if ($power < 0) {
-            return $this->inv()->pow(-$power);
+        if ($exponent < 0) {
+            return $this->inv()->pow(-$exponent);
         }
 
         // Handle positive powers greater than 1.
         $result = self::identity($this->rowCount);
         $base = clone $this;
 
-        while ($power > 0) {
-            if ($power % 2 === 1) {
+        while ($exponent > 0) {
+            if ($exponent % 2 === 1) {
                 $result = $result->mul($base);
             }
             $base = $base->mul($base);
-            $power = (int) ($power / 2);
+            $exponent = (int) ($exponent / 2);
         }
 
         assert($result instanceof self);

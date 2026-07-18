@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use InvalidArgumentException;
 use LogicException;
 use OceanMoon\Math\Complex;
 use OutOfRangeException;
@@ -46,6 +47,17 @@ class ComplexArrayAccessTest extends TestCase
 
         $this->expectException(OutOfRangeException::class);
         $value = $z[2];
+    }
+
+    /**
+     * Test ArrayAccess offsetGet with a non-integer offset throws InvalidArgumentException.
+     */
+    public function testOffsetGetNonIntegerOffset(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->expectException(InvalidArgumentException::class);
+        $value = $z['real'];
     }
 
     /**

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Matrix;
 
-use InvalidArgumentException;
+use DomainException;
 use LengthException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
@@ -105,6 +105,39 @@ class MatrixElementsTest extends TestCase
         $m->set(0, -1, 1);
     }
 
+    /**
+     * Test setting a non-finite value throws DomainException.
+     */
+    public function testSetNonFiniteValueThrows(): void
+    {
+        $m = new Matrix(2, 2);
+
+        $this->expectException(DomainException::class);
+        $m->set(0, 0, INF);
+    }
+
+    /**
+     * Test setting NAN throws DomainException.
+     */
+    public function testSetNanValueThrows(): void
+    {
+        $m = new Matrix(2, 2);
+
+        $this->expectException(DomainException::class);
+        $m->set(0, 0, NAN);
+    }
+
+    /**
+     * Test setting negative infinity throws DomainException.
+     */
+    public function testSetNegativeInfinityValueThrows(): void
+    {
+        $m = new Matrix(2, 2);
+
+        $this->expectException(DomainException::class);
+        $m->set(0, 0, -INF);
+    }
+
     #endregion
 
     #region getRow() tests
@@ -151,21 +184,6 @@ class MatrixElementsTest extends TestCase
     #region setRow() tests
 
     /**
-     * Test setRow with an array.
-     */
-    public function testSetRowWithArray(): void
-    {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
-        $m->setRow(0, [7, 8, 9]);
-
-        $this->assertSame([7.0, 8.0, 9.0], $m->getRow(0)->toArray());
-        $this->assertSame([4.0, 5.0, 6.0], $m->getRow(1)->toArray());
-    }
-
-    /**
      * Test setRow with a Vector.
      */
     public function testSetRowWithVector(): void
@@ -187,7 +205,7 @@ class MatrixElementsTest extends TestCase
     {
         $m = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->setRow(2, [1, 2, 3]);
+        $m->setRow(2, Vector::fromArray([1, 2, 3]));
     }
 
     /**
@@ -197,17 +215,7 @@ class MatrixElementsTest extends TestCase
     {
         $m = new Matrix(2, 3);
         $this->expectException(LengthException::class);
-        $m->setRow(0, [1, 2]);
-    }
-
-    /**
-     * Test setRow with non-numeric elements throws InvalidArgumentException.
-     */
-    public function testSetRowNonNumericThrows(): void
-    {
-        $m = new Matrix(2, 3);
-        $this->expectException(InvalidArgumentException::class);
-        $m->setRow(0, [1, 'two', 3]); // @phpstan-ignore argument.type
+        $m->setRow(0, Vector::fromArray([1, 2]));
     }
 
     #endregion
@@ -256,21 +264,6 @@ class MatrixElementsTest extends TestCase
     #region setColumn() tests
 
     /**
-     * Test setColumn with an array.
-     */
-    public function testSetColumnWithArray(): void
-    {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
-        $m->setColumn(1, [20, 50]);
-
-        $this->assertSame([1.0, 20.0, 3.0], $m->getRow(0)->toArray());
-        $this->assertSame([4.0, 50.0, 6.0], $m->getRow(1)->toArray());
-    }
-
-    /**
      * Test setColumn with a Vector.
      */
     public function testSetColumnWithVector(): void
@@ -292,7 +285,7 @@ class MatrixElementsTest extends TestCase
     {
         $m = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->setColumn(3, [1, 2]);
+        $m->setColumn(3, Vector::fromArray([1, 2]));
     }
 
     /**
@@ -302,17 +295,7 @@ class MatrixElementsTest extends TestCase
     {
         $m = new Matrix(2, 3);
         $this->expectException(LengthException::class);
-        $m->setColumn(0, [1, 2, 3]);
-    }
-
-    /**
-     * Test setColumn with non-numeric elements throws InvalidArgumentException.
-     */
-    public function testSetColumnNonNumericThrows(): void
-    {
-        $m = new Matrix(2, 3);
-        $this->expectException(InvalidArgumentException::class);
-        $m->setColumn(0, [1, 'two']); // @phpstan-ignore argument.type
+        $m->setColumn(0, Vector::fromArray([1, 2, 3]));
     }
 
     #endregion

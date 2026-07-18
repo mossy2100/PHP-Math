@@ -85,7 +85,7 @@ float.
 **Returns:**
 - `self` - A new vector containing the array values.
 
-**Throws:** `ConversionException` if the array is not a list, or any element is not a number.
+**Throws:** `DomainException` if the array is not a list, or any element is not a number.
 
 **Examples:**
 ```php
@@ -94,30 +94,8 @@ $v2 = Vector::fromArray([3.14, -1, 0]);
 $v3 = Vector::fromArray([]);  // Size-0 vector
 
 // Non-sequential arrays are rejected, not re-indexed
-Vector::fromArray([5 => 10, 10 => 20]);  // throws ConversionException
+Vector::fromArray([5 => 10, 10 => 20]);  // throws DomainException
 ```
-
-### toVector()
-
-```php
-public static function toVector(mixed $value): self
-```
-
-Convert a value to a Vector, if it isn't one already. Accepts an existing `Vector` (returned
-unchanged), an `array` (converted via `fromArray()`), or a `Matrix` with exactly one column
-(converted via `getColumn(0)`, matching the column-vector convention used elsewhere in this package).
-
-**Examples:**
-```php
-$v1 = Vector::toVector([1, 2, 3]);              // [1.0, 2.0, 3.0]
-
-$col = new Matrix(3, 1);
-$col->setColumn(0, [4, 5, 6]);
-$v2 = Vector::toVector($col);                   // [4.0, 5.0, 6.0]
-```
-
-**Throws:** `ConversionException` if the value's type cannot be converted to a Vector, or it's a
-Matrix that doesn't have exactly one column.
 
 ---
 
@@ -230,7 +208,9 @@ Set a vector element by index. Integer values are cast to float. Invalidates the
 - `$index` (int) - Element index (0-based).
 - `$value` (float) - Value to set.
 
-**Throws:** `OutOfRangeException` if the index is outside the valid range.
+**Throws:**
+- `OutOfRangeException` if the index is outside the valid range.
+- `DomainException` if the value is not finite (±INF or NAN).
 
 **Examples:**
 ```php
@@ -243,7 +223,14 @@ echo $v->get(1);  // 99.0
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
+The `equal()` and `approxEqual()` methods are provided by the
+[`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait
+from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Vector` supplying its own type-checking logic
+since the trait's parameter is typed `mixed` (see the trait's docs for why).
+
+Both methods accept only a `Vector` for `$other` — not an `array` or a single-column `Matrix`, even though those
+could plausibly represent the same values. Anything else throws `InvalidArgumentException` rather than silently
+returning `false`, to catch bugs from comparing values that can't meaningfully be compared.
 
 ### equal()
 
@@ -254,18 +241,14 @@ public function equal(mixed $other): bool
 Check if this vector exactly equals another value.
 
 Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
-`$other` is converted via `toVector()`, so anything that method accepts — `Vector`, an `array` of
-numbers, or a single-column `Matrix` — can be compared. To catch bugs from comparing values that can't
-meaningfully be compared, this throws rather than silently returning `false` for a value `toVector()`
-can't convert.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toVector()` accepts).
+- `$other` (mixed) - The value to compare with (must be a `Vector`).
 
 **Returns:**
 - `bool` - True if the vectors are the same size and all elements are exactly equal.
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Vector.
+**Throws:** `InvalidArgumentException` if `$other` is not a `Vector`.
 
 **Examples:**
 ```php
@@ -276,12 +259,10 @@ $v3 = Vector::fromArray([1.0000000001, 2, 3]);
 var_dump($v1->equal($v2));  // true (exact match)
 var_dump($v1->equal($v3));  // false (not exact)
 
-// Also accepts a plain array
-var_dump($v1->equal([1, 2, 3]));  // true
-
-// Values that can't be converted throw, rather than silently returning false
-$v1->equal('string');  // throws ConversionException
-$v1->equal(null);      // throws ConversionException
+// Anything else throws, rather than silently returning false
+$v1->equal([1, 2, 3]);  // throws InvalidArgumentException
+$v1->equal('string');   // throws InvalidArgumentException
+$v1->equal(null);       // throws InvalidArgumentException
 ```
 
 ### approxEqual()
@@ -297,12 +278,10 @@ public function approxEqual(
 Check if this vector approximately equals another value within specified tolerances.
 
 Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute
-tolerance first, then relative tolerance. `$other` is converted via `toVector()`, so anything that
-method accepts can be compared. To catch bugs from comparing values that can't meaningfully be
-compared, this throws rather than silently returning `false` for a value `toVector()` can't convert.
+tolerance first, then relative tolerance.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toVector()` accepts).
+- `$other` (mixed) - The value to compare with (must be a `Vector`).
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
 
@@ -310,7 +289,7 @@ compared, this throws rather than silently returning `false` for a value `toVect
 - `bool` - True if the vectors are the same size and all elements are approximately equal.
 
 **Throws:**
-- `ConversionException` if `$other` cannot be converted to a Vector.
+- `InvalidArgumentException` if `$other` is not a `Vector`.
 - `DomainException` if either tolerance is negative.
 
 **Examples:**
@@ -324,8 +303,8 @@ var_dump($v1->approxEqual($v2));  // true
 // With tight tolerance
 var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
 
-// Values that can't be converted throw, rather than silently returning false
-$v1->approxEqual('string');  // throws ConversionException
+// Anything else throws, rather than silently returning false
+$v1->approxEqual('string');  // throws InvalidArgumentException
 ```
 
 ---
@@ -401,21 +380,35 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 ### mul()
 
 ```php
-public function mul(float $scalar): self
+public function mul(float|Matrix $other): self
 ```
 
-Multiply this vector by a scalar.
+Multiply this vector by a scalar, or by a `Matrix`.
+
+For a `Matrix` operand, this vector is treated as a single-row (1×n) matrix, multiplied by `$other`, and the
+resulting single row is converted back to a `Vector`. This requires `$other`'s row count to equal this vector's
+size.
 
 **Parameters:**
-- `$scalar` (float) - Number to multiply by.
+- `$other` (float|Matrix) - Number to multiply by, or a Matrix to multiply by (treating this vector as a row).
 
 **Returns:**
 - `self` - New vector representing the product.
+
+**Throws:** `LengthException` if `$other` is a Matrix whose row count doesn't equal this vector's size.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
+
+// Multiply by a Matrix (vector treated as a row).
+$m = Matrix::fromArray([
+    [1, 4],
+    [2, 5],
+    [3, 6],
+]);
+$result2 = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()
@@ -433,7 +426,7 @@ Divide this vector by a scalar.
 - `self` - New vector representing the quotient.
 
 **Throws:**
-- `DivisionByZeroError` if scalar is zero.
+- `ArithmeticException` if scalar is zero.
 
 **Examples:**
 ```php
@@ -529,7 +522,7 @@ Normalize this vector to a unit vector (magnitude 1). The result has the same di
 - `self` - A new vector with magnitude 1.
 
 **Throws:**
-- `DivisionByZeroError` if the vector has zero magnitude.
+- `ArithmeticException` if the vector has zero magnitude.
 
 **Examples:**
 ```php
@@ -649,7 +642,8 @@ Get value at an offset.
 - `float` - The value at the given index.
 
 **Throws:**
-- `OutOfRangeException` if offset is out of bounds.
+- `InvalidArgumentException` if the offset is not an int.
+- `OutOfRangeException` if the offset is outside the valid range.
 
 ### offsetSet()
 
@@ -664,8 +658,8 @@ Set value at an offset.
 - `$value` (mixed) - Value to set.
 
 **Throws:**
-- `OutOfRangeException` if offset is outside valid range.
-- `InvalidArgumentException` if value is not a number.
+- `InvalidArgumentException` if the offset is not an int, or the value is not a number.
+- `OutOfRangeException` if the offset is outside the valid range.
 
 ### offsetUnset()
 

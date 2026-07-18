@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Vector;
 
 use DomainException;
-use OceanMoon\Core\Exceptions\ConversionException;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -126,20 +125,20 @@ class VectorConstructorTest extends TestCase
     }
 
     /**
-     * Test fromArray with non-numeric values throws ConversionException.
+     * Test fromArray with non-numeric values throws DomainException.
      */
     public function testFromArrayWithNonNumericThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Vector::fromArray([1, 'hello', 3]);
     }
 
     /**
-     * Test fromArray with a non-sequential (non-list) array throws ConversionException.
+     * Test fromArray with a non-sequential (non-list) array throws DomainException.
      */
     public function testFromArrayWithNonSequentialArrayThrows(): void
     {
-        $this->expectException(ConversionException::class);
+        $this->expectException(DomainException::class);
         Vector::fromArray([
             5  => 10,
             10 => 20,
