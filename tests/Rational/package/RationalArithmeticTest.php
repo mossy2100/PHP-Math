@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use DivisionByZeroError;
 use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use RoundingMode;
 
 #[CoversClass(Rational::class)]
 class RationalArithmeticTest extends TestCase
@@ -69,19 +70,6 @@ class RationalArithmeticTest extends TestCase
 
         $this->assertSame(5, $result->numerator);
         $this->assertSame(2, $result->denominator);
-    }
-
-    /**
-     * Test addition with float.
-     */
-    public function testAddFloat(): void
-    {
-        // 1/2 + 0.5 = 1
-        $r = new Rational(1, 2);
-        $result = $r->add(0.5);
-
-        $this->assertSame(1, $result->numerator);
-        $this->assertSame(1, $result->denominator);
     }
 
     /**
@@ -151,7 +139,7 @@ class RationalArithmeticTest extends TestCase
      */
     public function testInvZeroThrows(): void
     {
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         $r = new Rational(0);
         $r->inv();
     }
@@ -231,11 +219,57 @@ class RationalArithmeticTest extends TestCase
     }
 
     /**
+     * Test dividing zero by a non-zero value short-circuits to 0, without going through the
+     * general cross-cancellation path.
+     */
+    public function testDivZeroNumerator(): void
+    {
+        // (0/7) / 3 = 0/1
+        $r = new Rational(0, 7);
+        $result = $r->div(3);
+
+        $this->assertSame(0, $result->numerator);
+        $this->assertSame(1, $result->denominator);
+    }
+
+    /**
+     * Test division where the numerators share a common factor, exercising the gcd(a,c)
+     * cross-cancellation branch.
+     */
+    public function testDivCancelsCommonNumeratorFactor(): void
+    {
+        // (4/5) / (6/7): numerators 4 and 6 share a factor of 2, so gcd(a,c) = 2.
+        // Cross-cancelling gives (2/5) * (7/3) = 14/15.
+        $r1 = new Rational(4, 5);
+        $r2 = new Rational(6, 7);
+        $result = $r1->div($r2);
+
+        $this->assertSame(14, $result->numerator);
+        $this->assertSame(15, $result->denominator);
+    }
+
+    /**
+     * Test division where the denominators share a common factor, exercising the gcd(b,d)
+     * cross-cancellation branch.
+     */
+    public function testDivCancelsCommonDenominatorFactor(): void
+    {
+        // (3/4) / (5/6): denominators 4 and 6 share a factor of 2, so gcd(b,d) = 2.
+        // Cross-cancelling gives (3/2) * (3/5) = 9/10.
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(5, 6);
+        $result = $r1->div($r2);
+
+        $this->assertSame(9, $result->numerator);
+        $this->assertSame(10, $result->denominator);
+    }
+
+    /**
      * Test division by zero throws exception.
      */
     public function testDivZeroThrows(): void
     {
-        $this->expectException(DivisionByZeroError::class);
+        $this->expectException(ArithmeticException::class);
         $r = new Rational(3, 4);
         $r->div(0);
     }
@@ -281,7 +315,7 @@ class RationalArithmeticTest extends TestCase
     }
 
     /**
-     * Test power with exponent 1 returns the same value.
+     * Test power with exponent 1 returns an equal but distinct Rational (a clone, not the same instance).
      */
     public function testPowOne(): void
     {
@@ -291,6 +325,7 @@ class RationalArithmeticTest extends TestCase
 
         $this->assertSame(3, $result->numerator);
         $this->assertSame(4, $result->denominator);
+        $this->assertNotSame($r, $result);
     }
 
     /**
@@ -324,6 +359,30 @@ class RationalArithmeticTest extends TestCase
 
         $this->assertSame(9, $result->numerator);
         $this->assertSame(4, $result->denominator);
+    }
+
+    /**
+     * Test power with exponent PHP_INT_MIN doesn't overflow when negating the exponent.
+     *
+     * Negative exponents are normally handled via inv()->pow(-$exponent), but negating PHP_INT_MIN overflows to a
+     * float in PHP, which would previously cause a TypeError when passed to the int-typed recursive pow() call.
+     * Base ±1 is used because any other base would genuinely overflow an int at this magnitude of exponent.
+     */
+    public function testPowIntMinExponent(): void
+    {
+        // 1^PHP_INT_MIN = 1
+        $r = new Rational(1);
+        $result = $r->pow(PHP_INT_MIN);
+
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(1, $result->denominator);
+
+        // (-1)^PHP_INT_MIN = 1, since PHP_INT_MIN is even
+        $r2 = new Rational(-1);
+        $result2 = $r2->pow(PHP_INT_MIN);
+
+        $this->assertSame(1, $result2->numerator);
+        $this->assertSame(1, $result2->denominator);
     }
 
     /**
@@ -486,6 +545,111 @@ class RationalArithmeticTest extends TestCase
     }
 
     /**
+     * Test round() with RoundingMode::TowardsZero: always truncates, ignoring the remainder.
+     */
+    public function testRoundTowardsZero(): void
+    {
+        $this->assertSame(2, new Rational(7, 3)->round(RoundingMode::TowardsZero));
+        $this->assertSame(-2, new Rational(-7, 3)->round(RoundingMode::TowardsZero));
+        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::TowardsZero));
+        $this->assertSame(-2, new Rational(-5, 2)->round(RoundingMode::TowardsZero));
+    }
+
+    /**
+     * Test round() with RoundingMode::AwayFromZero: always rounds away from zero when there's a remainder.
+     */
+    public function testRoundAwayFromZero(): void
+    {
+        $this->assertSame(3, new Rational(7, 3)->round(RoundingMode::AwayFromZero));
+        $this->assertSame(-3, new Rational(-7, 3)->round(RoundingMode::AwayFromZero));
+        $this->assertSame(3, new Rational(5, 2)->round(RoundingMode::AwayFromZero));
+        $this->assertSame(-3, new Rational(-5, 2)->round(RoundingMode::AwayFromZero));
+    }
+
+    /**
+     * Test round() with RoundingMode::NegativeInfinity: equivalent to floor().
+     */
+    public function testRoundNegativeInfinity(): void
+    {
+        $this->assertSame(2, new Rational(7, 3)->round(RoundingMode::NegativeInfinity));
+        $this->assertSame(-3, new Rational(-7, 3)->round(RoundingMode::NegativeInfinity));
+        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::NegativeInfinity));
+        $this->assertSame(-3, new Rational(-5, 2)->round(RoundingMode::NegativeInfinity));
+    }
+
+    /**
+     * Test round() with RoundingMode::PositiveInfinity: equivalent to ceil().
+     */
+    public function testRoundPositiveInfinity(): void
+    {
+        $this->assertSame(3, new Rational(7, 3)->round(RoundingMode::PositiveInfinity));
+        $this->assertSame(-2, new Rational(-7, 3)->round(RoundingMode::PositiveInfinity));
+        $this->assertSame(3, new Rational(5, 2)->round(RoundingMode::PositiveInfinity));
+        $this->assertSame(-2, new Rational(-5, 2)->round(RoundingMode::PositiveInfinity));
+    }
+
+    /**
+     * Test round() with RoundingMode::HalfTowardsZero: exact ties round toward zero, unlike the default
+     * HalfAwayFromZero mode.
+     */
+    public function testRoundHalfTowardsZero(): void
+    {
+        // Exact ties round toward zero.
+        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::HalfTowardsZero));
+        $this->assertSame(-2, new Rational(-5, 2)->round(RoundingMode::HalfTowardsZero));
+
+        // Non-tie values round the same as HalfAwayFromZero.
+        $this->assertSame(2, new Rational(7, 3)->round(RoundingMode::HalfTowardsZero));
+        $this->assertSame(-2, new Rational(-7, 3)->round(RoundingMode::HalfTowardsZero));
+    }
+
+    /**
+     * Test round() with RoundingMode::HalfEven ("banker's rounding"): exact ties round to the nearest even
+     * integer.
+     */
+    public function testRoundHalfEven(): void
+    {
+        $this->assertSame(0, new Rational(1, 2)->round(RoundingMode::HalfEven));  // 0.5 -> 0 (even)
+        $this->assertSame(2, new Rational(3, 2)->round(RoundingMode::HalfEven));  // 1.5 -> 2 (even)
+        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::HalfEven));  // 2.5 -> 2 (even)
+        $this->assertSame(4, new Rational(7, 2)->round(RoundingMode::HalfEven));  // 3.5 -> 4 (even)
+        $this->assertSame(-2, new Rational(-5, 2)->round(RoundingMode::HalfEven)); // -2.5 -> -2 (even)
+    }
+
+    /**
+     * Test round() with RoundingMode::HalfOdd: exact ties round to the nearest odd integer.
+     */
+    public function testRoundHalfOdd(): void
+    {
+        $this->assertSame(1, new Rational(1, 2)->round(RoundingMode::HalfOdd));  // 0.5 -> 1 (odd)
+        $this->assertSame(1, new Rational(3, 2)->round(RoundingMode::HalfOdd));  // 1.5 -> 1 (odd)
+        $this->assertSame(3, new Rational(5, 2)->round(RoundingMode::HalfOdd));  // 2.5 -> 3 (odd)
+        $this->assertSame(3, new Rational(7, 2)->round(RoundingMode::HalfOdd));  // 3.5 -> 3 (odd)
+        $this->assertSame(-3, new Rational(-5, 2)->round(RoundingMode::HalfOdd)); // -2.5 -> -3 (odd)
+    }
+
+    /**
+     * Test round() stays exact for values with a numerator large enough that converting to float first (as a
+     * naive implementation via PHP's own round() might) would lose precision and produce the wrong answer.
+     */
+    public function testRoundExactForLargeNumerator(): void
+    {
+        $r = new Rational(PHP_INT_MAX - 1, 3);
+        $this->assertSame(intdiv(PHP_INT_MAX - 1, 3), $r->round());
+    }
+
+    /**
+     * Test round() on an already-integral Rational returns the same value for every rounding mode.
+     */
+    public function testRoundIntegralValueIsModeIndependent(): void
+    {
+        $r = new Rational(5);
+        foreach (RoundingMode::cases() as $mode) {
+            $this->assertSame(5, $r->round($mode));
+        }
+    }
+
+    /**
      * Test immutability - operations return new instances.
      */
     public function testImmutability(): void
@@ -499,6 +663,4 @@ class RationalArithmeticTest extends TestCase
         $this->assertSame(1, $r2->numerator);
         $this->assertSame(1, $r2->denominator);
     }
-
-    #endregion
 }

@@ -5,9 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math;
 
 use DomainException;
-use Exception;
 use InvalidArgumentException;
-use JsonSerializable;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
@@ -15,8 +13,8 @@ use OceanMoon\Core\Integers;
 use OceanMoon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
+use RoundingMode;
 use Stringable;
-use UnderflowException;
 
 use function OceanMoon\Core\Globals\is_number;
 use function OceanMoon\Core\Globals\sign;
@@ -37,7 +35,7 @@ use function OceanMoon\Core\Globals\sign;
  * So, while it's technically possible, supporting this edge case inflates the code for little gain.
  */
 /** @disregard P1128 */
-final class Rational implements Stringable, JsonSerializable
+final class Rational implements Stringable
 {
     use ApproxComparable;
 
@@ -68,7 +66,7 @@ final class Rational implements Stringable, JsonSerializable
      * @param int $den The denominator. Defaults to 1.
      * @throws ArithmeticException If the denominator is zero.
      * @throws DomainException If one argument is PHP_INT_MIN and the other is odd, which produces a ratio that cannot
-     * be represented as a Rational and cannot be simplified.
+     * be represented as a Rational.
      */
     public function __construct(int $num = 0, int $den = 1)
     {
@@ -77,17 +75,42 @@ final class Rational implements Stringable, JsonSerializable
             throw new ArithmeticException('Cannot create a Rational with a denominator of zero.');
         }
 
-        try {
-            // Simplify the ratio to canonical form.
-            [$num, $den] = self::simplify($num, $den);
-        } catch (DomainException) {
-            if ($den === 1) {
-                throw new DomainException("The value $num is outside the valid range for a Rational.");
-            }
+        // If either value is PHP_INT_MIN and the other is odd, then the ratio is unrepresentable.
+        if (($num === PHP_INT_MIN && $den % 2 !== 0) || ($den === PHP_INT_MIN && $num % 2 !== 0)) {
             throw new DomainException("Cannot express the ratio $num/$den as a Rational.");
         }
 
-        // Store the simplified values.
+        // Simplify the ratio to canonical form.
+        if ($num === 0) {
+            // A zero numerator is always represented as 0/1.
+            $den = 1;
+        } elseif ($num === $den) {
+            // The numerator and denominator are equal to each other.
+            $num = 1;
+            $den = 1;
+        } elseif ($num === -$den) {
+            // The numerator is equal to the negative of the denominator.
+            $num = -1;
+            $den = 1;
+        } else {
+            // Calculate the GCD.
+            $gcd = Integers::gcd($num, $den);
+
+            // Reduce the fraction if necessary.
+            if ($gcd > 1) {
+                // Neither of these calls to intdiv() will throw an exception because $gcd cannot be 0 or -1.
+                $num = intdiv($num, $gcd);
+                $den = intdiv($den, $gcd);
+            }
+
+            // Ensure the denominator is positive.
+            if ($den < 0) {
+                $num = -$num;
+                $den = -$den;
+            }
+        }
+
+        // Set the properties.
         $this->numerator = $num;
         $this->denominator = $den;
     }
@@ -102,10 +125,7 @@ final class Rational implements Stringable, JsonSerializable
      * If the float is actually a whole number (e.g. 3.0), it's converted directly.
      * Otherwise, it's approximated using continued fractions.
      * This finds the simplest rational that equals the provided number (or is as close as is practical).
-     *
-     * If an exact match is not found, the method will return the closest approximation with a denominator less than
-     * or equal to PHP_INT_MAX. This is likely to be a more useful result than an exception and limits the time spent
-     * in the method.
+     * @see https://en.wikipedia.org/wiki/Simple_continued_fraction
      *
      * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
      * This method will throw an exception if the absolute value of $value is non-zero and outside that range.
@@ -124,9 +144,13 @@ final class Rational implements Stringable, JsonSerializable
         }
 
         // Check if the value equals a valid integer.
-        $i = Floats::tryConvertToInt($value);
-        if (is_int($i) && $i > PHP_INT_MIN) {
-            return new self($i);
+        try {
+            $i = Floats::toInt($value);
+            if ($i > PHP_INT_MIN) {
+                return new self($i);
+            }
+        } catch (DomainException) {
+            // Fall through to continued fractions algorithm.
         }
 
         // Get number info and range limits.
@@ -140,14 +164,15 @@ final class Rational implements Stringable, JsonSerializable
             throw new DomainException("Cannot convert float to Rational. Value $value is outside the valid range.");
         }
 
-        // Check for limits of range, which cannot be handled by the continued fraction algorithm.
+        // Check for values at the limits of the valid range, which cannot be handled by the continued fractions
+        // algorithm.
         if ($absValue === $min) {
             return new self($sign, PHP_INT_MAX);
         } elseif ($absValue === $max) {
             return new self($sign * PHP_INT_MAX, 1);
         }
 
-        // Use the continued fraction algorithm to convert the float to the closest possible Rational.
+        // Use the continued fractions algorithm to convert the float to the closest possible Rational.
 
         // Track the best approximation found so far. Initialize to the nearest integer.
         $hBest = (int) round($absValue);
@@ -253,7 +278,7 @@ final class Rational implements Stringable, JsonSerializable
         $n = filter_var($str, FILTER_VALIDATE_FLOAT);
         if (is_float($n)) {
             return self::fromFloat($n);
-        }        
+        }
 
         // Check for a string that looks like a fraction (int/int).
         $parts = explode('/', $str);
@@ -478,7 +503,7 @@ final class Rational implements Stringable, JsonSerializable
     {
         // Guard.
         if ($this->numerator === 0) {
-            throw new ArithmeticException('Cannot take reciprocal of zero.');
+            throw new ArithmeticException('Cannot divide by zero.');
         }
 
         // Preserve sign: if num is negative, swap and negate.
@@ -492,94 +517,118 @@ final class Rational implements Stringable, JsonSerializable
     #region Binary arithmetic methods
 
     /**
-     * Add another value to this Rational.
+     * Add a value to this Rational.
      *
-     * @param self|int|float $other The value to add.
+     * @param self|int $other The value to add.
      * @return self A new Rational representing the sum.
-     * @throws DomainException If $other is a number outside the valid range for Rational.
-     * @throws OverflowException If the result overflows an integer.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function add(self|int|float $other): self
+    public function add(self|int $other): self
     {
-        // Get other value as a Rational.
-        $other = self::toRational($other);
+        [$a, $b, $c, $d] = $this->getOperandComponents($other);
 
         // (a/b) + (c/d) = (ad + bc) / (bd)
-        $f = Integers::mul($this->numerator, $other->denominator);
-        $g = Integers::mul($this->denominator, $other->numerator);
-        $h = Integers::add($f, $g);
-        $k = Integers::mul($this->denominator, $other->denominator);
-
+        $ad = Integers::mul($a, $d);
+        $bc = Integers::mul($b, $c);
+        $h = Integers::add($ad, $bc);
+        $k = Integers::mul($b, $d);
         return new self($h, $k);
     }
 
     /**
-     * Subtract another value from this Rational.
+     * Subtract a value from this Rational.
      *
-     * @param self|int|float $other The value to subtract.
+     * @param self|int $other The value to subtract.
      * @return self A new Rational representing the difference.
-     * @throws DomainException If $other is a number outside the valid range for Rational.
-     * @throws OverflowException If the result overflows an integer.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function sub(self|int|float $other): self
+    public function sub(self|int $other): self
     {
-        // Get other value as a Rational.
-        $other = self::toRational($other);
+        [$a, $b, $c, $d] = $this->getOperandComponents($other);
 
-        return $this->add($other->neg());
+        // (a/b) - (c/d) = (ad - bc) / (bd)
+        $ad = Integers::mul($a, $d);
+        $bc = Integers::mul($b, $c);
+        $h = Integers::sub($ad, $bc);
+        $k = Integers::mul($b, $d);
+        return new self($h, $k);
     }
 
     /**
-     * Multiply this Rational by another value.
+     * Multiply this Rational by a value.
      *
-     * @param self|int|float $other The value to multiply by.
+     * @param self|int $other The value to multiply by.
      * @return self A new Rational representing the product.
-     * @throws DomainException If $other is a number outside the valid range for Rational.
-     * @throws OverflowException If the result overflows an integer.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function mul(self|int|float $other): self
+    public function mul(self|int $other): self
     {
-        // Get other value as a Rational.
-        $other = self::toRational($other);
+        [$a, $b, $c, $d] = $this->getOperandComponents($other);
 
-        // Cross-cancel before multiplying: (a/b) * (c/d)
-        // Cancel gcd(a,d) from a and d
-        // Cancel gcd(b,c) from b and c
-        $gcd1 = Integers::gcd($this->numerator, $other->denominator);
-        $gcd2 = Integers::gcd($this->denominator, $other->numerator);
+        // To avert integer overflow, cross-cancel before multiplying.
+        // Cancel gcd(a,d) from a and d.
+        $gcd1 = Integers::gcd($a, $d);
+        if ($gcd1 !== 1) {
+            $a = intdiv($a, $gcd1);
+            $d = intdiv($d, $gcd1);
+        }
+        // Cancel gcd(b,c) from b and c.
+        $gcd2 = Integers::gcd($b, $c);
+        if ($gcd2 !== 1) {
+            $b = intdiv($b, $gcd2);
+            $c = intdiv($c, $gcd2);
+        }
 
-        $a = intdiv($this->numerator, $gcd1);
-        $b = intdiv($this->denominator, $gcd2);
-        $c = intdiv($other->numerator, $gcd2);
-        $d = intdiv($other->denominator, $gcd1);
-
-        // Now multiply the reduced terms: (a/b) * (c/d) = ac/bd
+        // Multiply reduced terms: (a/b) * (c/d) = ac/bd
         $h = Integers::mul($a, $c);
         $k = Integers::mul($b, $d);
-
         return new self($h, $k);
     }
 
     /**
-     * Divide this Rational by another value.
+     * Divide this Rational by a value.
      *
-     * @param self|int|float $other The value to divide by.
+     * @param self|int $other The value to divide by.
      * @return self A new Rational representing the quotient.
-     * @throws DomainException If $other is a number outside the valid range for Rational.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      * @throws ArithmeticException If dividing by zero.
-     * @throws OverflowException If the result overflows an integer.
      */
-    public function div(self|int|float $other): self
+    public function div(self|int $other): self
     {
-        // Get other value as a Rational.
-        $other = self::toRational($other);
-
-        // Guard against division by 0.
-        if ($other->numerator === 0) {
+        // Check for divide by 0 .
+        if ((is_int($other) && $other === 0) || ($other instanceof self && $other->numerator === 0)) {
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        return $this->mul($other->inv());
+        // Check for 0 divide by something.
+        if ($this->numerator === 0) {
+            return new self();
+        }
+
+        [$a, $b, $c, $d] = $this->getOperandComponents($other);
+
+        // To avert integer overflow, cross-cancel before multiplying.
+        // Cancel gcd(a,c) from a and c.
+        $gcd1 = Integers::gcd($a, $c);
+        if ($gcd1 !== 1) {
+            $a = intdiv($a, $gcd1);
+            $c = intdiv($c, $gcd1);
+        }
+        // Cancel gcd(b,d) from b and d.
+        $gcd2 = Integers::gcd($b, $d);
+        if ($gcd2 !== 1) {
+            $b = intdiv($b, $gcd2);
+            $d = intdiv($d, $gcd2);
+        }
+
+        // Multiply reduced terms: (a/b) / (c/d) = (a/b) * (d/c) = ad/bc
+        $h = Integers::mul($a, $d);
+        $k = Integers::mul($b, $c);
+        return new self($h, $k);
     }
 
     #endregion
@@ -589,10 +638,11 @@ final class Rational implements Stringable, JsonSerializable
     /**
      * Raise this Rational to an integer power.
      *
-     * @param int $exponent The integer exponent.
-     * @return self A new Rational representing the result.
+     * @param int $exponent The exponent.
+     * @return self A new Rational representing the result of the exponentiation.
      * @throws ArithmeticException If raising zero to a negative power.
-     * @throws OverflowException If the result overflows an integer.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      */
     public function pow(int $exponent): self
     {
@@ -615,7 +665,7 @@ final class Rational implements Stringable, JsonSerializable
 
         // Handle exponent = 1. Any number to power 1 is itself.
         if ($exponent === 1) {
-            return $this;
+            return clone $this;
         }
 
         // Handle exponent = 2. Delegate to sqr().
@@ -626,6 +676,11 @@ final class Rational implements Stringable, JsonSerializable
         // Handle exponent = -1. Delegate to inv().
         if ($exponent === -1) {
             return $this->inv();
+        }
+
+        // Handle exponent = PHP_INT_MIN.
+        if ($exponent === PHP_INT_MIN) {
+            return $this->pow(PHP_INT_MAX)->mul($this)->inv();
         }
 
         // Handle negative exponents by taking reciprocal.
@@ -657,31 +712,67 @@ final class Rational implements Stringable, JsonSerializable
     #region Rounding methods
 
     /**
-     * Find the integer closest to the Rational.
+     * Find the integer closest to the Rational, using the specified rounding mode.
      *
-     * The rounding method used here is "half away from zero", to match the default rounding mode
-     * used by PHP's round() function. A future version of this method could include a RoundingMode
-     * parameter.
+     * All arithmetic is performed exactly on the numerator and denominator -- the Rational is never converted to a
+     * float, so there's no precision loss near tie boundaries or for a numerator/denominator beyond float's 53-bit
+     * mantissa, both of which a float-based implementation (converting to float, rounding, then converting back)
+     * would be vulnerable to.
      *
-     * @return int The closest integer.
+     * @param RoundingMode $mode The rounding mode to use. Defaults to HalfAwayFromZero, matching the default mode
+     * used by PHP's own round() function.
+     * @return int The rounded integer.
      */
-    public function round(): int
+    public function round(RoundingMode $mode = RoundingMode::HalfAwayFromZero): int
     {
         if ($this->denominator === 1) {
             return $this->numerator;
         }
 
+        // Since the Rational is always in lowest terms and the denominator isn't 1 (checked above), the
+        // denominator cannot evenly divide the numerator, so the remainder is guaranteed to be non-zero.
         $q = intdiv($this->numerator, $this->denominator);
         $r = $this->numerator % $this->denominator;
+        $absR = abs($r);
+        $away = $this->numerator > 0 ? $q + 1 : $q - 1;
 
-        // Round away from zero if remainder ≥ half denominator.
-        if (abs($r) * 2 >= $this->denominator) {
-            $result = $this->numerator > 0 ? $q + 1 : $q - 1;
-        } else {
-            $result = $q;
-        }
+        return match ($mode) {
+            // Always truncate toward zero, ignoring the remainder entirely.
+            RoundingMode::TowardsZero => $q,
 
-        return $result;
+            // Always round away from zero, since there's always a non-zero remainder here.
+            RoundingMode::AwayFromZero => $away,
+
+            // Round down (toward negative infinity). Truncation already does this for a positive value; a
+            // negative value needs its magnitude increased by one.
+            RoundingMode::NegativeInfinity => $this->numerator > 0 ? $q : $away,
+
+            // Round up (toward positive infinity). Mirror image of NegativeInfinity.
+            RoundingMode::PositiveInfinity => $this->numerator > 0 ? $away : $q,
+
+            // Round to the nearest integer; an exact tie (remainder exactly half the denominator) rounds away
+            // from zero. Comparing $absR against ($denominator - $absR) is equivalent to comparing 2 * $absR
+            // against $denominator, but avoids the doubling ever overflowing for a remainder near PHP_INT_MAX.
+            RoundingMode::HalfAwayFromZero => $absR >= $this->denominator - $absR ? $away : $q,
+
+            // Round to the nearest integer; an exact tie rounds toward zero.
+            RoundingMode::HalfTowardsZero => $absR > $this->denominator - $absR ? $away : $q,
+
+            // Round to the nearest integer; an exact tie rounds to whichever of $q/$away is even ("banker's
+            // rounding"). $q and $away always differ by exactly 1, so exactly one of them is even.
+            RoundingMode::HalfEven => match (true) {
+                $absR > $this->denominator - $absR => $away,
+                $absR < $this->denominator - $absR => $q,
+                default => $q % 2 === 0 ? $q : $away,
+            },
+
+            // Round to the nearest integer; an exact tie rounds to whichever of $q/$away is odd.
+            RoundingMode::HalfOdd => match (true) {
+                $absR > $this->denominator - $absR => $away,
+                $absR < $this->denominator - $absR => $q,
+                default => $q % 2 !== 0 ? $q : $away,
+            },
+        };
     }
 
     /**
@@ -722,133 +813,28 @@ final class Rational implements Stringable, JsonSerializable
 
     #endregion
 
-    #region Serialization methods
-
-    /**
-     * Restore a Rational from serialized data.
-     *
-     * Reconstructs via the constructor, so the usual validation and canonicalization (reduction to lowest terms)
-     * apply to unserialized data just as they do to normal construction. Without this method, PHP's default
-     * unserialize() behavior would assign "numerator" and "denominator" directly as properties, bypassing both.
-     *
-     * There is no corresponding __serialize() method: unlike Complex (which has computed magnitude/phase properties
-     * that must be excluded from the payload), Rational's only properties are numerator and denominator, so PHP's
-     * default serialization already produces exactly the same payload a custom __serialize() would.
-     *
-     * Only "numerator" and "denominator" are read from $data; any other keys (e.g. from a hand-crafted string) are
-     * ignored.
-     *
-     * @param array<string, mixed> $data The serialized data.
-     * @throws DomainException If the data does not contain integer "numerator" and "denominator" values.
-     * @throws ArithmeticException If the denominator is zero.
-     * @throws UnderflowException If the value is non-zero but too small to represent as a Rational.
-     * @throws OverflowException If the value is too large to represent as a Rational.
-     */
-    public function __unserialize(array $data): void
-    {
-        // Guard against missing values.
-        if (!array_key_exists('numerator', $data) || !array_key_exists('denominator', $data)) {
-            throw new DomainException(
-                'Cannot unserialize Rational. Data must contain "numerator" and "denominator" values.'
-            );
-        }
-
-        // Guard against non-integer values.
-        if (!is_int($data['numerator']) || !is_int($data['denominator'])) {
-            throw new DomainException(
-                'Cannot unserialize Rational. Both "numerator" and "denominator" values must be integers.'
-            );
-        }
-
-        // Call the constructor to validate, canonicalize, and set the values.
-        $this->__construct($data['numerator'], $data['denominator']);
-    }
-
-    /**
-     * Convert Rational to a value for JSON serialization.
-     *
-     * @return array{numerator: int, denominator: int} An associative array containing the numerator and denominator.
-     */
-    public function jsonSerialize(): array
-    {
-        return [
-            'numerator'   => $this->numerator,
-            'denominator' => $this->denominator,
-        ];
-    }
-
-    #endregion
-
     #region Helper methods
 
     /**
-     * Convert a value into a Rational if it isn't one already.
+     * Helper function for arithmetic methods, when it's useful to get the Rational components as individual integers.
      *
-     * This serves as a helper method used by many of the arithmetic methods in this class.
-     *
-     * @param self|int|float $value The value to convert.
-     * @return self The equivalent Rational.
-     * @throws DomainException If $value is non-finite or is outside the valid range for Rational.
+     * @param int|self $other The other value in the operation.
+     * @return array{int, int, int, int} The components.
      */
-    private static function toRational(self|int|float $value): self
+    private function getOperandComponents(int|self $other): array
     {
-        // Check for Rational.
-        if ($value instanceof self) {
-            return $value;
+        $a = $this->numerator;
+        $b = $this->denominator;
+
+        if (is_int($other)) {
+            $c = $other;
+            $d = 1;
+        } else {
+            $c = $other->numerator;
+            $d = $other->denominator;
         }
 
-        // Check for int. This will throw for PHP_INT_MIN, which is outside the valid range.
-        if (is_int($value)) {
-            return new self($value);
-        }
-
-        // Must be for float. This will throw for non-finite values or values outside the valid range.
-        return self::fromFloat($value);
-    }
-
-    /**
-     * Convert a fraction to its canonical form.
-     *
-     * @param int $num The numerator.
-     * @param int $den The denominator.
-     * @return list<int> The simplified numerator and denominator.
-     * @throws DomainException If the numerator or denominator equals PHP_INT_MIN and the rational cannot be simplified.
-     */
-    private static function simplify(int $num, int $den): array
-    {
-        // Check for a numerator of zero.
-        if ($num === 0) {
-            return [0, 1];
-        }
-
-        // Check if the numerator and denominator are equal to each other.
-        if ($num === $den) {
-            return [1, 1];
-        }
-
-        // Check for a numerator equal to the negative of the denominator.
-        if ($num === -$den) {
-            return [-1, 1];
-        }
-
-        // We can accept PHP_INT_MIN (which is divisible by 2) if the other value is also divisible by 2.
-        if (($num === PHP_INT_MIN && $den % 2 === 0) || ($num % 2 === 0 && $den === PHP_INT_MIN)) {
-            $num = intdiv($num, 2);
-            $den = intdiv($den, 2);
-        }
-
-        // Calculate the GCD. This will throw DomainException if either integer is PHP_INT_MIN.
-        $gcd = Integers::gcd($num, $den);
-
-        // Reduce the fraction if necessary.
-        if ($gcd > 1) {
-            // Neither of these calls to intdiv() will throw an exception because $gcd cannot be 0 or -1.
-            $num = intdiv($num, $gcd);
-            $den = intdiv($den, $gcd);
-        }
-
-        // Return the simplified fraction, ensuring the denominator is positive.
-        return $den < 0 ? [-$num, -$den] : [$num, $den];
+        return [$a, $b, $c, $d];
     }
 
     #endregion

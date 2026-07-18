@@ -7,7 +7,6 @@ namespace OceanMoon\Math;
 use ArrayAccess;
 use DomainException;
 use InvalidArgumentException;
-use JsonSerializable;
 use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
@@ -26,7 +25,7 @@ use const OceanMoon\Core\Globals\M_TAU;
  *
  * @implements ArrayAccess<int, float>
  */
-final class Complex implements Stringable, ArrayAccess, JsonSerializable
+final class Complex implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
 
@@ -201,7 +200,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException("Cannot create Complex. Magnitude must not be negative: $mag.");
+            throw new DomainException("Cannot create Complex. Magnitude must not be negative, got $mag.");
         }
 
         // Get the phase as radians in the normal range (-pi, pi]
@@ -352,6 +351,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * Calculate the reciprocal of this complex number.
      *
      * @return self A new complex number representing the reciprocal.
+     * @throws ArithmeticException If this Complex is zero.
      */
     public function inv(): self
     {
@@ -540,18 +540,17 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
     }
 
     /**
-     * Calculate the nth roots of this complex number.
-     * Returns all n complex roots using De Moivre's theorem.
+     * Calculate roots of this complex number using De Moivre's theorem.
      *
-     * @param int $n The root to calculate (e.g. 2 for square root, 3 for cube root).
-     * @return list<self> An array of Complex numbers representing all nth roots.
-     * @throws DomainException If n is not a positive integer.
+     * @param int $degree The degree of the root to calculate (e.g. 2 for square root, 3 for cube root).
+     * @return list<self> An array of $degree Complex numbers representing the roots.
+     * @throws DomainException If the degree is not a positive integer.
      */
-    public function roots(int $n): array
+    public function roots(int $degree): array
     {
-        // Check for negative number of roots.
-        if ($n <= 0) {
-            throw new DomainException("Invalid root index: $n. Must be a positive integer.");
+        // Check for negative degree.
+        if ($degree <= 0) {
+            throw new DomainException("Cannot compute roots. Degree must be positive, got $degree.");
         }
 
         // Handle special case of 0.
@@ -560,13 +559,13 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         }
 
         // Calculate the magnitude of the roots.
-        $rootMag = $this->magnitude ** (1.0 / $n);
+        $rootMag = $this->magnitude ** (1.0 / $degree);
 
         // Calculate all n roots.
         $roots = [];
-        $theta = $this->phase / $n;
-        $delta = M_TAU / $n;
-        for ($k = 0; $k < $n; $k++) {
+        $theta = $this->phase / $degree;
+        $delta = M_TAU / $degree;
+        for ($k = 0; $k < $degree; $k++) {
             $rootPhase = $theta + $k * $delta;
             $roots[] = self::fromPolar($rootMag, $rootPhase);
         }
@@ -590,7 +589,7 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      * Calculate the square root of this complex number.
      * Only the principal value is returned. For both square roots, call roots(2).
      *
-     * @return self
+     * @return self A new complex number representing the square root of this number.
      */
     public function sqrt(): self
     {
@@ -708,6 +707,11 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
         }
         if ($base->equal(1)) {
             throw new ArithmeticException('Cannot compute logarithm with base one.');
+        }
+
+        // Handle $this = 0.
+        if ($this->equal(0)) {
+            throw new ArithmeticException('Cannot compute logarithm of zero.');
         }
 
         // Check for natural logarithm.
@@ -1073,70 +1077,6 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
 
     #endregion
 
-    #region Serialization methods
-
-    /**
-     * Serialize the Complex object to an array.
-     *
-     * This method overrides the default serialization behavior, which includes the computed magnitude and phase
-     * properties. However, those two properties aren't needed and shouldn't be included, as they may not be set, and
-     * in any case are computed from the real and imaginary parts as needed.
-     *
-     * @return array{real: float, imaginary: float} An associative array containing the real and imaginary parts.
-     */
-    public function __serialize(): array
-    {
-        return [
-            'real'      => $this->real,
-            'imaginary' => $this->imaginary,
-        ];
-    }
-
-    /**
-     * Restore a Complex from serialized data, as produced by __serialize().
-     *
-     * Reconstructs via the constructor, so the usual finite-value validation applies to unserialized data just as it
-     * does to normal construction. Without this method, PHP's default unserialize() behavior would assign "real" and
-     * "imaginary" directly as properties, bypassing that validation entirely.
-     *
-     * Only "real" and "imaginary" are read from $data; any other keys (e.g. from a hand-crafted string) are ignored.
-     * The $magnitude and $phase properties are unaffected — they retain their declared null default from object
-     * allocation and are recomputed lazily on first access, same as after normal construction.
-     *
-     * @param array<string, mixed> $data The serialized data.
-     * @throws DomainException If the data does not contain numeric "real" and "imaginary" values, or if either value is
-     * not finite (±INF or NAN).
-     */
-    public function __unserialize(array $data): void
-    {
-        // Guard against missing values.
-        if (!array_key_exists('real', $data) || !array_key_exists('imaginary', $data)) {
-            throw new DomainException('Cannot unserialize Complex. Data must contain "real" and "imaginary" values.');
-        }
-
-        // Guard against non-numeric values.
-        if (!is_number($data['real']) || !is_number($data['imaginary'])) {
-            throw new DomainException(
-                'Cannot unserialize Complex. Both "real" and "imaginary" values must be numeric (int or float).'
-            );
-        }
-
-        // Call the constructor to validate and set the values.
-        $this->__construct($data['real'], $data['imaginary']);
-    }
-
-    /**
-     * Convert Complex to a value for JSON serialization.
-     *
-     * @return array{real: float, imaginary: float} An associative array containing the real and imaginary parts.
-     */
-    public function jsonSerialize(): array
-    {
-        return $this->__serialize();
-    }
-
-    #endregion
-
     #region ArrayAccess implementation
 
     /**
@@ -1156,14 +1096,20 @@ final class Complex implements Stringable, ArrayAccess, JsonSerializable
      *
      * @param mixed $offset The offset to retrieve.
      * @return float The value at the given offset.
-     * @throws OutOfRangeException If the offset is invalid.
+     * @throws InvalidArgumentException If the offset is not an int.
+     * @throws OutOfRangeException If the offset is not 0 or 1.
      */
     #[Override] // ArrayAccess
     public function offsetGet(mixed $offset): float
     {
-        // Guard.
+        // Check offset type.
+        if (!is_int($offset)) {
+            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
+        }
+
+        // Check offset value.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException('Invalid offset. Must be 0 or 1.');
+            throw new OutOfRangeException("Invalid offset. Must be 0 or 1, got $offset.");
         }
 
         // Return the appropriate value.

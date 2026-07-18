@@ -13,7 +13,6 @@ The `Rational` class provides exact representation of rational numbers using two
 - Conversion to/from floats using continued fractions
 - Comparison operations with support for mixed types
 - Overflow detection for safe integer arithmetic
-- Native PHP serialization and JSON encoding support
 
 **Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator can be PHP_INT_MIN.
 
@@ -50,12 +49,13 @@ converting a float, use [`fromFloat()`](#fromfloat) instead, which handles appro
 continued fractions.
 
 **Parameters:**
-- `$num` (int) - The numerator (default: 0)
-- `$den` (int) - The denominator (default: 1)
+- `$num` (int) - The numerator (default: 0).
+- `$den` (int) - The denominator (default: 1).
 
 **Behavior:**
-- Automatically reduces the fraction to simplest form
-- Converts negative denominators: -3/−4 → 3/4
+- Automatically reduces the fraction to simplest form.
+- Moves a negative denominator's sign to the numerator (e.g. 3/-4 → -3/4); double negatives cancel
+  (e.g. -3/-4 → 3/4).
 
 **Examples:**
 ```php
@@ -70,11 +70,11 @@ $r6 = new Rational(3, -4);       // -3/4 (sign moved to numerator)
 **Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1.
 
 ```php
-new Rational(1, 0);               // DivisionByZeroError (zero denominator)
+new Rational(1, 0);               // ArithmeticException (zero denominator)
 ```
 
 **Throws:**
-- `DivisionByZeroError` if the denominator is zero
+- `ArithmeticException` if the denominator is zero.
 - `DomainException` if the ratio can't be exactly represented (PHP_INT_MIN paired with an odd or
   otherwise incompatible counterpart, e.g. `new Rational(PHP_INT_MIN, 3)`). This is not a magnitude
   problem — the resulting value may well be within the representable range — it's specifically that
@@ -111,19 +111,19 @@ echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_P
 
 **Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Values outside this range throw:
 ```php
-Rational::fromFloat(1e19);              // ConversionException — too large
-Rational::fromFloat(1e-20);             // ConversionException — too small
-Rational::fromFloat(INF);               // ConversionException — non-finite
-Rational::fromFloat(NAN);               // ConversionException — non-finite
+Rational::fromFloat(1e19);              // DomainException — too large
+Rational::fromFloat(1e-20);             // DomainException — too small
+Rational::fromFloat(INF);               // DomainException — non-finite
+Rational::fromFloat(NAN);               // DomainException — non-finite
 ```
 
-**Throws:** `ConversionException` if the value is not finite (±INF or NAN), or is outside the
+**Throws:** `DomainException` if the value is not finite (±INF or NAN), or is outside the
 representable range (too large or too small, but non-zero).
 
 ### fromString()
 
 ```php
-public static function fromString(string $s): self
+public static function fromString(string $str): self
 ```
 
 Create a Rational from a string.
@@ -141,29 +141,11 @@ $r3 = Rational::fromString("-5");        // -5/1
 $r4 = Rational::fromString(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 ```
 
-**Throws:** `ConversionException` if the string is empty, does not match a supported format, or
-represents a value outside the representable range (see `fromFloat()` above).
-
-### toRational()
-
-```php
-public static function toRational(mixed $value): self
-```
-
-Convert a value to a Rational if it isn't one already. Accepts an existing `Rational` (returned
-unchanged), an `int` or `float`, or a `string` in the format accepted by `fromString()`.
-
-**Examples:**
-```php
-$r1 = Rational::toRational(5);              // 5/1
-$r2 = Rational::toRational(0.5);            // 1/2
-$r3 = Rational::toRational("3/4");          // 3/4
-$r4 = Rational::toRational(new Rational(2, 3)); // Returns same instance
-```
-
-**Throws:** `ConversionException` if the value's type cannot be converted to a Rational, or if it can
-but the value itself is invalid or out of range — see `fromFloat()` and `fromString()` above for the
-specific failure conditions.
+**Throws:**
+- `FormatException` if the string is empty or does not match a supported format.
+- `ArithmeticException` if the string is a fraction with a zero denominator (e.g. `"1/0"`).
+- `DomainException` if the string represents a value outside the representable range (see `fromFloat()`
+  above).
 
 ---
 
@@ -245,7 +227,15 @@ echo new Rational(6, 8);   // "3/4" (auto-reduced)
 
 ## Comparison Methods
 
-The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package.
+The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the
+[`ApproxComparable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait
+from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Rational` supplying `compare()` and
+`approxEqual()` (the trait's abstract methods) plus its own type-checking logic.
+
+All comparison methods accept only a `Rational`, `int`, or `float` for `$other` — not a `string`, even a
+Rational-format one like `"1/2"`. Anything else throws `InvalidArgumentException` rather than silently
+returning `false`, to catch bugs from comparing values that can't meaningfully be compared. Use
+[`fromString()`](#fromstring) explicitly first if you need to compare against a string.
 
 ### equal()
 
@@ -255,18 +245,17 @@ public function equal(mixed $other): bool
 
 Check if this rational number exactly equals another value.
 
-Uses exact comparison based on `compare()` returning 0. `$other` is converted via `toRational()`, so
-anything that method accepts — `Rational`, `int`, `float`, or a parseable `string` (integer, float, or
-fraction format) — can be compared. To catch bugs from comparing values that can't meaningfully be
-compared, this throws rather than silently returning `false` for a value `toRational()` can't convert.
+Uses exact comparison based on `compare()` returning 0.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toRational()` accepts)
+- `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
 
 **Returns:**
-- `bool` - True if exactly equal, false otherwise
+- `bool` - True if exactly equal, false otherwise.
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Rational.
+**Throws:**
+- `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
+- `DomainException` if `$other` is `NAN`.
 
 **Examples:**
 ```php
@@ -279,12 +268,9 @@ var_dump($r1->equal($r3));  // false
 var_dump($r1->equal(0.75)); // true (exact match)
 var_dump($r1->equal(0.7500000001)); // false (not exact)
 
-// Also accepts a parseable string
-var_dump($r1->equal('3/4')); // true
-
-// Values that can't be converted throw, rather than silently returning false
-$r1->equal('not a number');  // throws ConversionException
-$r1->equal(null);            // throws ConversionException
+// Anything else throws, rather than silently returning false
+$r1->equal('3/4');  // throws InvalidArgumentException
+$r1->equal(null);   // throws InvalidArgumentException
 ```
 
 ### approxEqual()
@@ -299,25 +285,22 @@ public function approxEqual(
 
 Check if this rational number approximately equals another value within specified tolerances.
 
-Converts both values to floats and uses combined relative and absolute tolerance approach. `$other` is
-converted via `toRational()`, so anything that method accepts can be compared. To catch bugs from
-comparing values that can't meaningfully be compared, this throws rather than silently returning
-`false` for a value `toRational()` can't convert.
+Converts both values to floats and uses combined relative and absolute tolerance approach.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toRational()` accepts)
-- `$relTol` (float) - Relative tolerance (default: 1e-9)
-- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+- `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
+- `$relTol` (float) - Relative tolerance (default: 1e-9).
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16).
 
 **Returns:**
-- `bool` - True if approximately equal within tolerances, false otherwise
+- `bool` - True if approximately equal within tolerances, false otherwise.
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Rational.
+**Throws:** `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
 
 **How tolerance works:**
-- Checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`
-- Relative tolerance matters for large values
-- Absolute tolerance matters for values near zero
+- Checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`.
+- Relative tolerance matters for large values.
+- Absolute tolerance matters for values near zero.
 
 **Examples:**
 ```php
@@ -337,8 +320,8 @@ var_dump($r3->approxEqual(0.5000001, 1e-5));  // true
 // With zero tolerances (exact match required)
 var_dump($r1->approxEqual($r1, 0.0, 0.0));  // true
 
-// Values that can't be converted throw, rather than silently returning false
-$r1->approxEqual('not a number');  // throws ConversionException
+// Anything else throws, rather than silently returning false
+$r1->approxEqual('not a number');  // throws InvalidArgumentException
 ```
 
 ### compare()
@@ -350,18 +333,17 @@ public function compare(mixed $other): int
 Compare this rational number with another value using exact comparison.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toRational()` accepts: `Rational`, `int`,
-  `float`, or a parseable `string`)
+- `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
 
 **Returns:**
-- `int` - Exactly -1, 0, or 1
+- `int` - Exactly -1, 0, or 1.
 
 **Behavior:**
-- Optimizes comparison with integers and simple floats
-- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c
-- Falls back to float comparison if overflow occurs
-- Returns 0 for exact equality (no epsilon needed - integers are exact)
-- A `string` is converted via `toRational()` (and so accepts Rational-format strings too, e.g. `"1/2"`), not just parsed as a plain number
+- Optimizes comparison with integers and simple floats.
+- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c.
+- Falls back to float comparison if overflow occurs.
+- Returns 0 for exact equality (no epsilon needed - integers are exact).
+- Works with ±INF: comparing against `INF` always returns -1, and against `-INF` always returns 1.
 
 **Examples:**
 ```php
@@ -375,12 +357,11 @@ echo $r2->compare(1);     // -1 (1/3 < 1)
 // Works with Rational objects
 $r3 = new Rational(2, 4);
 echo $r1->compare($r3);   // 0 (1/2 == 2/4)
-
-// Also accepts a parseable string
-echo $r1->compare('1/2');  // 0
 ```
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Rational.
+**Throws:**
+- `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
+- `DomainException` if `$other` is `NAN`.
 
 ### approxCompare()
 
@@ -397,12 +378,12 @@ Compare this rational number with another value using approximate equality.
 Returns 0 if values are approximately equal within tolerances, otherwise performs exact less/greater than comparison.
 
 **Parameters:**
-- `$other` (mixed) - The value to compare with (anything `toRational()` accepts)
-- `$relTol` (float) - Relative tolerance (default: 1e-9)
-- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16)
+- `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
+- `$relTol` (float) - Relative tolerance (default: 1e-9).
+- `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16).
 
 **Returns:**
-- `int` - Exactly -1, 0, or 1
+- `int` - Exactly -1, 0, or 1.
 
 **Examples:**
 ```php
@@ -420,7 +401,9 @@ $r3 = new Rational(1, 4);
 echo $r3->approxCompare($r1);  // -1 (1/4 < 1/3)
 ```
 
-**Throws:** `ConversionException` if `$other` cannot be converted to a Rational.
+**Throws:**
+- `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
+- `DomainException` if `$other` is `NAN`.
 
 ### lessThan(), greaterThan(), etc.
 
@@ -431,7 +414,8 @@ public function greaterThan(mixed $other): bool
 public function greaterThanOrEqual(mixed $other): bool
 ```
 
-Ordering comparison methods provided by the `ApproxComparable` trait. These use exact comparison via `compare()`, and so accept anything `toRational()` accepts, and throw `ConversionException` under the same conditions as `compare()`.
+Ordering comparison methods provided by the `ApproxComparable` trait (via `Comparable`). These use exact comparison
+via `compare()`, and so accept the same types (`Rational`, `int`, or `float`) and throw under the same conditions.
 
 **Examples:**
 ```php
@@ -497,7 +481,7 @@ $r2 = new Rational(-2, 5);
 $result2 = $r2->inv();  // -5/2
 ```
 
-**Throws:** `DivisionByZeroError` if the numerator is zero.
+**Throws:** `ArithmeticException` if the numerator is zero.
 
 ---
 
@@ -506,7 +490,7 @@ $result2 = $r2->inv();  // -5/2
 ### add()
 
 ```php
-public function add(int|float|self $other): self
+public function add(self|int $other): self
 ```
 
 Add another value to this rational number.
@@ -521,12 +505,14 @@ $r3 = new Rational(3, 4);
 $sum2 = $r3->add(2);   // 11/4
 ```
 
-**Throws:** `OverflowException` if the result overflows.
+**Throws:**
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ### sub()
 
 ```php
-public function sub(int|float|self $other): self
+public function sub(self|int $other): self
 ```
 
 Subtract another value from this rational number.
@@ -538,12 +524,14 @@ $r2 = new Rational(1, 4);
 $diff = $r1->sub($r2);  // 1/2
 ```
 
-**Throws:** `OverflowException` if the result overflows.
+**Throws:**
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ### mul()
 
 ```php
-public function mul(int|float|self $other): self
+public function mul(self|int $other): self
 ```
 
 Multiply this rational number by another value.
@@ -560,15 +548,19 @@ $r3 = new Rational(3, 5);
 $product2 = $r3->mul(6);   // 18/5
 ```
 
-**Throws:** `OverflowException` if the result overflows.
+**Throws:**
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ### div()
 
 ```php
-public function div(int|float|self $other): self
+public function div(self|int $other): self
 ```
 
 Divide this rational number by another value.
+
+**Uses cross-cancellation** to prevent overflow when possible, same as `mul()`.
 
 **Example:**
 ```php
@@ -581,8 +573,9 @@ $quotient2 = $r3->div(2);   // 3/8
 ```
 
 **Throws:**
-- `DivisionByZeroError` if dividing by zero
-- `OverflowException` if the result overflows
+- `ArithmeticException` if dividing by zero.
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ---
 
@@ -613,12 +606,14 @@ $result4 = $r4->pow(0);  // 1/1 (any number^0 = 1)
 
 **Special cases:**
 - n^0 = 1 (including 0^0 by convention)
+- n^1 = n (returns a new, distinct object that's equal to but not the same instance as `$this`)
 - 0^(positive) = 0
-- 0^(negative) throws `DomainException`
+- 0^(negative) throws `ArithmeticException`
 
 **Throws:**
-- `DomainException` if raising zero to a negative power
-- `OverflowException` if the result overflows
+- `ArithmeticException` if raising zero to a negative power.
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ### sqr()
 
@@ -634,7 +629,9 @@ $r = new Rational(3, 4);
 $result = $r->sqr();  // 9/16
 ```
 
-**Throws:** `OverflowException` if the result overflows.
+**Throws:**
+- `OverflowException` if the result overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ---
 
@@ -643,10 +640,15 @@ $result = $r->sqr();  // 9/16
 ### round()
 
 ```php
-public function round(): int
+public function round(RoundingMode $mode = RoundingMode::HalfAwayFromZero): int
 ```
 
-Find the closest integer, using "half away from zero" rounding mode.
+Find the closest integer, using the specified rounding mode. Defaults to "half away from zero", matching the
+default mode used by PHP's own `round()` function.
+
+All arithmetic is performed exactly on the numerator and denominator -- the Rational is never converted to a
+`float`, so there's no precision loss near tie boundaries or for a numerator/denominator beyond float's 53-bit
+mantissa.
 
 **Examples:**
 ```php
@@ -657,10 +659,24 @@ $r2 = new Rational(8, 3);
 echo $r2->round();  // 3 (2.666...)
 
 $r3 = new Rational(5, 2);
-echo $r3->round();  // 3 (2.5 rounds away from zero)
+echo $r3->round();  // 3 (2.5 rounds away from zero, the default mode)
 
 $r4 = new Rational(-5, 2);
 echo $r4->round();  // -3 (-2.5 rounds away from zero)
+```
+
+**Rounding modes:**
+```php
+$r = new Rational(5, 2); // 2.5
+
+$r->round(RoundingMode::TowardsZero);      // 2
+$r->round(RoundingMode::AwayFromZero);     // 3
+$r->round(RoundingMode::NegativeInfinity); // 2 (equivalent to floor())
+$r->round(RoundingMode::PositiveInfinity); // 3 (equivalent to ceil())
+$r->round(RoundingMode::HalfAwayFromZero); // 3 (the default)
+$r->round(RoundingMode::HalfTowardsZero);  // 2
+$r->round(RoundingMode::HalfEven);         // 2 ("banker's rounding": ties go to the nearest even integer)
+$r->round(RoundingMode::HalfOdd);          // 3 (ties go to the nearest odd integer)
 ```
 
 ### floor()
@@ -699,51 +715,6 @@ echo $r2->ceil();  // -2
 
 ---
 
-## Serialization Methods
-
-### \_\_unserialize()
-
-```php
-public function __unserialize(array $data): void
-```
-
-Restore a Rational from serialized data. Used automatically by PHP's `unserialize()`. Reconstructs
-via the constructor, so the usual validation and canonicalization (reduction to lowest terms) apply
-to unserialized data just as they do to normal construction.
-
-There is no corresponding `__serialize()` method: unlike `Complex` (which has computed
-`magnitude`/`phase` properties that must be excluded from the serialized payload), `Rational`'s only
-properties are `numerator` and `denominator`, so PHP's default serialization already produces
-exactly the same payload a custom `__serialize()` would.
-
-**Example:**
-```php
-$r = new Rational(3, 4);
-$restored = unserialize(serialize($r));
-$restored->equal($r);  // true
-```
-
-**Throws:**
-- `DomainException` if the data is missing "numerator"/"denominator", either value is not an integer,
-  or the ratio can't be exactly represented (see the constructor's `DomainException` above)
-- `DivisionByZeroError` if the denominator is zero
-
-### jsonSerialize()
-
-```php
-public function jsonSerialize(): array
-```
-
-Provides `Rational`'s representation for `json_encode()`, via the `JsonSerializable` interface.
-
-**Example:**
-```php
-$r = new Rational(3, 4);
-echo json_encode($r);  // '{"numerator":3,"denominator":4}'
-```
-
----
-
 ## Usage Examples
 
 ### Exact Arithmetic
@@ -765,10 +736,10 @@ echo $sum;  // "1"
 $r = new Rational(6, 8);
 echo $r;  // "3/4"
 
-// Mixed operations
+// Combining Rationals; convert a float first with fromFloat() if needed
 $r1 = new Rational(1, 2);
-$r2 = $r1->add(0.25);    // 1/2 + 1/4
-echo $r2;                // "3/4"
+$r2 = $r1->add(new Rational(1, 4));  // 1/2 + 1/4
+echo $r2;                            // "3/4"
 
 // Complex calculations
 $r = new Rational(2, 3);
