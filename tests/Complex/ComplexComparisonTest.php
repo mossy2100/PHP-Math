@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use DomainException;
 use InvalidArgumentException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
@@ -202,6 +203,27 @@ class ComplexComparisonTest extends TestCase
 
         $z3 = new Complex(0, -5);
         $this->assertFalse($z1->equal($z3));
+    }
+
+    /**
+     * Test equal with NAN throws DomainException (NAN has no meaningful equality result, unlike ±INF).
+     */
+    public function testEqualWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $z = new Complex(3, 4);
+        $z->equal(NAN);
+    }
+
+    /**
+     * Test equal with ±INF returns false, since a Complex (always finite) is never equal to infinity.
+     */
+    public function testEqualWithInfinity(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertFalse($z->equal(INF));
+        $this->assertFalse($z->equal(-INF));
     }
 
     #endregion
@@ -480,6 +502,28 @@ class ComplexComparisonTest extends TestCase
 
         $this->assertTrue($z1->approxEqual($z2));
         $this->assertTrue($z2->approxEqual($z1));
+    }
+
+    /**
+     * Test approxEqual with NAN throws DomainException (NAN has no meaningful equality result, unlike ±INF).
+     */
+    public function testApproxEqualWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $z = new Complex(3, 4);
+        $z->approxEqual(NAN);
+    }
+
+    /**
+     * Test approxEqual with ±INF returns false, since a Complex (always finite) is never approximately equal to
+     * infinity.
+     */
+    public function testApproxEqualWithInfinity(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertFalse($z->approxEqual(INF));
+        $this->assertFalse($z->approxEqual(-INF));
     }
 
     #endregion

@@ -12,8 +12,7 @@
 
     <testsuites>
         <testsuite name="unit">
-            <directory>tests/*/package</directory>
-            <directory>tests/*/both</directory>
+            <directory>tests</directory>
         </testsuite>
     </testsuites>
 
@@ -32,5 +31,5 @@
             <file>src/globals.php</file>
         </exclude>
     </source>
-    
+
 </phpunit>

@@ -15,8 +15,8 @@ use OutOfRangeException;
 use Override;
 use Stringable;
 
+use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
-use function OceanMoon\Core\Globals\to_string;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
@@ -70,10 +70,11 @@ final class Matrix implements Stringable, Countable
     public function __construct(int $rowCount, int $columnCount)
     {
         // Check if dimensions are non-negative.
-        if ($rowCount < 0 || $columnCount < 0) {
-            throw new DomainException(
-                "Cannot create a matrix with negative dimensions: $rowCount rows, $columnCount columns."
-            );
+        if ($rowCount < 0) {
+            throw new DomainException("Cannot create Matrix with $rowCount rows. Must not be negative.");
+        }
+        if ($columnCount < 0) {
+            throw new DomainException("Cannot create Matrix with $columnCount columns. Must not be negative.");
         }
 
         // Initialize matrix properties.
@@ -106,7 +107,7 @@ final class Matrix implements Stringable, Countable
 
         // Check the outer array is a list.
         if (!array_is_list($arr)) {
-            throw new DomainException('Cannot create a Matrix from array. Array must be a list.');
+            throw new DomainException('Cannot create Matrix from array. Must be a list.');
         }
 
         $rowCount = count($arr);
@@ -117,16 +118,16 @@ final class Matrix implements Stringable, Countable
         foreach ($arr as $i => $row) {
             // Check each row is a list array.
             if (!is_array($row) || !array_is_list($row)) {
-                throw new DomainException("Cannot create a Matrix from array. Row at index $i must be a list array.");
+                throw new DomainException("Cannot create Matrix from array. Row $i must be a list.");
             }
 
             // Check all rows have the same number of columns.
+            $thisRowSize = count($row);
             if ($columnCount === null) {
-                $columnCount = count($row);
-            } elseif (count($row) !== $columnCount) {
+                $columnCount = $thisRowSize;
+            } elseif ($thisRowSize !== $columnCount) {
                 throw new LengthException(
-                    "Cannot create a Matrix from array: row at index $i has " . count($row) . ' columns, expected '
-                    . "$columnCount."
+                    'Cannot create Matrix from array. All rows must have the same number of elements.'
                 );
             }
 
@@ -136,10 +137,8 @@ final class Matrix implements Stringable, Countable
             foreach ($row as $j => $value) {
                 // Check if each value is a number.
                 if (!is_number($value)) {
-                    throw new DomainException(
-                        "Cannot create a Matrix from array: element at row $i, column $j must be a number (int or "
-                        . 'float), got ' . get_debug_type($value) . '.'
-                    );
+                    throw new DomainException("Invalid element type at row $i, column $j: " . get_debug_type($value) .
+                        '. Must be int or float.');
                 }
 
                 // Convert the value to a float and store it in the matrix.
@@ -259,12 +258,11 @@ final class Matrix implements Stringable, Countable
     {
         // Check if indexes are within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+            throw new OutOfRangeException("Cannot get element at row $row. Must be 0-" . ($this->rowCount - 1) . '.');
         }
         if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
-            );
+            throw new OutOfRangeException("Cannot get element at column $col. Must be 0-" . ($this->columnCount - 1) .
+                '.');
         }
 
         return $this->data[$row][$col];
@@ -281,7 +279,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if row index is within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+            throw new OutOfRangeException("Invalid row number: $row. Must be 0-" . ($this->rowCount - 1) . '.');
         }
 
         return Vector::fromArray($this->data[$row]);
@@ -298,9 +296,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if column index is within bounds.
         if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
-            );
+            throw new OutOfRangeException("Invalid column number: $col. Must be 0-" . ($this->columnCount - 1) . '.');
         }
 
         $column = [];
@@ -316,32 +312,30 @@ final class Matrix implements Stringable, Countable
      *
      * @param int $row Row of the top-left corner of the region to copy (0-based).
      * @param int $col Column of the top-left corner of the region to copy (0-based).
-     * @param int $rowCount Number of rows to copy.
-     * @param int $columnCount Number of columns to copy.
+     * @param int $rowCount Number of rows to copy (sub-matrix height).
+     * @param int $colCount Number of columns to copy (sub-matrix width).
      * @return self A new matrix containing the copied elements.
      * @throws OutOfRangeException If either count is negative, or the selected region extends beyond this matrix's
      * bounds.
      */
-    public function copy(int $row, int $col, int $rowCount, int $columnCount): self
+    public function copy(int $row, int $col, int $rowCount, int $colCount): self
     {
         // Check the row range is valid.
         if ($row < 0 || $rowCount < 0 || $row + $rowCount > $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row range: row $row, count $rowCount. This matrix has {$this->rowCount} rows."
-            );
+            throw new OutOfRangeException("Cannot copy elements from rows $row-" . ($row + $rowCount) .
+                '. Valid row range is 0-' . ($this->rowCount - 1) . '.');
         }
 
         // Check the column range is valid.
-        if ($col < 0 || $columnCount < 0 || $col + $columnCount > $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column range: column $col, count $columnCount. This matrix has {$this->columnCount} columns."
-            );
+        if ($col < 0 || $colCount < 0 || $col + $colCount > $this->columnCount) {
+            throw new OutOfRangeException("Cannot copy elements from columns $col-" . ($col + $colCount) .
+                '. Valid column range is 0-' . ($this->columnCount - 1) . '.');
         }
 
         // Copy the selected elements into a new matrix.
-        $result = new self($rowCount, $columnCount);
+        $result = new self($rowCount, $colCount);
         for ($i = 0; $i < $rowCount; $i++) {
-            for ($j = 0; $j < $columnCount; $j++) {
+            for ($j = 0; $j < $colCount; $j++) {
                 $result->set($i, $j, $this->data[$row + $i][$col + $j]);
             }
         }
@@ -366,19 +360,16 @@ final class Matrix implements Stringable, Countable
     {
         // Check if indexes are within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+            throw new OutOfRangeException("Cannot get element at row $row. Must be 0-" . ($this->rowCount - 1) . '.');
         }
         if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
-            );
+            throw new OutOfRangeException("Cannot get element at column $col. Must be 0-" . ($this->columnCount - 1) .
+                '.');
         }
 
         // Check the value is finite.
         if (!is_finite($value)) {
-            throw new DomainException(
-                "Cannot set element ($row, $col). Value must be finite, got " . to_string($value) . '.'
-            );
+            throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
         }
 
         assert($row < count($this->data) && $col < count($this->data[$row]));
@@ -397,14 +388,14 @@ final class Matrix implements Stringable, Countable
     {
         // Check if row index is within bounds.
         if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException("Row index $row is outside the valid range 0-" . ($this->rowCount - 1) . '.');
+            throw new OutOfRangeException("Invalid row number: $row. Must be 0-" . ($this->rowCount - 1) . '.');
         }
 
         // Check length.
         $vectorSize = count($vec);
         if ($vectorSize !== $this->columnCount) {
             throw new LengthException(
-                "Cannot set row due to incorrect Vector size. Expected {$this->columnCount} elements, got $vectorSize."
+                "Incorrect Vector size: $vectorSize. Must equal number of columns: {$this->columnCount}."
             );
         }
 
@@ -424,16 +415,14 @@ final class Matrix implements Stringable, Countable
     {
         // Check if column index is within bounds.
         if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Column index $col is outside the valid range 0-" . ($this->columnCount - 1) . '.'
-            );
+            throw new OutOfRangeException("Invalid column number: $col. Must be 0-" . ($this->columnCount - 1) . '.');
         }
 
         // Check length.
         $vectorSize = count($vec);
         if ($vectorSize !== $this->rowCount) {
             throw new LengthException(
-                "Cannot set column due to incorrect Vector size. Expected {$this->rowCount} elements, got $vectorSize."
+                "Incorrect Vector size: $vectorSize. Must equal number of rows: {$this->rowCount}."
             );
         }
 
@@ -445,11 +434,11 @@ final class Matrix implements Stringable, Countable
     }
 
     /**
-     * Copy the elements of another matrix into this one, starting at the given position.
+     * Copy the elements of another Matrix into this one, starting at the given position.
      *
-     * Unlike most methods in this class, this one mutates the matrix in place, matching set().
+     * Unlike most methods in this class, this one mutates the Matrix in place, matching set().
      *
-     * @param self $other The matrix to paste. Must fit within this matrix at the given offset.
+     * @param self $other Matrix to paste. Must fit within this Matrix at the given offset.
      * @param int $row Row at which to place the top-left corner of $other (0-based). Defaults to 0.
      * @param int $col Column at which to place the top-left corner of $other (0-based). Defaults to 0.
      * @throws OutOfRangeException If either offset is negative, or $other doesn't fit within this matrix at that
@@ -459,18 +448,14 @@ final class Matrix implements Stringable, Countable
     {
         // Check the row offset is valid.
         if ($row < 0 || $row + $other->rowCount > $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row offset: $row. The matrix being pasted has {$other->rowCount} rows; this matrix has "
-                . "{$this->rowCount} rows."
-            );
+            throw new OutOfRangeException("Cannot paste elements to rows $row-" . ($row + $other->rowCount) .
+                '. Valid row range is 0-' . ($this->rowCount - 1) . '.');
         }
 
         // Check the column offset is valid.
         if ($col < 0 || $col + $other->columnCount > $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column offset: $col. The matrix being pasted has {$other->columnCount} columns; this "
-                . "matrix has {$this->columnCount} columns."
-            );
+            throw new OutOfRangeException("Cannot paste elements to columns $col-" . ($col + $other->columnCount) .
+                '. Valid column range is 0-' . ($this->columnCount - 1) . '.');
         }
 
         // Copy the elements from $other into this matrix.
@@ -502,7 +487,7 @@ final class Matrix implements Stringable, Countable
         // If we don't have a Matrix, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be a Matrix.'
+                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be Matrix.'
             );
         }
 
@@ -547,7 +532,7 @@ final class Matrix implements Stringable, Countable
         // If we don't have a Matrix, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be a Matrix.'
+                'Cannot compare Matrix with ' . get_debug_type($other) . '. Must be Matrix.'
             );
         }
 
@@ -603,9 +588,7 @@ final class Matrix implements Stringable, Countable
      */
     public function neg(): self
     {
-        $result = $this->mul(-1);
-        assert($result instanceof self);
-        return $result;
+        return $this->mul(-1);
     }
 
     /**
@@ -623,13 +606,13 @@ final class Matrix implements Stringable, Countable
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
-            throw new DomainException('Cannot invert a non-square matrix.');
+            throw new DomainException('Cannot invert non-square matrix.');
         }
 
         // Calculate the inverse using cofactor expansion and the adjugate matrix.
         $det = $this->det();
         if ($det === 0.0) {
-            throw new ArithmeticException('Cannot invert matrix with a zero determinant.');
+            throw new ArithmeticException('Cannot invert matrix with zero determinant.');
         }
 
         $n = $this->rowCount;
@@ -661,7 +644,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
-            throw new LengthException('Cannot add matrices of different dimensions.');
+            throw new LengthException('Cannot add Matrix with different dimensions.');
         }
 
         // Add the matrices.
@@ -685,7 +668,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
-            throw new LengthException('Cannot subtract matrices of different dimensions.');
+            throw new LengthException('Cannot subtract Matrix with different dimensions.');
         }
 
         // Subtract the matrices.
@@ -699,16 +682,15 @@ final class Matrix implements Stringable, Countable
     }
 
     /**
-     * Multiply this matrix by a scalar, vector, or another matrix.
+     * Multiply this matrix by a scalar or another matrix.
      *
-     * When multiplying by a Vector, it is treated as a column vector (n×1 matrix) and the result is returned as a
-     * Vector.
+     * To multiply by a Vector, use `mulVector()` instead.
      *
-     * @param float|Vector|self $other Number, vector, or matrix to multiply by.
-     * @return self|Vector A Matrix for scalar/matrix operands, or a Vector for vector operands.
+     * @param float|self $other Number or matrix to multiply by.
+     * @return self New matrix representing the product.
      * @throws LengthException If dimensions are incompatible for multiplication.
      */
-    public function mul(float|Vector|self $other): self|Vector
+    public function mul(float|self $other): self
     {
         // Multiply matrix by a float.
         if (is_float($other)) {
@@ -722,22 +704,11 @@ final class Matrix implements Stringable, Countable
             return $scaled;
         }
 
-        // Multiply matrix by a vector.
-        if ($other instanceof Vector) {
-            // Multiply the Matrix by the Vector converted to a single-column matrix.
-            // The call to mul() will fail if the Vector size does not equal the number of columns the Matrix.
-            $result = $this->mul($other->toColumnMatrix());
-            assert($result instanceof self);
-
-            // Since we were given a Vector, return a Vector.
-            // Convert the first and only column of the resulting Matrix into a Vector.
-            return $result->getColumn(0);
-        }
-
         // Multiply matrix by a matrix.
         // Check if dimensions are compatible for multiplication.
         if ($this->columnCount !== $other->rowCount) {
-            throw new LengthException('Cannot multiply matrices with incompatible dimensions.');
+            throw new LengthException('Cannot multiply Matrix with incompatible dimensions. ' .
+            "Column count of Matrix 1 ({$this->columnCount} must equal row count of Matrix 2 ({$other->rowCount}).");
         }
 
         // Multiply the matrices.
@@ -785,9 +756,7 @@ final class Matrix implements Stringable, Countable
         }
 
         // Multiply by the inverse.
-        $result = $this->mul($other->inv());
-        assert($result instanceof self);
-        return $result;
+        return $this->mul($other->inv());
     }
 
     /**
@@ -801,7 +770,8 @@ final class Matrix implements Stringable, Countable
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
-            throw new LengthException('Cannot compute Hadamard product of matrices with different dimensions.');
+            throw new LengthException('Cannot compute Hadamard product with Matrix of different dimensions: ' .
+                "{$other->rowCount}x{$other->columnCount}.");
         }
 
         // Multiply the matrices element-wise.
@@ -831,7 +801,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
-            throw new DomainException('Cannot raise a non-square matrix to a power.');
+            throw new DomainException('Cannot raise non-square matrix to a power.');
         }
 
         // Handle power of 0.
@@ -846,9 +816,7 @@ final class Matrix implements Stringable, Countable
 
         // Handle exponent = PHP_INT_MIN.
         if ($exponent === PHP_INT_MIN) {
-            $result = $this->pow(PHP_INT_MAX)->mul($this);
-            assert($result instanceof self);
-            return $result->inv();
+            return $this->pow(PHP_INT_MAX)->mul($this)->inv();
         }
 
         // Handle negative powers.
@@ -868,7 +836,6 @@ final class Matrix implements Stringable, Countable
             $exponent = (int) ($exponent / 2);
         }
 
-        assert($result instanceof self);
         return $result;
     }
 
@@ -883,17 +850,30 @@ final class Matrix implements Stringable, Countable
     public function sqr(): self
     {
         if (!$this->isSquare()) {
-            throw new DomainException('Cannot square a non-square matrix.');
+            throw new DomainException('Cannot square non-square Matrix.');
         }
 
-        $result = $this->mul($this);
-        assert($result instanceof self);
-        return $result;
+        return $this->mul($this);
     }
 
     #endregion
 
     #region Linear algebra methods
+
+    /**
+     * Multiply this matrix by a vector: Ax.
+     *
+     * The vector is treated as a column vector; its size must equal this matrix's column count. To go the other way
+     * (xA), use `Vector::mulMatrix()` instead.
+     *
+     * @param Vector $vector The vector to multiply by.
+     * @return Vector New vector representing the result.
+     * @throws LengthException If the vector's size doesn't equal this matrix's column count.
+     */
+    public function mulVector(Vector $vector): Vector
+    {
+        return $this->mul($vector->toColumnMatrix())->getColumn(0);
+    }
 
     /**
      * Get the transpose of this matrix.
@@ -922,7 +902,7 @@ final class Matrix implements Stringable, Countable
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
-            throw new DomainException('Cannot compute determinant of a non-square matrix.');
+            throw new DomainException('Cannot compute determinant of non-square Matrix.');
         }
 
         return $this->calcDet($this->data);
@@ -937,7 +917,7 @@ final class Matrix implements Stringable, Countable
     public function trace(): float
     {
         if (!$this->isSquare()) {
-            throw new DomainException('Cannot compute trace of a non-square matrix.');
+            throw new DomainException('Cannot compute trace of non-square Matrix.');
         }
 
         $sum = 0.0;

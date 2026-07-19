@@ -18,12 +18,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`ArithmeticException`** (`OceanMoon\Core\Exceptions\ArithmeticException`) is now thrown for arithmetic operations
   with no defined result — `Complex::div()` (division by zero), `pow()` (raising zero to a negative or complex power),
   `ln()`/`log()` (logarithm of zero, or with base 0 or 1); `Rational`'s constructor/`inv()`/`div()`/`pow()` (zero
-  denominator, reciprocal of zero, division by zero, raising zero to a negative power); `Vector::div()`/`normalize()`
+  denominator, reciprocal of zero, division by zero, raising zero to a negative power); `Vector::div()`/`normalized()`
   (zero scalar/magnitude); and `Matrix::inv()`/`div()`/`pow()` (zero determinant / non-invertible matrix). This
   displaces `DivisionByZeroError` throughout the package — see Removed.
 - **`Vector::hadamard()`**, **`Matrix::hadamard()`** — element-wise (Hadamard) product of two same-shaped
   vectors/matrices.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
+- **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
+  branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
+- **`Vector::mulMatrix()`** — multiply this vector by a matrix (_xA_), returning a `Vector`. Replaces the `Matrix`
+  branch removed from `Vector::mul()` (see Removed) with a dedicated, non-polymorphic method — the same
+  static-analysis motivation as `Matrix::mulVector()`, above, applied symmetrically to the other direction.
+- **`Vector::normalize()`** — normalizes the vector to unit magnitude (1) in place, mutating it and returning `void`.
+  Complements the existing (now renamed) `normalized()`, which returns a new normalized vector without modifying the
+  original — see Changed.
 - **`Matrix::copy()`** — extract a rectangular sub-matrix.
 - **`Matrix::paste()`** — copy another matrix's elements into this one in place, at a given offset.
 - **`Matrix::resize()`** — return a new matrix with different dimensions, built from `copy()`/ `paste()`, zero-filling
@@ -40,9 +48,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   arithmetic method on `Vector`/`Matrix` sets elements via `set()` internally, this also catches non-finite results
   produced deep inside operations like `mul()` (scalar overflow) or `Matrix::inv()` (near-singular matrices) instead of
   letting `INF`/`NAN` silently propagate.
+- **`Complex::equal()`/`approxEqual()` and `Rational::approxEqual()` now handle a non-finite `$other` explicitly**,
+  distinguishing `NAN` from `±INF` instead of treating both the same way: `NAN` throws `DomainException` (there's no
+  meaningful equality result for it — the same reasoning `Rational::compare()` already applied), while `±INF` returns
+  `false` (a finite `Complex`/`Rational` is simply never equal to infinity, which isn't a type error worth throwing
+  over). This makes both classes consistent with each other and with `Rational::compare()`, which already threw for
+  `NAN` and already handled `±INF` correctly via the spaceship operator.
 
 ### Changed
 
+- **`Vector::normalize()` renamed to `normalized()`** — it returns a new normalized vector rather than mutating in
+  place, so it needed the `-d` suffix to make room for a genuine in-place `normalize()` (see Added) without the two
+  being confusable.
 - **Comparison methods narrowed to a small, fixed set of accepted types**, matching Core's finalized comparison-trait
   policy (strict `instanceof self` checks, throw `InvalidArgumentException` for anything else — no silent conversion):
   `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` now only accept an instance of the same class
@@ -133,6 +150,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Native PHP serialization and JSON encoding support removed from `Complex` and `Rational`** — both classes no longer
   implement `JsonSerializable`, and `__serialize()`/`__unserialize()`/`jsonSerialize()` are gone. This reverts what was
   added in `3.0.0`; the capability wasn't needed and was adding maintenance surface without a real use case.
+- **`Matrix::mul()` no longer accepts a `Vector`** — narrowed from `float|Vector|self` (returning `self|Vector`) to
+  `float|self` (returning `self`). The polymorphic return type forced `assert($result instanceof self)` at every
+  internal call site that multiplies by a known scalar or `Matrix` (`neg()`, `div()`, `pow()`, `sqr()`, and
+  `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
+  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
+  `Matrix::mulVector()` instead (see Added).
+- **`Vector::mul()` no longer accepts a `Matrix`** — narrowed from `float|Matrix` to `float`, for the same reason as
+  `Matrix::mul()` above (applied symmetrically, since `Vector::mul()`'s `Matrix` branch was itself one of the call
+  sites needing narrowing). Use the new `Vector::mulMatrix()` instead (see Added).
 
 ### Documentation
 

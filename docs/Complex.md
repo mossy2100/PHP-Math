@@ -211,8 +211,10 @@ public function equal(mixed $other): bool
 Check if this complex number exactly equals another value.
 
 Compares both real and imaginary parts using exact equality (`===`). `$other` must be a `Complex`, `int`, or `float` —
-an `int`/`float` is treated as a real number for the comparison. Anything else throws, rather than silently returning
-`false`, to catch bugs from comparing values that can't meaningfully be compared.
+an `int`/`float` is treated as a real number for the comparison. A type that can't meaningfully be compared throws,
+rather than silently returning `false`, to catch bugs. `NAN` also throws, since it has no meaningful equality result;
+`±INF` is not a type error, so it returns `false` instead — a `Complex` (always finite) is simply never equal to
+infinity.
 
 **Parameters:**
 
@@ -225,7 +227,7 @@ an `int`/`float` is treated as a real number for the comparison. Anything else t
 **Throws:**
 
 - `InvalidArgumentException` if `$other` is not a `Complex`, `int`, or `float`.
-- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `DomainException` if `$other` is `NAN`.
 
 **Examples:**
 
@@ -243,10 +245,15 @@ $z4 = new Complex(5, 0);
 var_dump($z4->equal(5));    // true
 var_dump($z4->equal(5.0));  // true
 
+// A Complex is never equal to infinity, but this isn't a type error, so it returns false rather than throwing
+var_dump($z1->equal(INF));  // false
+var_dump($z1->equal(-INF)); // false
+
 // Anything else throws, rather than silently returning false
-$z1->equal('3+4i');  // throws InvalidArgumentException
-$z1->equal([3, 4]);  // throws InvalidArgumentException
-$z1->equal(null);    // throws InvalidArgumentException
+$z1->equal(NAN);      // throws DomainException (no meaningful equality result)
+$z1->equal('3+4i');   // throws InvalidArgumentException
+$z1->equal([3, 4]);   // throws InvalidArgumentException
+$z1->equal(null);     // throws InvalidArgumentException
 ```
 
 ### approxEqual()
@@ -262,8 +269,8 @@ public function approxEqual(
 Check if this complex number approximately equals another value within specified tolerances.
 
 Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately.
-`$other` must be a `Complex`, `int`, or `float`, same as `equal()`. Anything else throws, rather than silently returning
-`false`.
+`$other` must be a `Complex`, `int`, or `float`, same as `equal()`. `NAN` throws for the same reason as `equal()`
+(no meaningful result); `±INF` returns `false` rather than throwing.
 
 **Parameters:**
 
@@ -278,7 +285,7 @@ Uses combined relative and absolute tolerance approach, comparing both real and 
 **Throws:**
 
 - `InvalidArgumentException` if `$other` is not a `Complex`, `int`, or `float`.
-- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `DomainException` if `$other` is `NAN`.
 
 **How tolerance works:**
 
@@ -479,6 +486,25 @@ $result = M_I->pow(2);  // -1 + 0i
 - `DomainException` if `$other` is a non-finite float (±INF or NAN).
 - `ArithmeticException` if attempting 0 raised to a negative or complex power.
 
+### sqr()
+
+```php
+public function sqr(): self
+```
+
+Calculate the square of this complex number.
+
+**Example:**
+
+```php
+$z = new Complex(3, 4);
+$result = $z->sqr();  // -7 + 24i
+```
+
+---
+
+## Root Methods
+
 ### roots()
 
 ```php
@@ -508,21 +534,6 @@ $roots = $z->roots(2);  // Returns [i, -i]
 ```
 
 **Throws:** `DomainException` if `$degree` is not a positive integer.
-
-### sqr()
-
-```php
-public function sqr(): self
-```
-
-Calculate the square of this complex number.
-
-**Example:**
-
-```php
-$z = new Complex(3, 4);
-$result = $z->sqr();  // -7 + 24i
-```
 
 ### sqrt()
 
@@ -765,7 +776,7 @@ $acoth = $z->acoth();  // atanh(1/z)
 
 ---
 
-## ArrayAccess Implementation
+## ArrayAccess Methods
 
 Complex numbers can be accessed as arrays:
 

@@ -285,7 +285,9 @@ public function approxEqual(
 
 Check if this rational number approximately equals another value within specified tolerances.
 
-Converts both values to floats and uses combined relative and absolute tolerance approach.
+Converts both values to floats and uses combined relative and absolute tolerance approach. `NAN` throws, since it has
+no meaningful equality result; `±INF` returns `false` instead — a `Rational` (always finite) is never approximately
+equal to infinity.
 
 **Parameters:**
 - `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
@@ -295,7 +297,9 @@ Converts both values to floats and uses combined relative and absolute tolerance
 **Returns:**
 - `bool` - True if approximately equal within tolerances, false otherwise.
 
-**Throws:** `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
+**Throws:**
+- `InvalidArgumentException` if `$other` is not a `Rational`, `int`, or `float`.
+- `DomainException` if `$other` is `NAN`.
 
 **How tolerance works:**
 - Checks: `|a - b| ≤ max(relTol * max(|a|, |b|), absTol)`.
@@ -320,7 +324,12 @@ var_dump($r3->approxEqual(0.5000001, 1e-5));  // true
 // With zero tolerances (exact match required)
 var_dump($r1->approxEqual($r1, 0.0, 0.0));  // true
 
+// A Rational is never approximately equal to infinity, but this isn't a type error, so it returns false
+var_dump($r1->approxEqual(INF));   // false
+var_dump($r1->approxEqual(-INF));  // false
+
 // Anything else throws, rather than silently returning false
+$r1->approxEqual(NAN);              // throws DomainException (no meaningful equality result)
 $r1->approxEqual('not a number');  // throws InvalidArgumentException
 ```
 

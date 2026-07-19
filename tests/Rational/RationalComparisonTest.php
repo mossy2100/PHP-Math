@@ -149,6 +149,18 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
+     * Test compare with ±INF. A Rational is always less than INF and greater than -INF, since ±INF, unlike NAN,
+     * has a well-defined position in the ordering.
+     */
+    public function testCompareWithInfinity(): void
+    {
+        $r = new Rational(3, 4);
+
+        $this->assertSame(-1, $r->compare(INF));
+        $this->assertSame(1, $r->compare(-INF));
+    }
+
+    /**
      * Test compare with PHP_INT_MIN falls through to float comparison.
      */
     public function testCompareWithPhpIntMin(): void
@@ -232,6 +244,27 @@ class RationalComparisonTest extends TestCase
         $r = new Rational(3, 4);
         $this->expectException(InvalidArgumentException::class);
         $this->assertFalse($r->equal('string'));
+    }
+
+    /**
+     * Test equal with NAN throws DomainException (NAN has no meaningful equality result, unlike ±INF).
+     */
+    public function testEqualWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $r = new Rational(3, 4);
+        $r->equal(NAN);
+    }
+
+    /**
+     * Test equal with ±INF returns false, since a Rational (always finite) is never equal to infinity.
+     */
+    public function testEqualWithInfinity(): void
+    {
+        $r = new Rational(3, 4);
+
+        $this->assertFalse($r->equal(INF));
+        $this->assertFalse($r->equal(-INF));
     }
 
     #endregion
@@ -579,6 +612,28 @@ class RationalComparisonTest extends TestCase
     }
 
     /**
+     * Test approxEqual with NAN throws DomainException (NAN has no meaningful equality result, unlike ±INF).
+     */
+    public function testApproxEqualWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $r = new Rational(3, 4);
+        $r->approxEqual(NAN);
+    }
+
+    /**
+     * Test approxEqual with ±INF returns false, since a Rational (always finite) is never approximately equal to
+     * infinity.
+     */
+    public function testApproxEqualWithInfinity(): void
+    {
+        $r = new Rational(3, 4);
+
+        $this->assertFalse($r->approxEqual(INF));
+        $this->assertFalse($r->approxEqual(-INF));
+    }
+
+    /**
      * Test approxEqual with a non-numeric string throws InvalidArgumentException.
      */
     public function testApproxEqualInvalidStringThrows(): void
@@ -743,6 +798,29 @@ class RationalComparisonTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->approxCompare('string');
+    }
+
+    /**
+     * Test approxCompare with NAN throws DomainException. approxCompare() tries approxEqual() first, which now
+     * throws for NAN rather than returning false, so the exception surfaces before compare() would even run.
+     */
+    public function testApproxCompareWithNanThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $r = new Rational(3, 4);
+        $r->approxCompare(NAN);
+    }
+
+    /**
+     * Test approxCompare with ±INF. approxEqual() returns false for infinity, so this falls through to compare(),
+     * which gives ±INF its well-defined ordering.
+     */
+    public function testApproxCompareWithInfinity(): void
+    {
+        $r = new Rational(3, 4);
+
+        $this->assertSame(-1, $r->approxCompare(INF));
+        $this->assertSame(1, $r->approxCompare(-INF));
     }
 
     #endregion

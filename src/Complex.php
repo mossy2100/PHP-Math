@@ -16,6 +16,7 @@ use OutOfRangeException;
 use Override;
 use Stringable;
 
+use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
 
 use const OceanMoon\Core\Globals\M_TAU;
@@ -35,26 +36,20 @@ final class Complex implements Stringable, ArrayAccess
 
     /**
      * The real part of the complex number.
-     *
-     * @var float
      */
     private(set) float $real;
 
     /**
      * The imaginary part of the complex number.
-     *
-     * @var float
      */
     private(set) float $imaginary;
 
     #endregion
 
-    #region Computed properties (public, readonly)
+    #region Public properties (computed, readonly)
 
     /**
-     * The magnitude (a.k.a. absolute value or modulus) of this complex number.
-     *
-     * @var null|float
+     * The magnitude (a.k.a. absolute value or modulus) of this complex number. Cached on first access.
      */
     private(set) ?float $magnitude = null {
         get {
@@ -68,12 +63,10 @@ final class Complex implements Stringable, ArrayAccess
     }
 
     /**
-     * The phase (a.k.a. argument) of this complex number in radians.
+     * The phase (a.k.a. argument) of this complex number in radians. Cached on first access.
      *
      * It is stored in a canonical form, in the range (-π, π]. This is known as the principal value.
      * @see https://en.wikipedia.org/wiki/Principal_value#Complex_argument
-     *
-     * @var null|float
      */
     private(set) ?float $phase = null {
         get {
@@ -109,10 +102,10 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for non-finite values.
         if (!is_finite($real)) {
-            throw new DomainException('Cannot create Complex. Real part must be finite.');
+            throw new DomainException('Cannot create Complex with non-finite real part: ' . ex($real) . '.');
         }
         if (!is_finite($imag)) {
-            throw new DomainException('Cannot create Complex. Imaginary part must be finite.');
+            throw new DomainException('Cannot create Complex with non-finite imaginary part: ' . ex($imag) . '.');
         }
 
         // Set the properties.
@@ -145,7 +138,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle empty string
         if ($str === '') {
-            throw new FormatException('Cannot create Complex. String must not be empty.');
+            throw new FormatException('Cannot convert empty string to Complex.');
         }
 
         $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
@@ -166,7 +159,7 @@ final class Complex implements Stringable, ArrayAccess
             // Pattern: ±bi ± a (imag + real)
             [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
-            throw new FormatException('Cannot create Complex. Invalid format.');
+            throw new FormatException('Cannot convert string to Complex. Invalid format.');
         }
 
         // Get the real part.
@@ -192,15 +185,15 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for non-finite values.
         if (!is_finite($mag)) {
-            throw new DomainException('Cannot create Complex. Magnitude must be finite.');
+            throw new DomainException('Cannot create Complex with non-finite magnitude: ' . ex($mag) . '.');
         }
         if (!is_finite($phase)) {
-            throw new DomainException('Cannot create Complex. Phase must be finite.');
+            throw new DomainException('Cannot create Complex with non-finite phase: ' . ex($phase) . '.');
         }
 
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException("Cannot create Complex. Magnitude must not be negative, got $mag.");
+            throw new DomainException('Cannot create Complex with negative magnitude: ' . ex($mag) . '.');
         }
 
         // Get the phase as radians in the normal range (-pi, pi]
@@ -273,7 +266,8 @@ final class Complex implements Stringable, ArrayAccess
      * @param mixed $other The value to compare with.
      * @return bool True if the values are equal.
      * @throws InvalidArgumentException If $other is not Complex, int, or float.
-     * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws DomainException If $other is NAN. There's no meaningful answer for NAN, unlike ±INF, which a Complex
+     * is simply never equal to.
      */
     /** @disregard P1128 */
     #[Override] // Equatable
@@ -284,6 +278,18 @@ final class Complex implements Stringable, ArrayAccess
             throw new InvalidArgumentException(
                 'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
             );
+        }
+
+        if (is_float($other)) {
+            // Fail on NAN - no meaningful result.
+            if (is_nan($other)) {
+                throw new DomainException('Cannot compare Complex with NAN.');
+            }
+
+            // A Complex (always finite) is never equal to ±INF.
+            if (!is_finite($other)) {
+                return false;
+            }
         }
 
         // Get other value as a Complex.
@@ -308,7 +314,8 @@ final class Complex implements Stringable, ArrayAccess
      * @param float $absTol The absolute tolerance.
      * @return bool True if the numbers are equal within the given tolerances, otherwise false.
      * @throws InvalidArgumentException If $other is not Complex, int, or float.
-     * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws DomainException If $other is NAN. There's no meaningful answer for NAN, unlike ±INF, which a Complex
+     * is simply never (approximately) equal to.
      */
     #[Override] // ApproxEquatable
     public function approxEqual(
@@ -321,6 +328,18 @@ final class Complex implements Stringable, ArrayAccess
             throw new InvalidArgumentException(
                 'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
             );
+        }
+
+        if (is_float($other)) {
+            // Fail on NAN - no meaningful result.
+            if (is_nan($other)) {
+                throw new DomainException('Cannot compare Complex with NAN.');
+            }
+
+            // A Complex (always finite) is never approximately equal to ±INF.
+            if (!is_finite($other)) {
+                return false;
+            }
         }
 
         // Get other value as a Complex.
@@ -540,6 +559,22 @@ final class Complex implements Stringable, ArrayAccess
     }
 
     /**
+     * Square this complex number.
+     *
+     * Equivalent to pow(2), but more efficient and readable.
+     *
+     * @return self A new complex number representing the square of this number.
+     */
+    public function sqr(): self
+    {
+        return $this->mul($this);
+    }
+
+    #endregion
+
+    #region Root methods
+
+    /**
      * Calculate roots of this complex number using De Moivre's theorem.
      *
      * @param int $degree The degree of the root to calculate (e.g. 2 for square root, 3 for cube root).
@@ -550,7 +585,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for negative degree.
         if ($degree <= 0) {
-            throw new DomainException("Cannot compute roots. Degree must be positive, got $degree.");
+            throw new DomainException("Cannot compute roots of degree: $degree. Must be positive.");
         }
 
         // Handle special case of 0.
@@ -571,18 +606,6 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         return $roots;
-    }
-
-    /**
-     * Square this complex number.
-     *
-     * Equivalent to pow(2), but more efficient and readable.
-     *
-     * @return self A new complex number representing the square of this number.
-     */
-    public function sqr(): self
-    {
-        return $this->mul($this);
     }
 
     /**
@@ -653,7 +676,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for ln(0), which is undefined.
         if ($this->equal(0)) {
-            throw new ArithmeticException('Cannot compute the logarithm of zero.');
+            throw new ArithmeticException('Cannot compute logarithm of zero.');
         }
 
         // Use shortcuts where possible.
@@ -1077,7 +1100,7 @@ final class Complex implements Stringable, ArrayAccess
 
     #endregion
 
-    #region ArrayAccess implementation
+    #region ArrayAccess methods
 
     /**
      * Check if the complex number has a given offset. Only 0 and 1 are valid offsets.
@@ -1104,12 +1127,12 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check offset type.
         if (!is_int($offset)) {
-            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
+            throw new InvalidArgumentException('Invalid offset type: ' . get_debug_type($offset) . '. Must be int.');
         }
 
         // Check offset value.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException("Invalid offset. Must be 0 or 1, got $offset.");
+            throw new OutOfRangeException("Invalid offset: $offset. Must be 0 or 1");
         }
 
         // Return the appropriate value.

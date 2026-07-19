@@ -119,37 +119,6 @@ class VectorArithmeticTest extends TestCase
     }
 
     /**
-     * Test multiplying a vector by a Matrix. The vector is treated as a single-row matrix, multiplied
-     * by the given Matrix, and the resulting single row is converted back to a Vector.
-     */
-    public function testMulByMatrix(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $m = Matrix::fromArray([
-            [1, 4],
-            [2, 5],
-            [3, 6],
-        ]);
-        $result = $v->mul($m);
-
-        $this->assertInstanceOf(Vector::class, $result);
-        // [1,2,3] * M = [1*1+2*2+3*3, 1*4+2*5+3*6] = [14, 32]
-        $this->assertSame([14.0, 32.0], $result->toArray());
-    }
-
-    /**
-     * Test multiplying a vector by a Matrix with an incompatible row count throws LengthException.
-     */
-    public function testMulByMatrixIncompatibleDimensionsThrows(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $m = new Matrix(2, 2);
-
-        $this->expectException(LengthException::class);
-        $v->mul($m);
-    }
-
-    /**
      * Test dividing a vector by a scalar.
      */
     public function testDiv(): void
@@ -189,6 +158,37 @@ class VectorArithmeticTest extends TestCase
         $b = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
         $a->hadamard($b);
+    }
+
+    /**
+     * Test multiplying a vector by a Matrix. The vector is treated as a single-row matrix, multiplied
+     * by the given Matrix, and the resulting single row is converted back to a Vector.
+     */
+    public function testMulMatrix(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $m = Matrix::fromArray([
+            [1, 4],
+            [2, 5],
+            [3, 6],
+        ]);
+        $result = $v->mulMatrix($m);
+
+        $this->assertInstanceOf(Vector::class, $result);
+        // [1,2,3] * M = [1*1+2*2+3*3, 1*4+2*5+3*6] = [14, 32]
+        $this->assertSame([14.0, 32.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a vector by a Matrix with an incompatible row count throws LengthException.
+     */
+    public function testMulMatrixIncompatibleDimensionsThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $m = new Matrix(2, 2);
+
+        $this->expectException(LengthException::class);
+        $v->mulMatrix($m);
     }
 
     /**
@@ -261,15 +261,15 @@ class VectorArithmeticTest extends TestCase
 
     #endregion
 
-    #region normalize() tests
+    #region normalized() tests
 
     /**
-     * Test normalize produces a unit vector.
+     * Test normalized produces a unit vector.
      */
-    public function testNormalizeProducesUnitVector(): void
+    public function testNormalizedProducesUnitVector(): void
     {
         $v = Vector::fromArray([3, 4]);
-        $unit = $v->normalize();
+        $unit = $v->normalized();
 
         $this->assertNotNull($unit->magnitude);
         $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
@@ -278,12 +278,12 @@ class VectorArithmeticTest extends TestCase
     }
 
     /**
-     * Test normalize on a unit vector returns equivalent vector.
+     * Test normalized on a unit vector returns equivalent vector.
      */
-    public function testNormalizeUnitVector(): void
+    public function testNormalizedUnitVector(): void
     {
         $v = Vector::fromArray([1, 0, 0]);
-        $unit = $v->normalize();
+        $unit = $v->normalized();
 
         $this->assertNotNull($unit->magnitude);
         $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
@@ -293,13 +293,13 @@ class VectorArithmeticTest extends TestCase
     }
 
     /**
-     * Test normalize on zero vector throws ArithmeticException.
+     * Test normalized on zero vector throws ArithmeticException.
      */
-    public function testNormalizeZeroVectorThrows(): void
+    public function testNormalizedZeroVectorThrows(): void
     {
         $v = new Vector(3);
         $this->expectException(ArithmeticException::class);
-        $v->normalize();
+        $v->normalized();
     }
 
     #endregion

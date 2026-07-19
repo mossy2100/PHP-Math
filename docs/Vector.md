@@ -219,6 +219,24 @@ $v->set(1, 99);
 echo $v->get(1);  // 99.0
 ```
 
+### normalize()
+
+```php
+public function normalize(): void
+```
+
+Normalize this vector to a unit vector (magnitude 1), in place. Mutates this vector rather than returning a new one —
+use [`normalized()`](#normalized) instead if you want an unmodified copy.
+
+**Throws:** `ArithmeticException` if the vector has zero magnitude. If it throws, the vector is left unmodified.
+
+**Examples:**
+```php
+$v = Vector::fromArray([3, 4]);
+$v->normalize();
+echo $v;  // ⟨0.6, 0.8⟩
+```
+
 ---
 
 ## Comparison Methods
@@ -380,35 +398,21 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 ### mul()
 
 ```php
-public function mul(float|Matrix $other): self
+public function mul(float $scalar): self
 ```
 
-Multiply this vector by a scalar, or by a `Matrix`.
-
-For a `Matrix` operand, this vector is treated as a single-row (1×n) matrix, multiplied by `$other`, and the
-resulting single row is converted back to a `Vector`. This requires `$other`'s row count to equal this vector's
-size.
+Multiply this vector by a scalar.
 
 **Parameters:**
-- `$other` (float|Matrix) - Number to multiply by, or a Matrix to multiply by (treating this vector as a row).
+- `$scalar` (float) - Number to multiply by.
 
 **Returns:**
 - `self` - New vector representing the product.
-
-**Throws:** `LengthException` if `$other` is a Matrix whose row count doesn't equal this vector's size.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
-
-// Multiply by a Matrix (vector treated as a row).
-$m = Matrix::fromArray([
-    [1, 4],
-    [2, 5],
-    [3, 6],
-]);
-$result2 = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()
@@ -462,6 +466,36 @@ $result = $v1->hadamard($v2);  // [4, 10, 18]
 
 ## Linear Algebra Methods
 
+### mulMatrix()
+
+```php
+public function mulMatrix(Matrix $matrix): self
+```
+
+Multiply this vector by a matrix (_xA_). The vector is treated as a row vector; its size must equal the matrix's row
+count.
+
+To go the other way (_Ax_), use `Matrix::mulVector()` instead.
+
+**Parameters:**
+- `$matrix` (Matrix) - The matrix to multiply by.
+
+**Returns:**
+- `self` - New vector representing the result.
+
+**Throws:** `LengthException` if this vector's size doesn't equal the matrix's row count.
+
+**Examples:**
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$m = Matrix::fromArray([
+    [1, 4],
+    [2, 5],
+    [3, 6],
+]);
+$result = $v->mulMatrix($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
+```
+
 ### dot()
 
 ```php
@@ -510,13 +544,14 @@ $v2 = Vector::fromArray([0, 1, 0]);
 $result = $v1->cross($v2);  // [0, 0, 1]
 ```
 
-### normalize()
+### normalized()
 
 ```php
-public function normalize(): self
+public function normalized(): self
 ```
 
-Normalize this vector to a unit vector (magnitude 1). The result has the same direction as the original.
+Get this vector normalized to a unit vector (magnitude 1). Returns a new vector with the same direction as the
+original — use [`normalize()`](#normalize) instead if you want to mutate this vector in place.
 
 **Returns:**
 - `self` - A new vector with magnitude 1.
@@ -527,7 +562,7 @@ Normalize this vector to a unit vector (magnitude 1). The result has the same di
 **Examples:**
 ```php
 $v = Vector::fromArray([3, 4]);
-$unit = $v->normalize();
+$unit = $v->normalized();
 echo $unit->magnitude;  // 1.0
 echo $unit->get(0);     // 0.6
 echo $unit->get(1);     // 0.8

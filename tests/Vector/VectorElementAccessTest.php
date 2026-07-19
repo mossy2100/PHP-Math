@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Vector;
 
 use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -147,5 +148,50 @@ class VectorElementAccessTest extends TestCase
         $this->assertSame(10.0, $v->get(0));
         $this->assertSame(99.0, $v->get(1));
         $this->assertSame(30.0, $v->get(2));
+    }
+
+    /**
+     * Test normalize() scales the vector to unit magnitude in place.
+     */
+    public function testNormalizeScalesInPlace(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+        $v->normalize();
+
+        $this->assertNotNull($v->magnitude);
+        $this->assertEqualsWithDelta(1.0, $v->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(3.0 / 5.0, $v->get(0), EPSILON);
+        $this->assertEqualsWithDelta(4.0 / 5.0, $v->get(1), EPSILON);
+    }
+
+    /**
+     * Test normalize() on a unit vector leaves it unchanged.
+     */
+    public function testNormalizeUnitVectorUnchanged(): void
+    {
+        $v = Vector::fromArray([1, 0, 0]);
+        $v->normalize();
+
+        $this->assertNotNull($v->magnitude);
+        $this->assertEqualsWithDelta(1.0, $v->magnitude, EPSILON);
+        $this->assertSame(1.0, $v->get(0));
+        $this->assertSame(0.0, $v->get(1));
+        $this->assertSame(0.0, $v->get(2));
+    }
+
+    /**
+     * Test normalize() on a zero vector throws ArithmeticException and leaves the vector unmodified.
+     */
+    public function testNormalizeZeroVectorThrows(): void
+    {
+        $v = new Vector(3);
+
+        try {
+            $v->normalize();
+            $this->fail('Expected ArithmeticException was not thrown.');
+        } catch (ArithmeticException) {
+            // Expected. The vector should be left unmodified.
+            $this->assertSame([0.0, 0.0, 0.0], $v->toArray());
+        }
     }
 }

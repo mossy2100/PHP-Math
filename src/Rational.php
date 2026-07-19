@@ -16,6 +16,7 @@ use Override;
 use RoundingMode;
 use Stringable;
 
+use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
 use function OceanMoon\Core\Globals\sign;
 
@@ -72,12 +73,12 @@ final class Rational implements Stringable
     {
         // Check for zero denominator.
         if ($den === 0) {
-            throw new ArithmeticException('Cannot create a Rational with a denominator of zero.');
+            throw new ArithmeticException('Cannot create Rational with denominator of zero.');
         }
 
         // If either value is PHP_INT_MIN and the other is odd, then the ratio is unrepresentable.
         if (($num === PHP_INT_MIN && $den % 2 !== 0) || ($den === PHP_INT_MIN && $num % 2 !== 0)) {
-            throw new DomainException("Cannot express the ratio $num/$den as a Rational.");
+            throw new DomainException("Cannot express ratio $num/$den as Rational.");
         }
 
         // Simplify the ratio to canonical form.
@@ -140,7 +141,7 @@ final class Rational implements Stringable
     {
         // Check for non-finite values.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot convert float to Rational. Value must be a finite number.');
+            throw new DomainException('Cannot create Rational from non-finite float: ' . ex($value) . '.');
         }
 
         // Check if the value equals a valid integer.
@@ -161,7 +162,9 @@ final class Rational implements Stringable
 
         // Check for values outside the valid range for Rational.
         if ($absValue < $min || $absValue > $max) {
-            throw new DomainException("Cannot convert float to Rational. Value $value is outside the valid range.");
+            throw new DomainException(
+                'Cannot create Rational from float: ' . ex($value) . '. Outside valid range.'
+            );
         }
 
         // Check for values at the limits of the valid range, which cannot be handled by the continued fractions
@@ -265,7 +268,7 @@ final class Rational implements Stringable
 
         // Handle empty string
         if ($str === '') {
-            throw new FormatException('Cannot convert string to Rational. String must not be empty.');
+            throw new FormatException('Cannot convert empty string to Rational.');
         }
 
         // Check for a string that looks like an integer.
@@ -444,6 +447,8 @@ final class Rational implements Stringable
      * @param float $absTol The maximum allowed absolute difference (default: PHP_FLOAT_EPSILON).
      * @return bool True if the values are equal within the given tolerances, false otherwise.
      * @throws InvalidArgumentException If the value cannot be converted to a Rational.
+     * @throws DomainException If $other is NAN. There's no meaningful answer for NAN, unlike ±INF, which a Rational
+     * is simply never (approximately) equal to.
      * @see Floats::approxEqual() For the tolerance algorithm details.
      */
     /** @disregard P1128 */
@@ -458,6 +463,12 @@ final class Rational implements Stringable
             throw new InvalidArgumentException(
                 'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.'
             );
+        }
+
+        // Fail on NAN - no meaningful result. ±INF falls through to Floats::approxEqual() below, which already
+        // handles it correctly (a finite Rational is never exactly equal to infinity).
+        if (is_float($other) && is_nan($other)) {
+            throw new DomainException('Cannot compare Rational with NAN.');
         }
 
         // Convert Rational to float.
@@ -656,7 +667,7 @@ final class Rational implements Stringable
         if ($this->numerator === 0) {
             // 0 to the power of a negative exponent is invalid (effectively division by zero).
             if ($exponent < 0) {
-                throw new ArithmeticException('Cannot raise zero to a negative power.');
+                throw new ArithmeticException('Cannot raise zero to negative power.');
             }
 
             // 0 to the power of a positive exponent is 0.

@@ -17,8 +17,8 @@ use OutOfRangeException;
 use Override;
 use Stringable;
 
+use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
-use function OceanMoon\Core\Globals\to_string;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.
@@ -82,7 +82,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     public function __construct(int $size)
     {
         if ($size < 0) {
-            throw new DomainException("Cannot create a Vector with negative size, got $size.");
+            throw new DomainException("Cannot create Vector with negative size: $size.");
         }
 
         $this->size = $size;
@@ -111,16 +111,15 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
         // Check for list.
         if (!array_is_list($arr)) {
-            throw new DomainException('Cannot create a Vector from array. Array must be a list.');
+            throw new DomainException('Cannot create Vector from array. Must be a list.');
         }
 
         // Check all elements are numbers.
-        foreach ($arr as $index => $value) {
+        foreach ($arr as $value) {
             // Check if the value is a number.
             if (!is_number($value)) {
                 throw new DomainException(
-                    "Cannot create a Vector from array. Element at index $index must be a number (int or float), "
-                    . 'got ' . get_debug_type($value) . '.'
+                    'Invalid element type: ' . get_debug_type($value) . '. Must be int or float.'
                 );
             }
 
@@ -205,9 +204,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException(
-                "Vector index $index is outside the valid range 0-" . ($this->size - 1) . '.'
-            );
+            throw new OutOfRangeException("Cannot get element at index: $index. Must be 0-" . ($this->size - 1) . '.');
         }
 
         return $this->data[$index];
@@ -229,20 +226,29 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException(
-                "Vector index $index is outside the valid range 0-" . ($this->size - 1) . '.'
-            );
+            throw new OutOfRangeException("Cannot set element at index: $index. Must be 0-" . ($this->size - 1) . '.');
         }
 
         // Check the value is finite.
         if (!is_finite($value)) {
-            throw new DomainException(
-                "Cannot set element $index. Value must be finite, got " . to_string($value) . '.'
-            );
+            throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
         }
 
         $this->data[$index] = $value;
         $this->magnitude = null;
+    }
+
+    /**
+     * Normalize this vector in place to a unit vector (magnitude 1).
+     *
+     * @throws ArithmeticException If the vector has zero magnitude.
+     */
+    public function normalize(): void
+    {
+        $unit = $this->normalized();
+        for ($i = 0; $i < $this->size; $i++) {
+            $this->set($i, $unit->get($i));
+        }
     }
 
     #endregion
@@ -266,7 +272,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be a Vector.'
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.'
             );
         }
 
@@ -309,7 +315,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be a Vector.'
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.'
             );
         }
 
@@ -357,7 +363,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot add vectors of different sizes.');
+            throw new LengthException('Cannot add Vector of different size:' . $other->size . '.');
         }
 
         // Add the vectors element-wise.
@@ -380,7 +386,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot subtract vectors of different sizes.');
+            throw new LengthException('Cannot subtract Vector of different size: ' . $other->size . '.');
         }
 
         // Subtract the vectors element-wise.
@@ -393,32 +399,20 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Multiply this Vector by a float or a Matrix.
+     * Multiply this vector by a scalar.
      *
-     * @param float|Matrix $other Float or Matrix to multiply by.
-     * @return self New Vector representing the result.
-     * @throws LengthException If $other is a Matrix and its row count doesn't equal this Vector's size.
+     * @param float $scalar Number to multiply by.
+     * @return self New vector representing the product.
      */
-    public function mul(float|Matrix $other): self
+    public function mul(float $scalar): self
     {
-        // Multiply Vector by a float.
-        if (is_float($other)) {
-            // Multiply each element by the float.
-            $result = new self($this->size);
-            for ($i = 0; $i < $this->size; $i++) {
-                $result->set($i, $this->data[$i] * $other);
-            }
-            return $result;
+        // Multiply each element by the scalar.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            $result->set($i, $this->data[$i] * $scalar);
         }
 
-        // Multiply Vector by a Matrix.
-        // Convert the Vector to a single-row matrix and multiply by the given Matrix.
-        // The call to Matrix::mul() will fail if the Vector size does not equal the number of rows in the Matrix.
-        $result = $this->toRowMatrix()->mul($other);
-        assert($result instanceof Matrix);
-
-        // Convert the first and only row of the resulting Matrix into a Vector.
-        return $result->getRow(0);
+        return $result;
     }
 
     /**
@@ -455,7 +449,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot compute Hadamard product of vectors with different sizes.');
+            throw new LengthException(
+                'Cannot compute Hadamard product with Vector of different size: ' . $other->size . '.'
+            );
         }
 
         // Multiply the vectors element-wise.
@@ -472,6 +468,26 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #region Linear algebra methods
 
     /**
+     * Multiply this vector by a matrix: xA.
+     *
+     * The vector is treated as a row vector; its size must equal the matrix's row count. To go the other way (Ax),
+     * use `Matrix::mulVector()` instead.
+     *
+     * @param Matrix $matrix The matrix to multiply by.
+     * @return self New vector representing the result.
+     * @throws LengthException If this vector's size doesn't equal the matrix's row count.
+     */
+    public function mulMatrix(Matrix $matrix): self
+    {
+        // Convert the vector to a single-row matrix and multiply by the given matrix.
+        // The call to Matrix::mul() will fail if the vector size does not equal the number of rows in the matrix.
+        $result = $this->toRowMatrix()->mul($matrix);
+
+        // Convert the first and only row of the resulting matrix into a vector.
+        return $result->getRow(0);
+    }
+
+    /**
      * Calculate the dot product of this vector with another vector.
      *
      * @param self $other Vector to calculate dot product with.
@@ -482,7 +498,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot compute dot product of vectors with different sizes.');
+            throw new LengthException(
+                'Cannot compute dot product with Vector of different size: ' . $other->size . '.'
+            );
         }
 
         // Calculate the dot product element-wise.
@@ -505,10 +523,14 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors are size 3.
         if ($this->size !== 3) {
-            throw new LengthException('Cannot compute cross product. First operand is not size 3.');
+            throw new LengthException(
+                'Cannot compute cross product with first Vector size: ' . $this->size . '. Must be 3.'
+            );
         }
         if ($other->size !== 3) {
-            throw new LengthException('Cannot compute cross product. Second operand is not size 3.');
+            throw new LengthException(
+                'Cannot compute cross product with second Vector size: ' . $other->size . '. Must be 3.'
+            );
         }
 
         return self::fromArray([
@@ -519,12 +541,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Normalize this vector to a unit vector (magnitude 1).
+     * Get this vector normalized to a unit vector (magnitude 1).
      *
      * @return self A new vector with the same direction and magnitude 1.
      * @throws ArithmeticException If the vector has zero magnitude.
      */
-    public function normalize(): self
+    public function normalized(): self
     {
         assert($this->magnitude !== null);
         return $this->div($this->magnitude);
@@ -592,16 +614,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // ArrayAccess
     public function offsetGet(mixed $offset): float
     {
-        // Check offset type.
+        // Check index type.
         if (!is_int($offset)) {
-            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
-        }
-
-        // Check offset value.
-        if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException(
-                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . ", got $offset."
-            );
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
         }
 
         return $this->get($offset);
@@ -618,28 +633,22 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // ArrayAccess
     public function offsetSet(mixed $offset, mixed $value): void
     {
-        // Check offset type.
+        // Check index type.
         if (!is_int($offset)) {
-            throw new InvalidArgumentException('Invalid offset. Must be an int, got ' . get_debug_type($offset) . '.');
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
         }
-
-        // Check offset value.
-        if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException(
-                'Invalid offset. Must be an integer in the range 0-' . ($this->size - 1) . ", got $offset."
-            );
-        }
-
-        // Check value is a number.
+        // Check element type.
         if (!is_number($value)) {
-            throw new InvalidArgumentException('Cannot use non-numeric elements in a vector.');
+            throw new InvalidArgumentException(
+                'Invalid element type: ' . get_debug_type($offset) . '. Must be int or float.'
+            );
         }
 
         $this->set($offset, $value);
     }
 
     /**
-     * Unset is not supported for vectors.
+     * Unset is not supported for Vector, which has a fixed size and contains only floats.
      *
      * @param mixed $offset Index.
      * @throws LogicException Always throws.
@@ -647,7 +656,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
-        throw new LogicException('Cannot unset elements in a vector.');
+        throw new LogicException('Cannot unset Vector elements.');
     }
 
     #endregion

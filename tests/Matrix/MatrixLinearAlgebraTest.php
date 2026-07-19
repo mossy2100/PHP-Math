@@ -5,13 +5,73 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
+use LengthException;
 use OceanMoon\Math\Matrix;
+use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Matrix::class)]
 class MatrixLinearAlgebraTest extends TestCase
 {
+    #region mulVector() tests
+
+    /**
+     * Test multiplying a matrix by a vector.
+     */
+    public function testMulVector(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mulVector($v);
+        // Row 0: 1*1+2*2+3*3=14
+        // Row 1: 4*1+5*2+6*3=32
+        $this->assertEqualsWithDelta(14.0, $result->toArray()[0], EPSILON);
+        $this->assertEqualsWithDelta(32.0, $result->toArray()[1], EPSILON);
+    }
+
+    /**
+     * Test multiplying a 0-row matrix by a vector returns a size-0 vector.
+     */
+    public function testMulVectorWithZeroRowMatrix(): void
+    {
+        $m = new Matrix(0, 3);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mulVector($v);
+        $this->assertSame(0, $result->size);
+    }
+
+    /**
+     * Test multiplying a 0-column matrix by an empty vector returns a zero vector matching the
+     * matrix's row count. This exercises Vector::toColumnMatrix()'s handling of an empty vector,
+     * which must produce a genuine n×1 (here 0×1) matrix rather than a 0×0 one, or the inner matrix
+     * multiplication silently produces the wrong shape.
+     */
+    public function testMulVectorWithEmptyVectorAndZeroColumnMatrix(): void
+    {
+        $m = new Matrix(3, 0);
+        $v = new Vector(0);
+        $result = $m->mulVector($v);
+        $this->assertSame(3, $result->size);
+        $this->assertSame([0.0, 0.0, 0.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a matrix with a non-zero column count by an empty vector throws
+     * LengthException, since the dimensions are genuinely incompatible.
+     */
+    public function testMulVectorWithIncompatibleSizeThrows(): void
+    {
+        $m = new Matrix(3, 2);
+        $this->expectException(LengthException::class);
+        $m->mulVector(new Vector(0));
+    }
+
+    #endregion
+
     #region transpose() tests
 
     /**
