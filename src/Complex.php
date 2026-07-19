@@ -1132,7 +1132,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Check offset value.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException("Invalid offset: $offset. Must be 0 or 1");
+            throw new OutOfRangeException("Invalid offset: $offset. Must be 0 or 1.");
         }
 
         // Return the appropriate value.

@@ -115,11 +115,11 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Check all elements are numbers.
-        foreach ($arr as $value) {
+        foreach ($arr as $index => $value) {
             // Check if the value is a number.
             if (!is_number($value)) {
                 throw new DomainException(
-                    'Invalid element type: ' . get_debug_type($value) . '. Must be int or float.'
+                    "Invalid element type at index $index: " . get_debug_type($value) . '. Must be int or float.'
                 );
             }
 
@@ -204,7 +204,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Cannot get element at index: $index. Must be 0-" . ($this->size - 1) . '.');
+            throw new OutOfRangeException(
+                "Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.'
+            );
         }
 
         return $this->data[$index];
@@ -226,7 +228,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Cannot set element at index: $index. Must be 0-" . ($this->size - 1) . '.');
+            throw new OutOfRangeException(
+                "Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.'
+            );
         }
 
         // Check the value is finite.
@@ -363,7 +367,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot add Vector of different size:' . $other->size . '.');
+            throw new LengthException(
+                "Cannot add Vector of incorrect size: {$other->size}. Expected {$this->size}."
+            );
         }
 
         // Add the vectors element-wise.
@@ -386,7 +392,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException('Cannot subtract Vector of different size: ' . $other->size . '.');
+            throw new LengthException(
+                "Cannot subtract Vector of incorrect size: {$other->size}. Expected {$this->size}."
+            );
         }
 
         // Subtract the vectors element-wise.
@@ -450,7 +458,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
             throw new LengthException(
-                'Cannot compute Hadamard product with Vector of different size: ' . $other->size . '.'
+                "Cannot compute Hadamard product with Vector of incorrect size: {$other->size}. " .
+                "Expected {$this->size}."
             );
         }
 
@@ -499,7 +508,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
             throw new LengthException(
-                'Cannot compute dot product with Vector of different size: ' . $other->size . '.'
+                "Cannot compute dot product with Vector of incorrect size: {$other->size}. Expected {$this->size}."
             );
         }
 
