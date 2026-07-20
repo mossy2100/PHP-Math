@@ -121,6 +121,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   involving `PHP_INT_MIN`), even though the true result (`0`) is perfectly representable — the cross-cancellation
   step computed `gcd(0, PHP_INT_MIN)`, which correctly overflows for its own sake but doesn't apply here. Now
   short-circuits to `0` whenever the dividend's numerator is zero, before reaching that computation.
+- **`bootstrap.php`'s extension-loaded guard** checked `extension_loaded('oceanmoon/math-ext')` — a Composer package
+  name, never a real registered PHP extension name — so it always evaluated `false` and silently redeclared
+  `OceanMoon\Math\M_I` in userland even when the native extension (which registers the same constant itself) was
+  loaded. Fixed to check `extension_loaded('oceanmoon_math')`, the extension's actual module name.
 
 ### Removed
 
@@ -159,6 +163,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::mul()` no longer accepts a `Matrix`** — narrowed from `float|Matrix` to `float`, for the same reason as
   `Matrix::mul()` above (applied symmetrically, since `Vector::mul()`'s `Matrix` branch was itself one of the call
   sites needing narrowing). Use the new `Vector::mulMatrix()` instead (see Added).
+- **`Complex::sec()`/`csc()`/`cot()`, `asec()`/`acsc()`/`acot()`, `sech()`/`csch()`/`coth()`, and
+  `asech()`/`acsch()`/`acoth()`** — twelve reciprocal-trig convenience methods removed entirely. Each was a one-line
+  reciprocal identity over a method that still exists (e.g. `sec()` was just `$this->cos()->inv()`), so nothing is
+  lost — call the underlying method and `inv()`/`div()` directly instead. No mainstream complex-number library (C99's
+  `<complex.h>`, C++'s `std::complex`, Python's `cmath`) provides these either; keeping them was scope beyond the
+  standard twelve trig/hyperbolic functions for no real benefit, and every method here is one the native extension
+  (in development) would otherwise have to port and keep in sync.
 
 ### Documentation
 
@@ -176,6 +187,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `TypeError` (`Rational::add()` called with a `float`), and made list-item punctuation consistent throughout both
   files (sentence-like `Parameters`/`Returns`/`Throws`/`Behavior` bullets now consistently end with a period; label
   and example lists consistently don't).
+- Removed the `sec()`/`csc()`/`cot()` (and inverse/hyperbolic variant) sections from `Complex.md`, matching their
+  removal above.
 
 ---
 

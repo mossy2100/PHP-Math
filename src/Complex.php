@@ -15,6 +15,7 @@ use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
+use RoundingMode;
 
 use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
@@ -808,42 +809,6 @@ final class Complex implements Stringable, ArrayAccess
         return $this->sin()->div($this->cos());
     }
 
-    /**
-     * Calculate the secant of this complex number.
-     *
-     * @return self A new complex number representing the secant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
-     */
-    public function sec(): self
-    {
-        // sec(z) = 1 / cos(z)
-        return $this->cos()->inv();
-    }
-
-    /**
-     * Calculate the cosecant of this complex number.
-     *
-     * @return self A new complex number representing the cosecant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
-     */
-    public function csc(): self
-    {
-        // csc(z) = 1 / sin(z)
-        return $this->sin()->inv();
-    }
-
-    /**
-     * Calculate the cotangent of this complex number.
-     *
-     * @return self A new complex number representing the cotangent of this complex number.
-     * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
-     */
-    public function cot(): self
-    {
-        // cot(z) = cos(z) / sin(z)
-        return $this->cos()->div($this->sin());
-    }
-
     #endregion
 
     #region Inverse trigonometric methods
@@ -900,42 +865,6 @@ final class Complex implements Stringable, ArrayAccess
         return $iMinusZ->div($iPlusZ)->ln()->mul(new self(0, -0.5));
     }
 
-    /**
-     * Calculate the inverse secant of this complex number.
-     *
-     * @return self A new complex number representing the inverse secant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
-     */
-    public function asec(): self
-    {
-        // asec(z) = acos(1/z)
-        return $this->inv()->acos();
-    }
-
-    /**
-     * Calculate the inverse cosecant of this complex number.
-     *
-     * @return self A new complex number representing the inverse cosecant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
-     */
-    public function acsc(): self
-    {
-        // acsc(z) = asin(1/z)
-        return $this->inv()->asin();
-    }
-
-    /**
-     * Calculate the inverse cotangent of this complex number.
-     *
-     * @return self A new complex number representing the inverse cotangent of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
-     */
-    public function acot(): self
-    {
-        // acot(z) = atan(1/z)
-        return $this->inv()->atan();
-    }
-
     #endregion
 
     #region Hyperbolic methods
@@ -982,42 +911,6 @@ final class Complex implements Stringable, ArrayAccess
         return $this->sinh()->div($this->cosh());
     }
 
-    /**
-     * Calculate the hyperbolic secant of this complex number.
-     *
-     * @return self A new complex number representing the hyperbolic secant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
-     */
-    public function sech(): self
-    {
-        // sech(z) = 1 / cosh(z)
-        return $this->cosh()->inv();
-    }
-
-    /**
-     * Calculate the hyperbolic cosecant of this complex number.
-     *
-     * @return self A new complex number representing the hyperbolic cosecant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
-     */
-    public function csch(): self
-    {
-        // csch(z) = 1 / sinh(z)
-        return $this->sinh()->inv();
-    }
-
-    /**
-     * Calculate the hyperbolic cotangent of this complex number.
-     *
-     * @return self A new complex number representing the hyperbolic cotangent of this complex number.
-     * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
-     */
-    public function coth(): self
-    {
-        // coth(z) = cosh(z) / sinh(z)
-        return $this->cosh()->div($this->sinh());
-    }
-
     #endregion
 
     #region Inverse hyperbolic methods
@@ -1062,40 +955,27 @@ final class Complex implements Stringable, ArrayAccess
         return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
     }
 
-    /**
-     * Calculate the inverse hyperbolic secant of this complex number.
-     *
-     * @return self A new complex number representing the inverse hyperbolic secant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
-     */
-    public function asech(): self
-    {
-        // asech(z) = acosh(1/z)
-        return $this->inv()->acosh();
-    }
+    #endregion
+
+    #region Rounding methods
 
     /**
-     * Calculate the inverse hyperbolic cosecant of this complex number.
+     * Round the real and imaginary parts to the given number of decimal places.
      *
-     * @return self A new complex number representing the inverse hyperbolic cosecant of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
+     * @param int $precision The number of decimal places to round to. Must not be negative.
+     * @param RoundingMode $mode The rounding mode to use. Defaults to HalfAwayFromZero, matching the default mode
+     * used by PHP's own round() function.
+     * @return self A new complex number with both parts rounded.
+     * @throws DomainException If $precision is negative.
      */
-    public function acsch(): self
+    public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
     {
-        // acsch(z) = asinh(1/z)
-        return $this->inv()->asinh();
-    }
+        // Ensure $precision is not negative.
+        if ($precision < 0) {
+            throw new DomainException('Invalid precision: ' . ex($precision) . '. Cannot be negative.');
+        }
 
-    /**
-     * Calculate the inverse hyperbolic cotangent of this complex number.
-     *
-     * @return self A new complex number representing the inverse hyperbolic cotangent of this complex number.
-     * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
-     */
-    public function acoth(): self
-    {
-        // acoth(z) = atanh(1/z)
-        return $this->inv()->atanh();
+        return new self(round($this->real, $precision, $mode), round($this->imaginary, $precision, $mode));
     }
 
     #endregion

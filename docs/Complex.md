@@ -269,8 +269,8 @@ public function approxEqual(
 Check if this complex number approximately equals another value within specified tolerances.
 
 Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately.
-`$other` must be a `Complex`, `int`, or `float`, same as `equal()`. `NAN` throws for the same reason as `equal()`
-(no meaningful result); `±INF` returns `false` rather than throwing.
+`$other` must be a `Complex`, `int`, or `float`, same as `equal()`. `NAN` throws for the same reason as `equal()` (no
+meaningful result); `±INF` returns `false` rather than throwing.
 
 **Parameters:**
 
@@ -629,25 +629,6 @@ $cos = $z->cos();
 $tan = $z->tan();
 ```
 
-### sec(), csc(), cot()
-
-```php
-public function sec(): self;
-public function csc(): self;
-public function cot(): self;
-```
-
-Calculate secant, cosecant, and cotangent functions.
-
-**Examples:**
-
-```php
-$z = new Complex(1, 1);
-$sec = $z->sec();  // 1/cos(z)
-$csc = $z->csc();  // 1/sin(z)
-$cot = $z->cot();  // cos(z)/sin(z)
-```
-
 ---
 
 ## Inverse Trigonometric Methods
@@ -669,25 +650,6 @@ $z = new Complex(0.5);
 $asin = $z->asin();
 $acos = $z->acos();
 $atan = $z->atan();
-```
-
-### asec(), acsc(), acot()
-
-```php
-public function asec(): self;
-public function acsc(): self;
-public function acot(): self;
-```
-
-Calculate inverse secant, cosecant, and cotangent functions.
-
-**Examples:**
-
-```php
-$z = new Complex(2);
-$asec = $z->asec();  // acos(1/z)
-$acsc = $z->acsc();  // asin(1/z)
-$acot = $z->acot();  // atan(1/z)
 ```
 
 ---
@@ -713,25 +675,6 @@ $cosh = $z->cosh();
 $tanh = $z->tanh();
 ```
 
-### sech(), csch(), coth()
-
-```php
-public function sech(): self;
-public function csch(): self;
-public function coth(): self;
-```
-
-Calculate hyperbolic secant, cosecant, and cotangent functions.
-
-**Examples:**
-
-```php
-$z = new Complex(1, 1);
-$sech = $z->sech();  // 1/cosh(z)
-$csch = $z->csch();  // 1/sinh(z)
-$coth = $z->coth();  // cosh(z)/sinh(z)
-```
-
 ---
 
 ## Inverse Hyperbolic Methods
@@ -755,23 +698,55 @@ $acosh = $z->acosh();
 $atanh = $z->atanh();
 ```
 
-### asech(), acsch(), acoth()
+---
+
+## Rounding Methods
+
+### round()
 
 ```php
-public function asech(): self;
-public function acsch(): self;
-public function acoth(): self;
+public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
 ```
 
-Calculate inverse hyperbolic secant, cosecant, and cotangent functions.
+Round the real and imaginary parts to the given number of decimal places, using the specified rounding mode.
+Defaults to "half away from zero", matching the default mode used by PHP's own `round()` function.
+
+**Parameters:**
+
+- `$precision` (int) - The number of decimal places to round to. Must not be negative.
+- `$mode` (RoundingMode) - The rounding mode to use.
+
+**Returns:**
+
+- `self` - A new complex number with both parts rounded.
+
+**Throws:**
+
+- `DomainException` if `$precision` is negative.
 
 **Examples:**
 
 ```php
-$z = new Complex(2);
-$asech = $z->asech();  // acosh(1/z)
-$acsch = $z->acsch();  // asinh(1/z)
-$acoth = $z->acoth();  // atanh(1/z)
+$z = new Complex(7 / 3, 8 / 3);
+echo $z->round(0);  // 2 + 3i (2.333... rounds down, 2.666... rounds up)
+
+$z2 = new Complex(1.2345, -1.2345);
+echo $z2->round(2);  // 1.23 - 1.23i
+```
+
+**Rounding modes:**
+
+```php
+$z = new Complex(2.5, -2.5);
+
+$z->round(0, RoundingMode::TowardsZero);      // 2 - 2i
+$z->round(0, RoundingMode::AwayFromZero);     // 3 - 3i
+$z->round(0, RoundingMode::NegativeInfinity); // 2 - 3i (equivalent to floor() on each part)
+$z->round(0, RoundingMode::PositiveInfinity); // 3 - 2i (equivalent to ceil() on each part)
+$z->round(0, RoundingMode::HalfAwayFromZero); // 3 - 3i (the default)
+$z->round(0, RoundingMode::HalfTowardsZero);  // 2 - 2i
+$z->round(0, RoundingMode::HalfEven);         // 2 - 2i ("banker's rounding": ties go to the nearest even integer)
+$z->round(0, RoundingMode::HalfOdd);          // 3 - 3i (ties go to the nearest odd integer)
 ```
 
 ---
