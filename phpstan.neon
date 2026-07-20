@@ -5,5 +5,5 @@ parameters:
     excludePaths:
         - tests/*/extension/*
     bootstrapFiles:
-        - tests/bootstrap.php
+        - tests/epsilon.php
     treatPhpDocTypesAsCertain: false
