@@ -128,4 +128,188 @@ class ComplexUnaryArithmeticTest extends TestCase
     }
 
     #endregion
+
+    #region Conjugate identity tests.
+
+    /**
+     * Test conj(conj(z)) = z (involution).
+     */
+    public function testConjInvolution(): void
+    {
+        $z = new Complex(3, 4);
+        $result = $z->conj()->conj();
+
+        $this->assertSame($z->real, $result->real);
+        $this->assertSame($z->imaginary, $result->imaginary);
+    }
+
+    /**
+     * Test z + conj(z) = 2*Re(z), i.e. the result is real.
+     */
+    public function testConjSumIsTwiceRealPart(): void
+    {
+        $z = new Complex(3, 4);
+        $sum = $z->add($z->conj());
+
+        $this->assertEqualsWithDelta(2 * $z->real, $sum->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $sum->imaginary, EPSILON);
+    }
+
+    /**
+     * Test z - conj(z) = 2i*Im(z), i.e. the result is purely imaginary.
+     */
+    public function testConjDifferenceIsTwiceImaginaryPart(): void
+    {
+        $z = new Complex(3, 4);
+        $diff = $z->sub($z->conj());
+
+        $this->assertEqualsWithDelta(0.0, $diff->real, EPSILON);
+        $this->assertEqualsWithDelta(2 * $z->imaginary, $diff->imaginary, EPSILON);
+    }
+
+    /**
+     * Test z * conj(z) = |z|², i.e. the result is real and equal to the squared magnitude.
+     */
+    public function testConjProductIsMagnitudeSquared(): void
+    {
+        $z = new Complex(3, 4);
+        $product = $z->mul($z->conj());
+
+        $this->assertEqualsWithDelta($z->magnitude ** 2, $product->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->imaginary, EPSILON);
+    }
+
+    /**
+     * Test |z| = sqrt(z * conj(z)).
+     */
+    public function testMagnitudeEqualsSqrtOfConjProduct(): void
+    {
+        $z = new Complex(3, 4);
+        $result = $z->mul($z->conj())->sqrt();
+
+        $this->assertEqualsWithDelta($z->magnitude, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(z1 + z2) = conj(z1) + conj(z2).
+     */
+    public function testConjOfSumEqualsSumOfConjs(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(-2, 5);
+
+        $lhs = $z1->add($z2)->conj();
+        $rhs = $z1->conj()->add($z2->conj());
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(z1 * z2) = conj(z1) * conj(z2).
+     */
+    public function testConjOfProductEqualsProductOfConjs(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(-2, 5);
+
+        $lhs = $z1->mul($z2)->conj();
+        $rhs = $z1->conj()->mul($z2->conj());
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(z1 / z2) = conj(z1) / conj(z2).
+     */
+    public function testConjOfQuotientEqualsQuotientOfConjs(): void
+    {
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(-2, 5);
+
+        $lhs = $z1->div($z2)->conj();
+        $rhs = $z1->conj()->div($z2->conj());
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(z^w) = conj(z)^conj(w).
+     */
+    public function testConjOfPowEqualsPowOfConjs(): void
+    {
+        $z = new Complex(3, 4);
+        $w = new Complex(2, 1);
+
+        $lhs = $z->pow($w)->conj();
+        $rhs = $z->conj()->pow($w->conj());
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(exp(z)) = exp(conj(z)).
+     */
+    public function testConjOfExpEqualsExpOfConj(): void
+    {
+        $z = new Complex(3, 4);
+
+        $lhs = $z->exp()->conj();
+        $rhs = $z->conj()->exp();
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test conj(ln(z)) = ln(conj(z)).
+     */
+    public function testConjOfLnEqualsLnOfConj(): void
+    {
+        $z = new Complex(3, 4);
+
+        $lhs = $z->ln()->conj();
+        $rhs = $z->conj()->ln();
+
+        $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
+        $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);
+    }
+
+    /**
+     * Test |conj(z)| = |z|, i.e. conjugation preserves magnitude.
+     */
+    public function testConjPreservesMagnitude(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertEqualsWithDelta($z->magnitude, $z->conj()->magnitude, EPSILON);
+    }
+
+    /**
+     * Test arg(conj(z)) = -arg(z), i.e. conjugation negates the phase.
+     */
+    public function testConjNegatesPhase(): void
+    {
+        $z = new Complex(3, 4);
+
+        $this->assertEqualsWithDelta(-$z->phase, $z->conj()->phase, EPSILON);
+    }
+
+    /**
+     * Test conj(z) = z if and only if z is real.
+     */
+    public function testConjEqualsOriginalOnlyForRealNumbers(): void
+    {
+        $real = new Complex(5, 0);
+        $this->assertTrue($real->equal($real->conj()));
+
+        $complex = new Complex(5, 1);
+        $this->assertFalse($complex->equal($complex->conj()));
+    }
+
+    #endregion
 }
