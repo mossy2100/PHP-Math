@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexInspectionTest extends TestCase
 {
+    #region Method isReal() tests.
+
     /**
      * Test isReal for real numbers.
      */
@@ -40,4 +42,6 @@ class ComplexInspectionTest extends TestCase
         $z3 = new Complex(5, 0.0000001);
         $this->assertFalse($z3->isReal());
     }
+
+    #endregion
 }

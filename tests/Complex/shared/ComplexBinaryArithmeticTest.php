@@ -12,33 +12,9 @@ use PHPUnit\Framework\TestCase;
 use const OceanMoon\Math\M_I;
 
 #[CoversClass(Complex::class)]
-class ComplexArithmeticTest extends TestCase
+class ComplexBinaryArithmeticTest extends TestCase
 {
-    /**
-     * Test negation of complex numbers.
-     */
-    public function testNeg(): void
-    {
-        $z1 = new Complex(3, 4);
-        $result = $z1->neg();
-
-        $this->assertSame(-3.0, $result->real);
-        $this->assertSame(-4.0, $result->imaginary);
-
-        // Test negation of negative numbers
-        $z2 = new Complex(-5, -2);
-        $result2 = $z2->neg();
-
-        $this->assertSame(5.0, $result2->real);
-        $this->assertSame(2.0, $result2->imaginary);
-
-        // Test negation of zero
-        $z3 = new Complex(0, 0);
-        $result3 = $z3->neg();
-
-        $this->assertSame(0.0, $result3->real);
-        $this->assertSame(0.0, $result3->imaginary);
-    }
+    #region Method add() tests.
 
     /**
      * Test addition of two complex numbers.
@@ -70,6 +46,23 @@ class ComplexArithmeticTest extends TestCase
     }
 
     /**
+     * Test add() does not modify the original (immutability).
+     */
+    public function testAddDoesNotMutate(): void
+    {
+        $z = new Complex(3, 4);
+
+        $z->add(new Complex(1, 1));
+
+        $this->assertSame(3.0, $z->real);
+        $this->assertSame(4.0, $z->imaginary);
+    }
+
+    #endregion
+
+    #region Method sub() tests.
+
+    /**
      * Test subtraction of two complex numbers.
      */
     public function testSubComplex(): void
@@ -97,6 +90,23 @@ class ComplexArithmeticTest extends TestCase
         $this->assertSame(3.5, $result2->real);
         $this->assertSame(4.0, $result2->imaginary);
     }
+
+    /**
+     * Test sub() does not modify the original (immutability).
+     */
+    public function testSubDoesNotMutate(): void
+    {
+        $z = new Complex(3, 4);
+
+        $z->sub(new Complex(1, 1));
+
+        $this->assertSame(3.0, $z->real);
+        $this->assertSame(4.0, $z->imaginary);
+    }
+
+    #endregion
+
+    #region Method mul() tests.
 
     /**
      * Test multiplication of two complex numbers.
@@ -140,6 +150,23 @@ class ComplexArithmeticTest extends TestCase
         $this->assertSame(-4.0, $result->real);
         $this->assertSame(3.0, $result->imaginary);
     }
+
+    /**
+     * Test mul() does not modify the original (immutability).
+     */
+    public function testMulDoesNotMutate(): void
+    {
+        $z = new Complex(3, 4);
+
+        $z->mul(2);
+
+        $this->assertSame(3.0, $z->real);
+        $this->assertSame(4.0, $z->imaginary);
+    }
+
+    #endregion
+
+    #region Method div() tests.
 
     /**
      * Test division of two complex numbers.
@@ -194,75 +221,17 @@ class ComplexArithmeticTest extends TestCase
     }
 
     /**
-     * Test reciprocal (multiplicative inverse).
+     * Test div() does not modify the original (immutability).
      */
-    public function testInv(): void
-    {
-        // 1 / (3 + 4i) = (3 - 4i) / 25 = 0.12 - 0.16i
-        $z = new Complex(3, 4);
-        $result = $z->inv();
-
-        $this->assertEqualsWithDelta(0.12, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(-0.16, $result->imaginary, EPSILON);
-
-        // Verify z * inv(z) = 1
-        $product = $z->mul($result);
-        $this->assertEqualsWithDelta(1.0, $product->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $product->imaginary, EPSILON);
-    }
-
-    /**
-     * Test conjugate.
-     */
-    public function testConj(): void
+    public function testDivDoesNotMutate(): void
     {
         $z = new Complex(3, 4);
-        $result = $z->conj();
-
-        $this->assertSame(3.0, $result->real);
-        $this->assertSame(-4.0, $result->imaginary);
-
-        // Test conjugate of conjugate
-        $result2 = $result->conj();
-        $this->assertSame(3.0, $result2->real);
-        $this->assertSame(4.0, $result2->imaginary);
-
-        // Test conjugate of real number
-        $z2 = new Complex(5, 0);
-        $result3 = $z2->conj();
-        $this->assertSame(5.0, $result3->real);
-        $this->assertSame(0.0, $result3->imaginary);
-    }
-
-    /**
-     * Test that arithmetic operations don't modify the original.
-     */
-    public function testImmutability(): void
-    {
-        $z = new Complex(3, 4);
-
-        $z->add(new Complex(1, 1));
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
-
-        $z->sub(new Complex(1, 1));
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
-
-        $z->mul(2);
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
 
         $z->div(2);
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
 
-        $z->neg();
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
-
-        $z->conj();
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
     }
+
+    #endregion
 }

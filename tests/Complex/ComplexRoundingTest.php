@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use DomainException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -13,6 +12,8 @@ use RoundingMode;
 #[CoversClass(Complex::class)]
 class ComplexRoundingTest extends TestCase
 {
+    #region Method round() tests.
+
     /**
      * Test rounding with the default precision (0) and default mode (HalfAwayFromZero).
      */
@@ -164,11 +165,31 @@ class ComplexRoundingTest extends TestCase
     }
 
     /**
-     * Test round() with a negative precision throws DomainException.
+     * Test round() with a negative precision rounds to the nearest power of ten before the decimal
+     * point (e.g. -1 = nearest ten, -2 = nearest hundred), matching PHP's own round().
      */
-    public function testRoundNegativePrecisionThrows(): void
+    public function testRoundNegativePrecision(): void
     {
-        $this->expectException(DomainException::class);
-        new Complex(1.5, 2.5)->round(-1);
+        $z = new Complex(1234.5, 5678.9);
+
+        $this->assertSame(1200.0, $z->round(-2)->real);
+        $this->assertSame(5700.0, $z->round(-2)->imaginary);
+
+        $this->assertSame(1230.0, $z->round(-1)->real);
+        $this->assertSame(5680.0, $z->round(-1)->imaginary);
     }
+
+    /**
+     * Test round() with no arguments uses the default precision (0) and mode (HalfAwayFromZero).
+     */
+    public function testRoundNoArguments(): void
+    {
+        $z = new Complex(2.5, -2.5);
+        $result = $z->round();
+
+        $this->assertSame(3.0, $result->real);
+        $this->assertSame(-3.0, $result->imaginary);
+    }
+
+    #endregion
 }

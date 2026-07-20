@@ -15,6 +15,59 @@ use const OceanMoon\Core\Globals\M_TAU;
 #[CoversClass(Complex::class)]
 class ComplexTranscendentalTest extends TestCase
 {
+    #region Method exp() tests.
+
+    /**
+     * Test exponential function.
+     */
+    public function testExpSpecialValues(): void
+    {
+        // e^0 = 1
+        $result = new Complex(0)->exp();
+        $this->assertEqualsWithDelta(1.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
+
+        // e^1 = e
+        $result2 = new Complex(1)->exp();
+        $this->assertEqualsWithDelta(M_E, $result2->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
+
+        // e^ln(2) = 2
+        $result3 = new Complex(M_LN2)->exp();
+        $this->assertEqualsWithDelta(2.0, $result3->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result3->imaginary, EPSILON);
+
+        // e^ln(10) = 10
+        $result4 = new Complex(M_LN10)->exp();
+        $this->assertEqualsWithDelta(10.0, $result4->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result4->imaginary, EPSILON);
+
+        // e^ln(π) = π
+        $result5 = new Complex(M_LNPI)->exp();
+        $this->assertEqualsWithDelta(M_PI, $result5->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
+    }
+
+    /**
+     * Test Euler's identity, both forms.
+     */
+    public function testEulersIdentity(): void
+    {
+        // e^πi = -1
+        $result5 = new Complex(0, M_PI)->exp();
+        $this->assertEqualsWithDelta(-1, $result5->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
+
+        // e^τi = 1
+        $result5 = new Complex(0, M_TAU)->exp();
+        $this->assertEqualsWithDelta(1, $result5->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
+    }
+
+    #endregion
+
+    #region Method ln() tests.
+
     /**
      * Test natural logarithm of various special values.
      */
@@ -73,6 +126,10 @@ class ComplexTranscendentalTest extends TestCase
         $this->expectException(DomainException::class);
         new Complex(0)->ln();
     }
+
+    #endregion
+
+    #region Method log() tests.
 
     /**
      * Test logarithm with various bases.
@@ -165,50 +222,5 @@ class ComplexTranscendentalTest extends TestCase
         new Complex(0)->log(new Complex(2, 1));
     }
 
-    /**
-     * Test exponential function.
-     */
-    public function testExpSpecialValues(): void
-    {
-        // e^0 = 1
-        $result = new Complex(0)->exp();
-        $this->assertEqualsWithDelta(1.0, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
-
-        // e^1 = e
-        $result2 = new Complex(1)->exp();
-        $this->assertEqualsWithDelta(M_E, $result2->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
-
-        // e^ln(2) = 2
-        $result3 = new Complex(M_LN2)->exp();
-        $this->assertEqualsWithDelta(2.0, $result3->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result3->imaginary, EPSILON);
-
-        // e^ln(10) = 10
-        $result4 = new Complex(M_LN10)->exp();
-        $this->assertEqualsWithDelta(10.0, $result4->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result4->imaginary, EPSILON);
-
-        // e^ln(π) = π
-        $result5 = new Complex(M_LNPI)->exp();
-        $this->assertEqualsWithDelta(M_PI, $result5->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
-    }
-
-    /**
-     * Test Euler's identity, both forms.
-     */
-    public function testEulersIdentity(): void
-    {
-        // e^πi = -1
-        $result5 = new Complex(0, M_PI)->exp();
-        $this->assertEqualsWithDelta(-1, $result5->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
-
-        // e^τi = 1
-        $result5 = new Complex(0, M_TAU)->exp();
-        $this->assertEqualsWithDelta(1, $result5->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
-    }
+    #endregion
 }

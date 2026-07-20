@@ -14,6 +14,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexArrayAccessTest extends TestCase
 {
+    #region Method offsetExists() tests.
+
     /**
      * Test ArrayAccess offsetExists.
      */
@@ -26,6 +28,10 @@ class ComplexArrayAccessTest extends TestCase
         $this->assertFalse(isset($z[2]));
         $this->assertFalse(isset($z[-1]));
     }
+
+    #endregion
+
+    #region Method offsetGet() tests.
 
     /**
      * Test ArrayAccess offsetGet.
@@ -60,6 +66,10 @@ class ComplexArrayAccessTest extends TestCase
         $value = $z['real'];
     }
 
+    #endregion
+
+    #region Method offsetSet() tests.
+
     /**
      * Test ArrayAccess offsetSet throws exception (immutable).
      */
@@ -71,6 +81,10 @@ class ComplexArrayAccessTest extends TestCase
         $z[0] = 5;
     }
 
+    #endregion
+
+    #region Method offsetUnset() tests.
+
     /**
      * Test ArrayAccess offsetUnset throws exception (immutable).
      */
@@ -81,4 +95,6 @@ class ComplexArrayAccessTest extends TestCase
         $this->expectException(LogicException::class);
         unset($z[0]);
     }
+
+    #endregion
 }

@@ -13,6 +13,8 @@ use const OceanMoon\Math\M_I;
 #[CoversClass(Complex::class)]
 class ComplexPropertiesTest extends TestCase
 {
+    #region Property $real tests.
+
     /**
      * Test accessing the real property.
      */
@@ -28,6 +30,10 @@ class ComplexPropertiesTest extends TestCase
         $this->assertSame(0.0, $z3->real);
     }
 
+    #endregion
+
+    #region Property $imaginary tests.
+
     /**
      * Test accessing the imaginary property.
      */
@@ -42,6 +48,10 @@ class ComplexPropertiesTest extends TestCase
         $z3 = new Complex(5, 0);
         $this->assertSame(0.0, $z3->imaginary);
     }
+
+    #endregion
+
+    #region Property $magnitude tests.
 
     /**
      * Test magnitude property for complex numbers.
@@ -110,26 +120,39 @@ class ComplexPropertiesTest extends TestCase
         $this->assertSame($mag1, $mag2);
     }
 
+    #endregion
+
+    #region Property $phase tests.
+
     /**
-     * Test phase property for complex numbers in each quadrant.
+     * Test phase property for complex numbers in each quadrant, and that it stays within the
+     * principal range (-π, π].
      */
     public function testPhaseQuadrants(): void
     {
         // First quadrant (0 to π/2)
         $z1 = new Complex(1, 1);
         $this->assertEqualsWithDelta(M_PI / 4, $z1->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI, $z1->phase);
+        $this->assertLessThanOrEqual(M_PI, $z1->phase);
 
         // Second quadrant (π/2 to π)
         $z2 = new Complex(-1, 1);
         $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI, $z2->phase);
+        $this->assertLessThanOrEqual(M_PI, $z2->phase);
 
         // Third quadrant (-π to -π/2)
         $z3 = new Complex(-1, -1);
         $this->assertEqualsWithDelta(-3 * M_PI / 4, $z3->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI, $z3->phase);
+        $this->assertLessThanOrEqual(M_PI, $z3->phase);
 
         // Fourth quadrant (-π/2 to 0)
         $z4 = new Complex(1, -1);
         $this->assertEqualsWithDelta(-M_PI / 4, $z4->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI, $z4->phase);
+        $this->assertLessThanOrEqual(M_PI, $z4->phase);
     }
 
     /**
@@ -165,6 +188,24 @@ class ComplexPropertiesTest extends TestCase
     }
 
     /**
+     * Test phase property on the axes (real/imaginary boundaries between quadrants).
+     */
+    public function testPhaseOnAxes(): void
+    {
+        $z1 = new Complex(5, 0);
+        $this->assertEqualsWithDelta(0.0, $z1->phase, EPSILON);
+
+        $z2 = new Complex(-5, 0);
+        $this->assertEqualsWithDelta(M_PI, $z2->phase, EPSILON);
+
+        $z3 = new Complex(0, 3);
+        $this->assertEqualsWithDelta(M_PI / 2, $z3->phase, EPSILON);
+
+        $z4 = new Complex(0, -3);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z4->phase, EPSILON);
+    }
+
+    /**
      * Test that phase is cached (same value returned on multiple accesses).
      */
     public function testPhaseIsCached(): void
@@ -178,76 +219,75 @@ class ComplexPropertiesTest extends TestCase
     }
 
     /**
-     * Test that fromPolar correctly sets magnitude and phase.
+     * Test magnitude/phase computed from rectangular coordinates in the third quadrant.
      */
-    public function testFromPolarSetsCachedValues(): void
+    public function testRectangularToPolarQuadrant3(): void
     {
-        $mag = 5.0;
-        $phase = M_PI / 3;
+        $z = new Complex(-3, -4);
 
-        $z = Complex::fromPolar($mag, $phase);
-
-        // Verify magnitude is correct
-        $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
-
-        // Verify phase is correct
-        $this->assertEqualsWithDelta($phase, $z->phase, EPSILON);
-
-        // Verify real and imaginary parts
-        $this->assertEqualsWithDelta($mag * cos($phase), $z->real, EPSILON);
-        $this->assertEqualsWithDelta($mag * sin($phase), $z->imaginary, EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
+        // Phase should be in [-π, -π/2) range, specifically -(π - atan(4/3))
+        $expectedPhase = -(M_PI - atan(4 / 3));
+        $this->assertEqualsWithDelta($expectedPhase, $z->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI, $z->phase);
+        $this->assertLessThan(-M_PI / 2, $z->phase);
     }
 
     /**
-     * Test that fromPolar with various angles produces correct phases.
+     * Test magnitude/phase computed from rectangular coordinates in the fourth quadrant.
      */
-    public function testFromPolarVariousAngles(): void
+    public function testRectangularToPolarQuadrant4(): void
     {
-        // Test positive angles (should remain unchanged)
-        $positiveAngles = [0, M_PI / 6, M_PI / 4, M_PI / 3, M_PI / 2, M_PI];
+        $z = new Complex(3, -4);
 
-        foreach ($positiveAngles as $angle) {
-            $z = Complex::fromPolar(1.0, $angle);
-            $this->assertEqualsWithDelta($angle, $z->phase, EPSILON);
+        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
+        // Phase should be in [-π/2, 0) range, specifically -atan(4/3)
+        $expectedPhase = -atan(4 / 3);
+        $this->assertEqualsWithDelta($expectedPhase, $z->phase, EPSILON);
+        $this->assertGreaterThanOrEqual(-M_PI / 2, $z->phase);
+        $this->assertLessThan(0, $z->phase);
+    }
+
+    /**
+     * Test that phase is always in the principal range (-π, π], across a variety of constructions.
+     */
+    public function testPhaseAlwaysInPrincipalRange(): void
+    {
+        $testCases = [
+            new Complex(1, 0),
+            new Complex(-1, 0),
+            new Complex(0, 1),
+            new Complex(0, -1),
+            new Complex(1, 1),
+            new Complex(-1, 1),
+            new Complex(-1, -1),
+            new Complex(1, -1),
+            Complex::fromPolar(1, -M_PI),
+            Complex::fromPolar(1, 5 * M_PI),
+        ];
+
+        foreach ($testCases as $z) {
+            $this->assertGreaterThan(-M_PI, $z->phase, "Phase should be > -π for $z");
+            $this->assertLessThanOrEqual(M_PI, $z->phase, "Phase should be <= π for $z");
         }
-
-        // Test negative angles (should remain in principal range (-π, π])
-        $z1 = Complex::fromPolar(1.0, -M_PI / 2);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z1->phase, EPSILON);
-
-        $z2 = Complex::fromPolar(1.0, -M_PI / 4);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z2->phase, EPSILON);
     }
 
+    #endregion
+
+    #region Constant M_I tests.
+
     /**
-     * Test properties with the imaginary unit constant.
+     * Test properties of the imaginary unit constant.
      */
     public function testImaginaryUnitProperties(): void
     {
         $z = M_I;
 
-        // Verify real and imaginary parts
         $this->assertSame(0.0, $z->real);
         $this->assertSame(1.0, $z->imaginary);
-
-        // Verify magnitude
         $this->assertEqualsWithDelta(1.0, $z->magnitude, EPSILON);
-
-        // Verify phase
         $this->assertEqualsWithDelta(M_PI / 2, $z->phase, EPSILON);
     }
 
-    /**
-     * Test that real and imag properties are read-only from outside the class.
-     */
-    public function testPropertiesAreReadOnly(): void
-    {
-        $z = new Complex(3, 4);
-
-        // This test verifies that the properties have private(set) visibility
-        // If we try to set them from outside, it should be a compile-time error
-        // We can't test this with PHPUnit directly, but we can verify they're readable
-        $this->assertSame(3.0, $z->real);
-        $this->assertSame(4.0, $z->imaginary);
-    }
+    #endregion
 }

@@ -8,13 +8,10 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-/**
- * Test class for Complex hyperbolic and inverse hyperbolic functions.
- */
 #[CoversClass(Complex::class)]
 class ComplexHyperbolicTest extends TestCase
 {
-    #region Hyperbolic functions
+    #region Method sinh() tests.
 
     /**
      * Test sinh (hyperbolic sine).
@@ -47,6 +44,10 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
 
+    #endregion
+
+    #region Method cosh() tests.
+
     /**
      * Test cosh (hyperbolic cosine).
      */
@@ -78,6 +79,10 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
 
+    #endregion
+
+    #region Method tanh() tests.
+
     /**
      * Test tanh (hyperbolic tangent).
      */
@@ -108,6 +113,10 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($ratio->imaginary, $tanh->imaginary, EPSILON);
     }
 
+    #endregion
+
+    #region Hyperbolic Pythagorean identity tests.
+
     /**
      * Test hyperbolic Pythagorean identity: cosh²(z) - sinh²(z) = 1.
      */
@@ -121,97 +130,6 @@ class ComplexHyperbolicTest extends TestCase
 
         $this->assertEqualsWithDelta(1.0, $result->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
-    }
-
-    #endregion
-
-    #region Inverse hyperbolic functions
-
-    /**
-     * Test asinh (inverse hyperbolic sine).
-     */
-    public function testAsinh(): void
-    {
-        // asinh(0) = 0
-        $result = new Complex(0)->asinh();
-        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
-
-        // asinh(1) ≈ 0.8814
-        $result2 = new Complex(1)->asinh();
-        $this->assertEqualsWithDelta(asinh(1), $result2->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
-    }
-
-    /**
-     * Test asinh(sinh(z)) = z round-trip identity.
-     */
-    public function testAsinhSinhIdentity(): void
-    {
-        $z = new Complex(0.5, 0.5);
-
-        $result = $z->sinh()->asinh();
-
-        $this->assertEqualsWithDelta($z->real, $result->real, EPSILON);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
-    }
-
-    /**
-     * Test acosh (inverse hyperbolic cosine).
-     */
-    public function testAcosh(): void
-    {
-        // acosh(1) = 0
-        $result = new Complex(1)->acosh();
-        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
-
-        // acosh(2) ≈ 1.3170
-        $result2 = new Complex(2)->acosh();
-        $this->assertEqualsWithDelta(acosh(2), $result2->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
-    }
-
-    /**
-     * Test acosh(cosh(z)) = z round-trip identity.
-     */
-    public function testAcoshCoshIdentity(): void
-    {
-        $z = new Complex(0.5, 0.5);
-
-        $result = $z->cosh()->acosh();
-
-        $this->assertEqualsWithDelta($z->real, $result->real, EPSILON);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
-    }
-
-    /**
-     * Test atanh (inverse hyperbolic tangent).
-     */
-    public function testAtanh(): void
-    {
-        // atanh(0) = 0
-        $result = new Complex(0)->atanh();
-        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
-
-        // atanh(0.5) ≈ 0.5493
-        $result2 = new Complex(0.5)->atanh();
-        $this->assertEqualsWithDelta(atanh(0.5), $result2->real, EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result2->imaginary, EPSILON);
-    }
-
-    /**
-     * Test atanh(tanh(z)) = z round-trip identity.
-     */
-    public function testAtanhTanhIdentity(): void
-    {
-        $z = new Complex(0.5, 0.5);
-
-        $result = $z->tanh()->atanh();
-
-        $this->assertEqualsWithDelta($z->real, $result->real, EPSILON);
-        $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
     }
 
     #endregion

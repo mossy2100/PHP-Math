@@ -708,8 +708,8 @@ $atanh = $z->atanh();
 public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
 ```
 
-Round the real and imaginary parts to the given number of decimal places, using the specified rounding mode.
-Defaults to "half away from zero", matching the default mode used by PHP's own `round()` function.
+Round the real and imaginary parts to the given number of decimal places, using the specified rounding mode. Defaults to
+"half away from zero", matching the default mode used by PHP's own `round()` function.
 
 **Parameters:**
 

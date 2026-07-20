@@ -13,6 +13,8 @@ use TypeError;
 #[CoversClass(Complex::class)]
 class ComplexConstructorTest extends TestCase
 {
+    #region Method __construct() tests.
+
     /**
      * Test the constructor with various inputs.
      */
@@ -102,4 +104,6 @@ class ComplexConstructorTest extends TestCase
         $this->expectException(TypeError::class);
         new Complex('3', '4'); // @phpstan-ignore argument.type, argument.type
     }
+
+    #endregion
 }

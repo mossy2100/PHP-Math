@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexConversionTest extends TestCase
 {
+    #region Method __toString() tests.
+
     /**
      * Test __toString for real numbers.
      */
@@ -124,4 +126,6 @@ class ComplexConversionTest extends TestCase
         $this->assertStringStartsWith('1 + ', (string) $z);
         $this->assertStringEndsWith('i', (string) $z);
     }
+
+    #endregion
 }

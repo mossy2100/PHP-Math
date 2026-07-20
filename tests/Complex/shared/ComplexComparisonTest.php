@@ -15,7 +15,7 @@ use stdClass;
 #[CoversClass(Complex::class)]
 class ComplexComparisonTest extends TestCase
 {
-    #region Exact equality tests
+    #region Method equal() tests.
 
     /**
      * Test exact equality with identical complex numbers.
@@ -228,7 +228,7 @@ class ComplexComparisonTest extends TestCase
 
     #endregion
 
-    #region Approximate equality tests
+    #region Method approxEqual() tests.
 
     /**
      * Test basic approximate equality with default tolerances.

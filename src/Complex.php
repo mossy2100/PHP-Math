@@ -537,7 +537,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle exponent = 1. Any number to power 1 is itself.
         if ($other->equal(1)) {
-            return $this;
+            return clone $this;
         }
 
         // Handle exponent = 2. Delegate to sqr().
@@ -663,7 +663,9 @@ final class Complex implements Stringable, ArrayAccess
             return new self(1);
         }
 
-        // General solution. Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b))
+        // General solution. Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b)).
+        // Calling fromPolar(mag, phase) builds a new Complex via mag * (cos(phase) + i*sin(phase)), so passing
+        // magnitude = e^a and phase = b implements the formula above.
         return self::fromPolar(exp($this->real), $this->imaginary);
     }
 
@@ -962,19 +964,20 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Round the real and imaginary parts to the given number of decimal places.
      *
-     * @param int $precision The number of decimal places to round to. Must not be negative.
+     * If $precision is positive, the Complex parts are rounded to $precision significant digits *after* the decimal
+     * point.
+     * If $precision is negative, the Complex parts are rounded to $precision significant digits *before* the decimal
+     * point, i.e. to the nearest multiple of pow(10, -$precision), e.g. for a precision of -1 num is rounded to tens,
+     * for a precision of -2 to hundreds, etc.
+     *
+     * @param int $precision The number of decimal places to round to.
      * @param RoundingMode $mode The rounding mode to use. Defaults to HalfAwayFromZero, matching the default mode
      * used by PHP's own round() function.
      * @return self A new complex number with both parts rounded.
-     * @throws DomainException If $precision is negative.
+     * @see https://www.php.net/manual/en/function.round.php
      */
-    public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
+    public function round(int $precision = 0, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
     {
-        // Ensure $precision is not negative.
-        if ($precision < 0) {
-            throw new DomainException('Invalid precision: ' . ex($precision) . '. Cannot be negative.');
-        }
-
         return new self(round($this->real, $precision, $mode), round($this->imaginary, $precision, $mode));
     }
 
