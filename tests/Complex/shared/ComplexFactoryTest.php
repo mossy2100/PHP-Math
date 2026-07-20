@@ -37,21 +37,17 @@ class ComplexFactoryTest extends TestCase
     {
         // Basic imaginary units
         $this->assertEquals(new Complex(0, 1), Complex::fromString('i'));
-        $this->assertEquals(new Complex(0, 1), Complex::fromString('j'));
         $this->assertEquals(new Complex(0, 1), Complex::fromString('I'));
-        $this->assertEquals(new Complex(0, 1), Complex::fromString('J'));
 
         // Negative imaginary units
         $this->assertEquals(new Complex(0, -1), Complex::fromString('-i'));
-        $this->assertEquals(new Complex(0, -1), Complex::fromString('-j'));
         $this->assertEquals(new Complex(0, -1), Complex::fromString('-I'));
-        $this->assertEquals(new Complex(0, -1), Complex::fromString('-J'));
 
         // Imaginary with coefficients
         $this->assertEquals(new Complex(0, 3), Complex::fromString('3i'));
-        $this->assertEquals(new Complex(0, -2.5), Complex::fromString('-2.5j'));
+        $this->assertEquals(new Complex(0, -2.5), Complex::fromString('-2.5i'));
         $this->assertEquals(new Complex(0, 0.75), Complex::fromString('0.75I'));
-        $this->assertEquals(new Complex(0, 1.5e2), Complex::fromString('1.5e2J'));
+        $this->assertEquals(new Complex(0, 1.5e2), Complex::fromString('1.5e2I'));
     }
 
     /**
@@ -61,13 +57,13 @@ class ComplexFactoryTest extends TestCase
     {
         // Standard format: a+bi
         $this->assertEquals(new Complex(3, 4), Complex::fromString('3+4i'));
-        $this->assertEquals(new Complex(5, -2), Complex::fromString('5-2j'));
+        $this->assertEquals(new Complex(5, -2), Complex::fromString('5-2i'));
         $this->assertEquals(new Complex(-1, 1), Complex::fromString('-1+i'));
         $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('2.5-3.7I'));
 
         // With decimals and scientific notation
         $this->assertEquals(new Complex(1.23, 4.56), Complex::fromString('1.23+4.56i'));
-        $this->assertEquals(new Complex(-0.5, 2.5e-1), Complex::fromString('-0.5+2.5e-1j'));
+        $this->assertEquals(new Complex(-0.5, 2.5e-1), Complex::fromString('-0.5+2.5e-1i'));
         $this->assertEquals(new Complex(123.0, -1), Complex::fromString('123.-I'));
     }
 
@@ -78,13 +74,13 @@ class ComplexFactoryTest extends TestCase
     {
         // Standard format: bi+a
         $this->assertEquals(new Complex(3, 4), Complex::fromString('4i+3'));
-        $this->assertEquals(new Complex(5, -2), Complex::fromString('-2j+5'));
+        $this->assertEquals(new Complex(5, -2), Complex::fromString('-2i+5'));
         $this->assertEquals(new Complex(-1, 1), Complex::fromString('i-1'));
         $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('-3.7I+2.5'));
 
         // With decimals and scientific notation
         $this->assertEquals(new Complex(1.23, 4.56), Complex::fromString('4.56i+1.23'));
-        $this->assertEquals(new Complex(-0.5, 2.5e-1), Complex::fromString('2.5e-1j-0.5'));
+        $this->assertEquals(new Complex(-0.5, 2.5e-1), Complex::fromString('2.5e-1i-0.5'));
     }
 
     /**
@@ -93,7 +89,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromStringWithWhitespace(): void
     {
         $this->assertEquals(new Complex(3, 4), Complex::fromString(' 3 + 4i '));
-        $this->assertEquals(new Complex(5, -2), Complex::fromString('5 - 2j'));
+        $this->assertEquals(new Complex(5, -2), Complex::fromString('5 - 2i'));
         $this->assertEquals(new Complex(-1, 1), Complex::fromString(' -1 + i'));
         $this->assertEquals(new Complex(3, 4), Complex::fromString('4i + 3'));
         $this->assertEquals(new Complex(0, 1), Complex::fromString(' i '));
@@ -124,16 +120,17 @@ class ComplexFactoryTest extends TestCase
     public static function invalidInputProvider(): array
     {
         return [
-            'empty string'                   => [''],
-            'random text'                    => ['abc'],
-            'incomplete expression'          => ['3+'],
-            'double signs'                   => ['++i'],
-            'missing imaginary unit'         => ['3+4'],
-            'incomplete imaginary'           => ['i+'],
-            'wrong imaginary unit'           => ['3+4k'],
-            'multiple decimal points'        => ['3.4.5'],
-            'incomplete scientific notation' => ['3e'],
-            'double e'                       => ['3ee4'],
+            'empty string'                        => [''],
+            'random text'                         => ['abc'],
+            'incomplete expression'               => ['3+'],
+            'double signs'                        => ['++i'],
+            'missing imaginary unit'              => ['3+4'],
+            'incomplete imaginary'                => ['i+'],
+            'wrong imaginary unit'                => ['3+4k'],
+            'j is not a supported imaginary unit' => ['3+4j'],
+            'multiple decimal points'             => ['3.4.5'],
+            'incomplete scientific notation'      => ['3e'],
+            'double e'                            => ['3ee4'],
         ];
     }
 
@@ -168,7 +165,7 @@ class ComplexFactoryTest extends TestCase
     {
         $this->assertEquals(new Complex(1.5e10, 0), Complex::fromString('1.5e10'));
         $this->assertEquals(new Complex(0, -2.3e-5), Complex::fromString('-2.3e-5i'));
-        $this->assertEquals(new Complex(1e5, 2e-3), Complex::fromString('1e5+2e-3j'));
+        $this->assertEquals(new Complex(1e5, 2e-3), Complex::fromString('1e5+2e-3i'));
         $this->assertEquals(new Complex(-1.5, 3.2e4), Complex::fromString('3.2e4i-1.5'));
     }
 
@@ -196,12 +193,12 @@ class ComplexFactoryTest extends TestCase
             ['i', 0, 1],
             ['-i', 0, -1],
             ['3i', 0, 3],
-            ['-2.5j', 0, -2.5],
+            ['-2.5i', 0, -2.5],
             ['3+4i', 3, 4],
-            ['5-2j', 5, -2],
+            ['5-2i', 5, -2],
             ['-1+i', -1, 1],
             ['4i+3', 3, 4],
-            ['-2j+5', 5, -2],
+            ['-2i+5', 5, -2],
             ['i-1', -1, 1],
             [' 3 + 4i ', 3, 4],
             ['1.5e2+3.2e-1i', 150, 0.32],

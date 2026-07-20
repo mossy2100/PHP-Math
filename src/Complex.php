@@ -123,10 +123,10 @@ final class Complex implements Stringable, ArrayAccess
      *
      * Supports various formats:
      * - Real numbers: "5", "-3.14", "0"
-     * - Pure imaginary: "i", "-i", "3i", "-2.5j", "I", "J"
-     * - Complex: "3+4i", "5-2j", "-1+i", "2.5-3.7I"
-     * - Spaces allowed: "3 + 4i", "5 - 2j"
-     * - Either order: "4i+3", "-2j+5"
+     * - Pure imaginary: "i", "-i", "3i", "-2.5i", "I"
+     * - Complex: "3+4i", "5-2i", "-1+i", "2.5-3.7I"
+     * - Spaces allowed: "3 + 4i", "5 - 2i"
+     * - Either order: "4i+3", "-2i+5"
      *
      * @param string $str The string to convert.
      * @return self The equivalent Complex.
@@ -148,15 +148,15 @@ final class Complex implements Stringable, ArrayAccess
             [, $realSign, $realVal] = $matches;
             $imagSign = '';
             $imagVal = 0;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]$/", $str, $matches)) {
             // Pattern: ±bi (imaginary only)
             [, $imagSign, $imagVal] = $matches;
             $realSign = '';
             $realVal = 0;
-        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)[ijIJ]\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)[iI]\$/", $str, $matches)) {
             // Pattern: ±a ± bi (real + imag)
             [, $realSign, $realVal, $imagSign, $imagVal] = $matches;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[ijIJ]\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
             // Pattern: ±bi ± a (imag + real)
             [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {

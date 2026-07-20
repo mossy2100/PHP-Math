@@ -92,6 +92,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   everywhere else in this package's tests. `FloatAssertions`'s relative-tolerance behavior wasn't being exercised by any
   of the seven call sites it had here (all in a similar, modest magnitude range), so the switch is a simplification, not
   a loss of coverage. The trait itself is untouched in Core.
+- **`Complex::fromString()` no longer accepts `j`/`J` as an imaginary unit suffix** — only `i`/`I` now. Frees up `j` (and
+  `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each mean something distinct; keeping `j` as a
+  synonym for `i` on `Complex` would make that ambiguous. A string like `'3+4j'` now throws `FormatException` instead of
+  parsing as `3 + 4i`.
 
 ### Fixed
 

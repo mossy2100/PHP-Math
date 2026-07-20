@@ -104,17 +104,17 @@ Create a Complex from a string. Supports various formats.
 **Supported formats:**
 
 - Real numbers: `"5"`, `"-3.14"`
-- Pure imaginary: `"i"`, `"j"`, `"3i"`, `"-2.5j"`
-- Complex (real first): `"3+4i"`, `"5-2j"`, `"-1+i"`
-- Complex (imaginary first): `"4i+3"`, `"-2j+5"`, `"i-1"`
-- Whitespace tolerant: `" 3 + 4i "`, `"5 - 2j"`
-- Case insensitive: `"I"`, `"J"`
+- Pure imaginary: `"i"`, `"3i"`, `"-2.5i"`
+- Complex (real first): `"3+4i"`, `"5-2i"`, `"-1+i"`
+- Complex (imaginary first): `"4i+3"`, `"-2i+5"`, `"i-1"`
+- Whitespace tolerant: `" 3 + 4i "`, `"5 - 2i"`
+- Case insensitive: `"I"`
 
 **Examples:**
 
 ```php
 $z1 = Complex::fromString("3+4i");
-$z2 = Complex::fromString("-2.5j");
+$z2 = Complex::fromString("-2.5i");
 $z3 = Complex::fromString("i");
 $z4 = Complex::fromString("4i+3");
 ```
