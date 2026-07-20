@@ -801,7 +801,7 @@ final class Matrix implements Stringable, Countable
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
             throw new LengthException(
-                "Cannot compute Hadamard product with Matrix of incorrect dimensions: " .
+                'Cannot compute Hadamard product with Matrix of incorrect dimensions: ' .
                 "{$other->rowCount}x{$other->columnCount}. Expected {$this->rowCount}x{$this->columnCount}."
             );
         }

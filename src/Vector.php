@@ -204,9 +204,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException(
-                "Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.'
-            );
+            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.');
         }
 
         return $this->data[$index];
@@ -228,9 +226,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException(
-                "Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.'
-            );
+            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.');
         }
 
         // Check the value is finite.
@@ -367,9 +363,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
-            throw new LengthException(
-                "Cannot add Vector of incorrect size: {$other->size}. Expected {$this->size}."
-            );
+            throw new LengthException("Cannot add Vector of incorrect size: {$other->size}. Expected {$this->size}.");
         }
 
         // Add the vectors element-wise.

@@ -14,8 +14,8 @@ use OceanMoon\Core\Floats;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
-use Stringable;
 use RoundingMode;
+use Stringable;
 
 use function OceanMoon\Core\Globals\ex;
 use function OceanMoon\Core\Globals\is_number;
