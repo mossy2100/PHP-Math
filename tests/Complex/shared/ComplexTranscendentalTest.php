@@ -10,7 +10,7 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
-use const OceanMoon\Core\Globals\M_TAU;
+use const OceanMoon\Core\M_TAU;
 
 #[CoversClass(Complex::class)]
 class ComplexTranscendentalTest extends TestCase

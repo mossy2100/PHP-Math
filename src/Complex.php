@@ -17,10 +17,10 @@ use Override;
 use RoundingMode;
 use Stringable;
 
-use function OceanMoon\Core\Globals\ex;
-use function OceanMoon\Core\Globals\is_number;
+use function OceanMoon\Core\ex;
+use function OceanMoon\Core\is_number;
 
-use const OceanMoon\Core\Globals\M_TAU;
+use const OceanMoon\Core\M_TAU;
 
 /**
  * Encapsulates a complex number and provides a number of useful methods.

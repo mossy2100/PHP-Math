@@ -805,7 +805,7 @@ echo $z->phase;      // 0.785... (π/4)
 ### Euler's Identities
 
 ```php
-use const OceanMoon\Core\Globals\M_TAU;
+use const OceanMoon\Core\M_TAU;
 
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
@@ -853,4 +853,4 @@ $sum = $sin2->add($cos2);  // 1 + 0i
 - **[Vector](Vector.md)** - Vector operations
 - **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate
   comparison
-- **`M_TAU`** - The `OceanMoon\Core\Globals\M_TAU` constant (2π), used by `roots()` and `exp()`
+- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`

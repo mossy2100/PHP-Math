@@ -17,8 +17,8 @@ use OutOfRangeException;
 use Override;
 use Stringable;
 
-use function OceanMoon\Core\Globals\ex;
-use function OceanMoon\Core\Globals\is_number;
+use function OceanMoon\Core\ex;
+use function OceanMoon\Core\is_number;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.

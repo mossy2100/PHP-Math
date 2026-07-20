@@ -16,7 +16,11 @@ require_once __DIR__ . '/epsilon.php';
 // print a visible status line either way so it's obvious at a glance which classes are actually
 // under test, including when phpunit is invoked directly rather than via composer.
 if (extension_loaded('oceanmoon_math')) {
-    fwrite(STDERR, "\n\033[41;97m oceanmoon_math extension is LOADED -- testing the C extension's classes, not this package's! \033[0m\n\n");
+    fwrite(
+        STDERR,
+        "\n\033[41;97m oceanmoon_math extension is LOADED -- testing the C extension's classes, not this package's! " .
+        "\033[0m\n\n"
+    );
 } else {
-    fwrite(STDERR, "oceanmoon_math extension: not loaded (testing pure PHP).\n");
+    fwrite(STDERR, "\n\033[42;30m oceanmoon_math extension: not loaded (testing pure PHP). \033[0m\n\n");
 }

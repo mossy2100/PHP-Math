@@ -16,9 +16,9 @@ use Override;
 use RoundingMode;
 use Stringable;
 
-use function OceanMoon\Core\Globals\ex;
-use function OceanMoon\Core\Globals\is_number;
-use function OceanMoon\Core\Globals\sign;
+use function OceanMoon\Core\ex;
+use function OceanMoon\Core\is_number;
+use function OceanMoon\Core\sign;
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
