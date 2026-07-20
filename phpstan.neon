@@ -4,4 +4,6 @@ parameters:
         - tests
     excludePaths:
         - tests/*/extension/*
+    bootstrapFiles:
+        - tests/bootstrap.php
     treatPhpDocTypesAsCertain: false
