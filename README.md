@@ -15,7 +15,7 @@ This package provides classes for working with complex numbers, rational numbers
 **Key Features:**
 
 - **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, polar/rectangular
-  conversions, and conversion to/from arrays and objects.
+  conversions, and converting to/from strings.
 - **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow
   detection.
 - **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access.
@@ -67,8 +67,6 @@ Immutable class for complex numbers (a + bi) with support for:
 - Transcendental functions (exp, ln, log, pow, roots)
 - Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan)
 - Polar and rectangular form conversions
-- Conversion to/from arrays and plain objects
-- Native PHP serialization and JSON encoding
 - Epsilon-based equality comparison
 - String parsing and formatting
 
@@ -79,7 +77,6 @@ Immutable class for rational numbers (p/q) with support for:
 - Exact arithmetic using integer ratios (no floating-point errors)
 - Automatic reduction to simplest form (e.g., 6/8 → 3/4)
 - A dedicated `fromFloat()` method for approximate conversion from floats using continued fractions
-- Native PHP serialization and JSON encoding
 - Overflow-safe integer operations
 - Comparison operations with mixed types
 - String parsing and formatting

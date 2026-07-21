@@ -610,13 +610,14 @@ final class Rational implements Stringable
      */
     public function div(self|int $other): self
     {
-        // Check for divide by 0 .
+        // Check for divide by 0.
         if ((is_int($other) && $other === 0) || ($other instanceof self && $other->numerator === 0)) {
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
         // Check for 0 divide by something.
         if ($this->numerator === 0) {
+            // Return 0.
             return new self();
         }
 
@@ -636,7 +637,7 @@ final class Rational implements Stringable
             $d = intdiv($d, $gcd2);
         }
 
-        // Multiply reduced terms: (a/b) / (c/d) = (a/b) * (d/c) = ad/bc
+        // Multiply reduced terms: (a/b) / (c/d) = ad/bc
         $h = Integers::mul($a, $d);
         $k = Integers::mul($b, $c);
         return new self($h, $k);
