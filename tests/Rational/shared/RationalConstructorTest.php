@@ -14,7 +14,7 @@ use TypeError;
 #[CoversClass(Rational::class)]
 class RationalConstructorTest extends TestCase
 {
-    #region Basic construction tests
+    #region Method __construct() tests.
 
     /**
      * Test creating rational numbers with integer arguments.
@@ -104,23 +104,6 @@ class RationalConstructorTest extends TestCase
     }
 
     /**
-     * Test immutability of properties.
-     */
-    public function testPropertiesAreReadOnly(): void
-    {
-        $r = new Rational(3, 4);
-
-        // PHPStan will catch write attempts at static analysis time
-        // At runtime, private(set) prevents modification
-        $this->assertSame(3, $r->numerator);
-        $this->assertSame(4, $r->denominator);
-    }
-
-    #endregion
-
-    #region Error handling tests
-
-    /**
      * Test that zero denominator throws ArithmeticException.
      */
     public function testZeroDenominatorThrows(): void
@@ -128,10 +111,6 @@ class RationalConstructorTest extends TestCase
         $this->expectException(ArithmeticException::class);
         new Rational(1, 0);
     }
-
-    #endregion
-
-    #region PHP_INT_MIN / PHP_INT_MAX edge cases
 
     /**
      * Test PHP_INT_MIN numerator with denominator that is a multiple of 2.

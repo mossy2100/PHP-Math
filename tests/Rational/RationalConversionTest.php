@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rational::class)]
 class RationalConversionTest extends TestCase
 {
-    #region toFloat() and __toString() tests
+    #region Method toFloat() tests.
 
     /**
      * Test toFloat conversion.
@@ -56,56 +56,7 @@ class RationalConversionTest extends TestCase
 
     #endregion
 
-    #region toString() tests
-
-    /**
-     * Test __toString for whole numbers.
-     */
-    public function testToStringWholeNumber(): void
-    {
-        $r = new Rational(5, 1);
-        $this->assertSame('5', (string) $r);
-
-        $r2 = new Rational(10, 2);
-        $this->assertSame('5', (string) $r2);
-
-        $r3 = new Rational(0);
-        $this->assertSame('0', (string) $r3);
-
-        $r4 = new Rational(-7, 1);
-        $this->assertSame('-7', (string) $r4);
-    }
-
-    /**
-     * Test __toString for fractions.
-     */
-    public function testToStringFraction(): void
-    {
-        $r = new Rational(3, 4);
-        $this->assertSame('3/4', (string) $r);
-
-        $r2 = new Rational(-5, 6);
-        $this->assertSame('-5/6', (string) $r2);
-
-        $r3 = new Rational(1, 2);
-        $this->assertSame('1/2', (string) $r3);
-    }
-
-    /**
-     * Test __toString with reduced fractions.
-     */
-    public function testToStringReduced(): void
-    {
-        $r = new Rational(6, 8);
-        $this->assertSame('3/4', (string) $r);
-
-        $r2 = new Rational(10, 15);
-        $this->assertSame('2/3', (string) $r2);
-    }
-
-    #endregion
-
-    #region toMixedNumber() tests
+    #region Method toMixedNumber() tests.
 
     /**
      * Test toMixedNumber with improper positive fraction.
@@ -196,6 +147,55 @@ class RationalConversionTest extends TestCase
         // Reconstruct: integer + fraction should equal original
         $reconstructed = $fraction->add($integer);
         $this->assertTrue($r->equal($reconstructed));
+    }
+
+    #endregion
+
+    #region Method __toString() tests.
+
+    /**
+     * Test __toString for whole numbers.
+     */
+    public function testToStringWholeNumber(): void
+    {
+        $r = new Rational(5, 1);
+        $this->assertSame('5', (string) $r);
+
+        $r2 = new Rational(10, 2);
+        $this->assertSame('5', (string) $r2);
+
+        $r3 = new Rational(0);
+        $this->assertSame('0', (string) $r3);
+
+        $r4 = new Rational(-7, 1);
+        $this->assertSame('-7', (string) $r4);
+    }
+
+    /**
+     * Test __toString for fractions.
+     */
+    public function testToStringFraction(): void
+    {
+        $r = new Rational(3, 4);
+        $this->assertSame('3/4', (string) $r);
+
+        $r2 = new Rational(-5, 6);
+        $this->assertSame('-5/6', (string) $r2);
+
+        $r3 = new Rational(1, 2);
+        $this->assertSame('1/2', (string) $r3);
+    }
+
+    /**
+     * Test __toString with reduced fractions.
+     */
+    public function testToStringReduced(): void
+    {
+        $r = new Rational(6, 8);
+        $this->assertSame('3/4', (string) $r);
+
+        $r2 = new Rational(10, 15);
+        $this->assertSame('2/3', (string) $r2);
     }
 
     #endregion

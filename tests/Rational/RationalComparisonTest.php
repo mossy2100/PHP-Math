@@ -14,7 +14,7 @@ use stdClass;
 #[CoversClass(Rational::class)]
 class RationalComparisonTest extends TestCase
 {
-    #region Compare tests
+    #region Method compare() tests.
 
     /**
      * Test compare with equal Rationals.
@@ -186,9 +186,44 @@ class RationalComparisonTest extends TestCase
         $this->assertSame(1, $r->compare((float) PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
     }
 
+    /**
+     * Test compare is reflexive: comparing a value with itself returns 0.
+     */
+    public function testCompareReflexive(): void
+    {
+        $r = new Rational(5, 7);
+        $this->assertSame(0, $r->compare($r));
+    }
+
+    /**
+     * Test compare is antisymmetric: if a < b then b > a.
+     */
+    public function testCompareAntisymmetric(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(1, 2);
+
+        $this->assertSame(-1, $r1->compare($r2));
+        $this->assertSame(1, $r2->compare($r1));
+    }
+
+    /**
+     * Test compare is transitive: if a < b and b < c, then a < c.
+     */
+    public function testCompareTransitive(): void
+    {
+        $r1 = new Rational(1, 4);
+        $r2 = new Rational(1, 3);
+        $r3 = new Rational(1, 2);
+
+        $this->assertSame(-1, $r1->compare($r2));
+        $this->assertSame(-1, $r2->compare($r3));
+        $this->assertSame(-1, $r1->compare($r3));
+    }
+
     #endregion
 
-    #region Equal tests
+    #region Method equal() tests.
 
     /**
      * Test equals with equal Rationals.
@@ -267,68 +302,6 @@ class RationalComparisonTest extends TestCase
         $this->assertFalse($r->equal(-INF));
     }
 
-    #endregion
-
-    #region Less/greater than tests
-
-    /**
-     * Test lessThan.
-     */
-    public function testLessThan(): void
-    {
-        $r1 = new Rational(1, 3);
-        $r2 = new Rational(1, 2);
-
-        $this->assertTrue($r1->lessThan($r2));
-        $this->assertFalse($r2->lessThan($r1));
-        $this->assertFalse($r1->lessThan($r1));
-    }
-
-    /**
-     * Test lessThanOrEqual.
-     */
-    public function testLessThanOrEqual(): void
-    {
-        $r1 = new Rational(1, 3);
-        $r2 = new Rational(1, 2);
-        $r3 = new Rational(1, 3);
-
-        $this->assertTrue($r1->lessThanOrEqual($r2));
-        $this->assertTrue($r1->lessThanOrEqual($r3));
-        $this->assertFalse($r2->lessThanOrEqual($r1));
-    }
-
-    /**
-     * Test greaterThan.
-     */
-    public function testGreaterThan(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
-
-        $this->assertTrue($r1->greaterThan($r2));
-        $this->assertFalse($r2->greaterThan($r1));
-        $this->assertFalse($r1->greaterThan($r1));
-    }
-
-    /**
-     * Test greaterThanOrEqual.
-     */
-    public function testGreaterThanOrEqual(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
-        $r3 = new Rational(3, 4);
-
-        $this->assertTrue($r1->greaterThanOrEqual($r2));
-        $this->assertTrue($r1->greaterThanOrEqual($r3));
-        $this->assertFalse($r2->greaterThanOrEqual($r1));
-    }
-
-    #endregion
-
-    #region Mathematical property tests
-
     /**
      * Test reflexivity: a value should equal itself.
      */
@@ -376,44 +349,22 @@ class RationalComparisonTest extends TestCase
         $this->assertTrue($r1->equal($r3));
     }
 
-    /**
-     * Test compare is reflexive: comparing a value with itself returns 0.
-     */
-    public function testCompareReflexive(): void
-    {
-        $r = new Rational(5, 7);
-        $this->assertSame(0, $r->compare($r));
-    }
+    #endregion
+
+    #region Method lessThan() tests.
 
     /**
-     * Test compare is antisymmetric: if a < b then b > a.
+     * Test lessThan.
      */
-    public function testCompareAntisymmetric(): void
+    public function testLessThan(): void
     {
         $r1 = new Rational(1, 3);
         $r2 = new Rational(1, 2);
 
-        $this->assertSame(-1, $r1->compare($r2));
-        $this->assertSame(1, $r2->compare($r1));
+        $this->assertTrue($r1->lessThan($r2));
+        $this->assertFalse($r2->lessThan($r1));
+        $this->assertFalse($r1->lessThan($r1));
     }
-
-    /**
-     * Test compare is transitive: if a < b and b < c, then a < c.
-     */
-    public function testCompareTransitive(): void
-    {
-        $r1 = new Rational(1, 4);
-        $r2 = new Rational(1, 3);
-        $r3 = new Rational(1, 2);
-
-        $this->assertSame(-1, $r1->compare($r2));
-        $this->assertSame(-1, $r2->compare($r3));
-        $this->assertSame(-1, $r1->compare($r3));
-    }
-
-    #endregion
-
-    #region Ordering method tests
 
     /**
      * Test lessThan with invalid type throws InvalidArgumentException.
@@ -423,36 +374,6 @@ class RationalComparisonTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $r = new Rational(3, 4);
         $r->lessThan('string');
-    }
-
-    /**
-     * Test lessThanOrEqual with invalid type throws InvalidArgumentException.
-     */
-    public function testLessThanOrEqualInvalidTypeThrows(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $r = new Rational(3, 4);
-        $r->lessThanOrEqual([]);
-    }
-
-    /**
-     * Test greaterThan with invalid type throws InvalidArgumentException.
-     */
-    public function testGreaterThanInvalidTypeThrows(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $r = new Rational(3, 4);
-        $r->greaterThan(new stdClass());
-    }
-
-    /**
-     * Test greaterThanOrEqual with invalid type throws InvalidArgumentException.
-     */
-    public function testGreaterThanOrEqualInvalidTypeThrows(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $r = new Rational(3, 4);
-        $r->greaterThanOrEqual(null);
     }
 
     /**
@@ -467,16 +388,32 @@ class RationalComparisonTest extends TestCase
         $this->assertFalse($r2->lessThan($r1));
     }
 
-    /**
-     * Test greaterThan with Rational.
-     */
-    public function testGreaterThanWithRational(): void
-    {
-        $r1 = new Rational(3, 4);
-        $r2 = new Rational(1, 2);
+    #endregion
 
-        $this->assertTrue($r1->greaterThan($r2));
-        $this->assertFalse($r2->greaterThan($r1));
+    #region Method lessThanOrEqual() tests.
+
+    /**
+     * Test lessThanOrEqual.
+     */
+    public function testLessThanOrEqual(): void
+    {
+        $r1 = new Rational(1, 3);
+        $r2 = new Rational(1, 2);
+        $r3 = new Rational(1, 3);
+
+        $this->assertTrue($r1->lessThanOrEqual($r2));
+        $this->assertTrue($r1->lessThanOrEqual($r3));
+        $this->assertFalse($r2->lessThanOrEqual($r1));
+    }
+
+    /**
+     * Test lessThanOrEqual with invalid type throws InvalidArgumentException.
+     */
+    public function testLessThanOrEqualInvalidTypeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $r = new Rational(3, 4);
+        $r->lessThanOrEqual([]);
     }
 
     /**
@@ -495,6 +432,73 @@ class RationalComparisonTest extends TestCase
         $r3 = new Rational(1, 3);
         $this->assertTrue($r3->lessThanOrEqual($r1));
         $this->assertFalse($r1->lessThanOrEqual($r3));
+    }
+
+    #endregion
+
+    #region Method greaterThan() tests.
+
+    /**
+     * Test greaterThan.
+     */
+    public function testGreaterThan(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        $this->assertTrue($r1->greaterThan($r2));
+        $this->assertFalse($r2->greaterThan($r1));
+        $this->assertFalse($r1->greaterThan($r1));
+    }
+
+    /**
+     * Test greaterThan with invalid type throws InvalidArgumentException.
+     */
+    public function testGreaterThanInvalidTypeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $r = new Rational(3, 4);
+        $r->greaterThan(new stdClass());
+    }
+
+    /**
+     * Test greaterThan with Rational.
+     */
+    public function testGreaterThanWithRational(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+
+        $this->assertTrue($r1->greaterThan($r2));
+        $this->assertFalse($r2->greaterThan($r1));
+    }
+
+    #endregion
+
+    #region Method greaterThanOrEqual() tests.
+
+    /**
+     * Test greaterThanOrEqual.
+     */
+    public function testGreaterThanOrEqual(): void
+    {
+        $r1 = new Rational(3, 4);
+        $r2 = new Rational(1, 2);
+        $r3 = new Rational(3, 4);
+
+        $this->assertTrue($r1->greaterThanOrEqual($r2));
+        $this->assertTrue($r1->greaterThanOrEqual($r3));
+        $this->assertFalse($r2->greaterThanOrEqual($r1));
+    }
+
+    /**
+     * Test greaterThanOrEqual with invalid type throws InvalidArgumentException.
+     */
+    public function testGreaterThanOrEqualInvalidTypeThrows(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $r = new Rational(3, 4);
+        $r->greaterThanOrEqual(null);
     }
 
     /**
@@ -517,7 +521,7 @@ class RationalComparisonTest extends TestCase
 
     #endregion
 
-    #region Approximate equality tests
+    #region Method approxEqual() tests.
 
     /**
      * Test basic approximate equality with default tolerances.
@@ -725,7 +729,7 @@ class RationalComparisonTest extends TestCase
 
     #endregion
 
-    #region Approximate comparison tests
+    #region Method approxCompare() tests.
 
     /**
      * Test approxCompare with values that are approximately equal.

@@ -14,6 +14,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Rational::class)]
 class RationalFactoryTest extends TestCase
 {
+    #region Method fromString() tests.
+
     /**
      * Test parsing integer strings.
      */
@@ -100,6 +102,10 @@ class RationalFactoryTest extends TestCase
         $this->expectException(ArithmeticException::class);
         Rational::fromString('5/0');
     }
+
+    #endregion
+
+    #region Method fromFloat() tests.
 
     /**
      * Test fromFloat with a whole-number float converts directly and exactly.
@@ -269,4 +275,6 @@ class RationalFactoryTest extends TestCase
         $this->expectException(DomainException::class);
         Rational::fromFloat(NAN);
     }
+
+    #endregion
 }
