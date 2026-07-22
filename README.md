@@ -90,7 +90,7 @@ Mutable numeric vector with support for:
 - Exact and approximate equality comparison
 - Conversion to arrays and matrices
 - Array-style element access via the `ArrayAccess` interface
-- String representation using box-drawing characters
+- String representation using mathematical angle brackets
 
 ### [Matrix](docs/Matrix.md)
 
