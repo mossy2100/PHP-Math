@@ -640,6 +640,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         if (!is_int($offset)) {
             throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
         }
+
         // Check element type.
         if (!is_number($value)) {
             throw new InvalidArgumentException(

@@ -1139,6 +1139,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         if (!is_int($offset)) {
             throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
         }
+
         // Check value type.
         if (!$value instanceof Vector) {
             throw new InvalidArgumentException(
