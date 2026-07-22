@@ -243,11 +243,14 @@ public function getRow(int $row): Vector
 
 Get a row as a Vector.
 
+**Returns an independent copy** - mutating the returned Vector never affects this Matrix. For a live, mutable view of
+a row that stays linked to the Matrix, use [`$m[$row]`](#arrayaccess-methods) instead.
+
 **Parameters:**
 
 - `$row` (int) - Row index (0-based)
 
-**Returns:** `Vector` - The row as a Vector.
+**Returns:** `Vector` - An independent copy of the row.
 
 **Throws:** `OutOfRangeException` if row index is outside the valid range.
 
@@ -352,7 +355,10 @@ $m->set(1, 1, 10);
 public function setRow(int $row, Vector $vec): void
 ```
 
-Set a row from a Vector.
+Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
+row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid
+and reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on this
+Matrix.
 
 **Parameters:**
 
@@ -993,6 +999,102 @@ $m = new Matrix(2, 3);
 echo $m->count();  // 6
 echo count($m);    // 6 (via the global count() function)
 ```
+
+---
+
+## ArrayAccess Methods
+
+Matrices can be accessed using bracket syntax, including chained double-index access:
+
+```php
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+
+// Read access
+echo $m[0][0];  // 1
+echo $m[1][2];  // 6
+
+// Write access
+$m[0][1] = 20;
+echo $m[0][1];  // 20
+
+// Set a whole row
+$m[1] = Vector::fromArray([40, 50, 60]);
+
+// Check existence
+var_dump(isset($m[0]));  // true
+var_dump(isset($m[5]));  // false
+
+// Cannot unset rows
+unset($m[0]);  // Throws LogicException
+```
+
+**`$m[$row]` returns the Matrix's actual internal row `Vector`, not a copy.** Mutating it mutates the Matrix. This is
+what makes `$m[$row][$col] = $x` work: PHP fetches the row via `offsetGet()`, then sets the element on that same
+`Vector` object.
+
+This is different from [`getRow()`](#getrow), which returns an **independent copy** - mutating the result of
+`getRow()` never affects the Matrix. See `getRow()` and `setRow()` below for the full contrast.
+
+### offsetExists()
+
+```php
+public function offsetExists(mixed $offset): bool
+```
+
+Check if a row offset exists. Returns true if the offset is an integer within the valid range.
+
+**Parameters:**
+- `$offset` (mixed) - Row index to check.
+
+**Returns:**
+- `bool` - True if the offset is valid.
+
+### offsetGet()
+
+```php
+public function offsetGet(mixed $offset): Vector
+```
+
+Get the row `Vector` at an offset. This is the Matrix's live internal row - see the note above.
+
+**Parameters:**
+- `$offset` (mixed) - Row index to get.
+
+**Returns:**
+- `Vector` - The live row Vector.
+
+**Throws:**
+- `InvalidArgumentException` if the offset is not an int.
+- `OutOfRangeException` if the offset is outside the valid range.
+
+### offsetSet()
+
+```php
+public function offsetSet(mixed $offset, mixed $value): void
+```
+
+Set a row from a `Vector`. Equivalent to `setRow()`: the given Vector's elements are copied into the row's existing
+Vector, which is never replaced.
+
+**Parameters:**
+- `$offset` (mixed) - Row index to set.
+- `$value` (mixed) - The row Vector.
+
+**Throws:**
+- `InvalidArgumentException` if the offset is not an int, or the value is not a `Vector`.
+- `OutOfRangeException` if the offset is outside the valid range.
+- `LengthException` if the Vector has the wrong number of elements.
+
+### offsetUnset()
+
+```php
+public function offsetUnset(mixed $offset): void
+```
+
+Unsetting rows is not supported.
+
+**Throws:**
+- `LogicException` - Always throws.
 
 ---
 

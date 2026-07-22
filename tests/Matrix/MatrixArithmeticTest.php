@@ -344,6 +344,22 @@ class MatrixArithmeticTest extends TestCase
     }
 
     /**
+     * Test that pow(1)'s clone has independent row data: mutating a row of the clone (as returned by pow(1), which
+     * relies on Matrix's __clone()) does not affect the original.
+     */
+    public function testPowOneCloneIsIndependent(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 3],
+            [4, 5],
+        ]);
+        $result = $m->pow(1);
+        $result->set(0, 0, 999);
+
+        $this->assertSame(2.0, $m->get(0, 0));
+    }
+
+    /**
      * Test power with a negative exponent.
      */
     public function testPowNegative(): void

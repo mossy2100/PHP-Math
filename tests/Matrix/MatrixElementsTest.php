@@ -179,6 +179,21 @@ class MatrixElementsTest extends TestCase
         $m->getRow(-1);
     }
 
+    /**
+     * Test getRow returns an independent copy: mutating the returned Vector does not affect the Matrix.
+     */
+    public function testGetRowReturnsIndependentCopy(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $row = $m->getRow(0);
+        $row->set(0, 999);
+
+        $this->assertSame(1.0, $m->get(0, 0));
+    }
+
     #endregion
 
     #region setRow() tests
@@ -216,6 +231,20 @@ class MatrixElementsTest extends TestCase
         $m = new Matrix(2, 3);
         $this->expectException(LengthException::class);
         $m->setRow(0, Vector::fromArray([1, 2]));
+    }
+
+    /**
+     * Test setRow does not alias the caller's Vector: mutating it after the call does not affect the Matrix.
+     */
+    public function testSetRowDoesNotAliasCallerVector(): void
+    {
+        $m = new Matrix(2, 3);
+        $vec = Vector::fromArray([1, 2, 3]);
+        $m->setRow(0, $vec);
+
+        $vec->set(0, 999);
+
+        $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
     }
 
     #endregion

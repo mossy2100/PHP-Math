@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math;
 
+use ArrayAccess;
 use Countable;
 use DomainException;
 use InvalidArgumentException;
 use LengthException;
+use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
@@ -20,8 +22,10 @@ use function OceanMoon\Core\is_number;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
+ *
+ * @implements ArrayAccess<int, Vector>
  */
-final class Matrix implements Stringable, Countable
+final class Matrix implements Stringable, Countable, ArrayAccess
 {
     use ApproxEquatable;
 
@@ -30,13 +34,18 @@ final class Matrix implements Stringable, Countable
     #region Private properties
 
     /**
-     * The matrix data.
+     * The matrix data: one Vector per row.
      *
      * This must be private because even if it's private(set) if they can get $this->data they could add new elements
      * (inadvertently sizing the matrix without changing rowCount/colCount or making it non-rectangular) or they could
      * set elements to non-numbers.
      *
-     * @var list<list<float>>
+     * Each row Vector's object identity is established once (in the constructor or a factory method) and never
+     * replaced afterward -- methods that change row content (set(), setRow()) mutate the existing Vector in place
+     * rather than swapping in a new one. This matters once callers can hold a live reference to a row (see
+     * offsetGet()): the reference stays valid and up to date across later mutations instead of going stale.
+     *
+     * @var list<Vector>
      */
     private array $data;
 
@@ -80,7 +89,15 @@ final class Matrix implements Stringable, Countable
         // Initialize matrix properties.
         $this->rowCount = $rowCount;
         $this->columnCount = $columnCount;
-        $this->data = array_fill(0, $rowCount, array_fill(0, $columnCount, 0.0));
+
+        // Build a fresh Vector per row. Not array_fill(0, $rowCount, new Vector($columnCount)): array_fill() copies
+        // its value into every slot, and copying an object copies its handle, not a new instance -- every row would
+        // end up sharing the very same Vector, so mutating one row would mutate them all.
+        $data = [];
+        for ($i = 0; $i < $rowCount; $i++) {
+            $data[] = new Vector($columnCount);
+        }
+        $this->data = $data;
     }
 
     #endregion
@@ -145,7 +162,7 @@ final class Matrix implements Stringable, Countable
                 $dataRow[] = (float) $value;
             }
 
-            $data[] = $dataRow;
+            $data[] = Vector::fromArray($dataRow);
         }
 
         // Create the matrix.
@@ -171,6 +188,19 @@ final class Matrix implements Stringable, Countable
         return $result;
     }
 
+    /**
+     * Deep-clone the matrix data.
+     *
+     * PHP's default shallow clone copies the $data array itself but not the Vector objects inside it, so without
+     * this, a cloned Matrix would share its row Vectors with the original -- mutating a row of one (via set(),
+     * setRow(), or offsetSet()) would silently mutate the other too, since row content is always mutated in place
+     * (see the $data property doc comment). pow() relies on clone producing a fully independent Matrix.
+     */
+    public function __clone(): void
+    {
+        $this->data = array_map(static fn (Vector $vec): Vector => clone $vec, $this->data);
+    }
+
     #endregion
 
     #region Conversion methods
@@ -182,7 +212,7 @@ final class Matrix implements Stringable, Countable
      */
     public function toArray(): array
     {
-        return $this->data;
+        return array_map(static fn (Vector $vec): array => $vec->toArray(), $this->data);
     }
 
     /**
@@ -203,7 +233,7 @@ final class Matrix implements Stringable, Countable
         for ($i = 0; $i < $this->rowCount; $i++) {
             $cells[$i] = [];
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $cell = (string) $this->data[$i][$j];
+                $cell = (string) $this->data[$i]->get($j);
                 $cells[$i][$j] = $cell;
                 $maxWidth = max($maxWidth, strlen($cell));
             }
@@ -268,14 +298,18 @@ final class Matrix implements Stringable, Countable
             );
         }
 
-        return $this->data[$row][$col];
+        return $this->data[$row]->get($col);
     }
 
     /**
-     * Get a row as a vector.
+     * Get a row as an independent copy.
+     *
+     * This is a copy: mutating the returned Vector does not affect this Matrix. For a live, mutable view of a row
+     * that stays linked to this Matrix -- e.g. so `$m[$row][$col] = $x` mutates the Matrix in place -- use
+     * `$m[$row]` (ArrayAccess) instead. See the "ArrayAccess Methods" section of docs/Matrix.md.
      *
      * @param int $row Row index (0-based).
-     * @return Vector Row vector.
+     * @return Vector An independent copy of the row.
      * @throws OutOfRangeException If row index is outside valid range.
      */
     public function getRow(int $row): Vector
@@ -287,7 +321,7 @@ final class Matrix implements Stringable, Countable
             );
         }
 
-        return Vector::fromArray($this->data[$row]);
+        return clone $this->data[$row];
     }
 
     /**
@@ -308,7 +342,7 @@ final class Matrix implements Stringable, Countable
 
         $column = [];
         for ($i = 0; $i < $this->rowCount; $i++) {
-            $column[] = $this->data[$i][$col];
+            $column[] = $this->data[$i]->get($col);
         }
 
         return Vector::fromArray($column);
@@ -347,7 +381,7 @@ final class Matrix implements Stringable, Countable
         $result = new self($rowCount, $colCount);
         for ($i = 0; $i < $rowCount; $i++) {
             for ($j = 0; $j < $colCount; $j++) {
-                $result->set($i, $j, $this->data[$row + $i][$col + $j]);
+                $result->set($i, $j, $this->data[$row + $i]->get($col + $j));
             }
         }
 
@@ -386,12 +420,17 @@ final class Matrix implements Stringable, Countable
             throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
         }
 
-        assert($row < count($this->data) && $col < count($this->data[$row]));
-        $this->data[$row][$col] = $value;
+        assert($row < count($this->data) && $col < $this->data[$row]->size);
+        $this->data[$row]->set($col, $value);
     }
 
     /**
      * Set a Matrix row from a row Vector.
+     *
+     * Copies $vec's elements into the row's existing Vector rather than replacing it, so the row's object identity
+     * is preserved -- a live reference obtained via `$m[$row]` (ArrayAccess) stays valid and reflects the new
+     * values, rather than going stale. $vec itself is never stored by reference: later mutating the caller's own
+     * $vec has no effect on this Matrix.
      *
      * @param int $row Row index (0-based).
      * @param Vector $vec The row Vector.
@@ -415,8 +454,10 @@ final class Matrix implements Stringable, Countable
             );
         }
 
-        // Set values.
-        $this->data[$row] = $vec->toArray();
+        // Copy the values into the row's existing Vector, in place.
+        for ($col = 0; $col < $this->columnCount; $col++) {
+            $this->data[$row]->set($col, $vec->get($col));
+        }
     }
 
     /**
@@ -446,8 +487,8 @@ final class Matrix implements Stringable, Countable
 
         // Set values.
         for ($row = 0; $row < $this->rowCount; $row++) {
-            assert($row < count($this->data) && $col < count($this->data[$row]));
-            $this->data[$row][$col] = $vec[$row];
+            assert($row < count($this->data) && $col < $this->data[$row]->size);
+            $this->data[$row]->set($col, $vec->get($row));
         }
     }
 
@@ -483,7 +524,7 @@ final class Matrix implements Stringable, Countable
         // Copy the elements from $other into this matrix.
         for ($i = 0; $i < $other->rowCount; $i++) {
             for ($j = 0; $j < $other->columnCount; $j++) {
-                $this->set($row + $i, $col + $j, $other->data[$i][$j]);
+                $this->set($row + $i, $col + $j, $other->data[$i]->get($j));
             }
         }
     }
@@ -518,12 +559,10 @@ final class Matrix implements Stringable, Countable
             return false;
         }
 
-        // Check elements are equal.
+        // Check rows are equal.
         for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                if ($this->data[$i][$j] !== $other->data[$i][$j]) {
-                    return false;
-                }
+            if (!$this->data[$i]->equal($other->data[$i])) {
+                return false;
             }
         }
 
@@ -563,12 +602,10 @@ final class Matrix implements Stringable, Countable
             return false;
         }
 
-        // Check elements are approximately equal.
+        // Check rows are approximately equal.
         for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                if (!Floats::approxEqual($this->data[$i][$j], $other->data[$i][$j], $relTol, $absTol)) {
-                    return false;
-                }
+            if (!$this->data[$i]->approxEqual($other->data[$i], $relTol, $absTol)) {
+                return false;
             }
         }
 
@@ -676,7 +713,7 @@ final class Matrix implements Stringable, Countable
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i][$j] + $other->data[$i][$j]);
+                $result->set($i, $j, $this->data[$i]->get($j) + $other->data[$i]->get($j));
             }
         }
         return $result;
@@ -703,7 +740,7 @@ final class Matrix implements Stringable, Countable
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i][$j] - $other->data[$i][$j]);
+                $result->set($i, $j, $this->data[$i]->get($j) - $other->data[$i]->get($j));
             }
         }
         return $result;
@@ -726,7 +763,7 @@ final class Matrix implements Stringable, Countable
             $scaled = new self($this->rowCount, $this->columnCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
                 for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->set($i, $j, $this->data[$i][$j] * $other);
+                    $scaled->set($i, $j, $this->data[$i]->get($j) * $other);
                 }
             }
             return $scaled;
@@ -747,7 +784,7 @@ final class Matrix implements Stringable, Countable
             for ($j = 0; $j < $other->columnCount; $j++) {
                 $sum = 0.0;
                 for ($k = 0; $k < $this->columnCount; $k++) {
-                    $sum += $this->data[$i][$k] * $other->data[$k][$j];
+                    $sum += $this->data[$i]->get($k) * $other->data[$k]->get($j);
                 }
                 $result->set($i, $j, $sum);
             }
@@ -779,7 +816,7 @@ final class Matrix implements Stringable, Countable
             $scaled = new self($this->rowCount, $this->columnCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
                 for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->set($i, $j, $this->data[$i][$j] / $other);
+                    $scaled->set($i, $j, $this->data[$i]->get($j) / $other);
                 }
             }
             return $scaled;
@@ -810,7 +847,7 @@ final class Matrix implements Stringable, Countable
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i][$j] * $other->data[$i][$j]);
+                $result->set($i, $j, $this->data[$i]->get($j) * $other->data[$i]->get($j));
             }
         }
 
@@ -917,7 +954,7 @@ final class Matrix implements Stringable, Countable
         $result = new self($this->columnCount, $this->rowCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($j, $i, $this->data[$i][$j]);
+                $result->set($j, $i, $this->data[$i]->get($j));
             }
         }
 
@@ -937,7 +974,7 @@ final class Matrix implements Stringable, Countable
             throw new DomainException('Cannot compute determinant of non-square Matrix.');
         }
 
-        return $this->calcDet($this->data);
+        return $this->calcDet($this->toArray());
     }
 
     /**
@@ -954,7 +991,7 @@ final class Matrix implements Stringable, Countable
 
         $sum = 0.0;
         for ($i = 0; $i < $this->rowCount; $i++) {
-            $sum += $this->data[$i][$i];
+            $sum += $this->data[$i]->get($i);
         }
 
         return $sum;
@@ -976,7 +1013,7 @@ final class Matrix implements Stringable, Countable
         $sum = 0.0;
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $sum += $this->data[$i][$j] ** 2;
+                $sum += $this->data[$i]->get($j) ** 2;
             }
         }
 
@@ -994,7 +1031,7 @@ final class Matrix implements Stringable, Countable
         for ($j = 0; $j < $this->columnCount; $j++) {
             $colSum = 0.0;
             for ($i = 0; $i < $this->rowCount; $i++) {
-                $colSum += abs($this->data[$i][$j]);
+                $colSum += abs($this->data[$i]->get($j));
             }
             $max = max($max, $colSum);
         }
@@ -1013,7 +1050,7 @@ final class Matrix implements Stringable, Countable
         for ($i = 0; $i < $this->rowCount; $i++) {
             $rowSum = 0.0;
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $rowSum += abs($this->data[$i][$j]);
+                $rowSum += abs($this->data[$i]->get($j));
             }
             $max = max($max, $rowSum);
         }
@@ -1034,6 +1071,94 @@ final class Matrix implements Stringable, Countable
     public function count(): int
     {
         return $this->rowCount * $this->columnCount;
+    }
+
+    #endregion
+
+    #region ArrayAccess methods
+
+    /**
+     * Check if a row offset exists.
+     *
+     * @param mixed $offset Row index to check.
+     * @return bool
+     */
+    #[Override] // ArrayAccess
+    public function offsetExists(mixed $offset): bool
+    {
+        return is_int($offset) && $offset >= 0 && $offset < $this->rowCount;
+    }
+
+    /**
+     * Get a row at an offset.
+     *
+     * Unlike `getRow()`, this returns the Matrix's actual internal Vector for that row, not an independent copy --
+     * mutating the returned Vector mutates this Matrix. This is what makes `$m[$row][$col] = $x` work: the engine
+     * calls this method to get the row, then calls `offsetSet()` on that same Vector object. See the "ArrayAccess
+     * Methods" section of docs/Matrix.md.
+     *
+     * @param mixed $offset Row index to get.
+     * @return Vector The live row Vector.
+     * @throws InvalidArgumentException If the offset is not an int.
+     * @throws OutOfRangeException If the offset is outside the valid range.
+     */
+    #[Override] // ArrayAccess
+    public function offsetGet(mixed $offset): Vector
+    {
+        // Check index type.
+        if (!is_int($offset)) {
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
+        }
+
+        // Check if row index is within bounds.
+        if ($offset < 0 || $offset >= $this->rowCount) {
+            throw new OutOfRangeException(
+                "Invalid row index: $offset. Must be in the range 0-" . ($this->rowCount - 1) . '.'
+            );
+        }
+
+        return $this->data[$offset];
+    }
+
+    /**
+     * Set a row at an offset.
+     *
+     * Equivalent to `setRow()`: the given Vector's elements are copied into the row's existing Vector, which is
+     * never replaced (see the $data property doc comment).
+     *
+     * @param mixed $offset Row index to set.
+     * @param mixed $value The row Vector.
+     * @throws InvalidArgumentException If the offset is not an int, or the value is not a Vector.
+     * @throws OutOfRangeException If offset is outside valid range.
+     * @throws LengthException If the Vector has the wrong number of elements.
+     */
+    #[Override] // ArrayAccess
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        // Check index type.
+        if (!is_int($offset)) {
+            throw new InvalidArgumentException('Invalid index type: ' . get_debug_type($offset) . '. Must be int.');
+        }
+        // Check value type.
+        if (!$value instanceof Vector) {
+            throw new InvalidArgumentException(
+                'Invalid row type: ' . get_debug_type($value) . '. Must be Vector.'
+            );
+        }
+
+        $this->setRow($offset, $value);
+    }
+
+    /**
+     * Unset is not supported for Matrix, which has a fixed number of rows.
+     *
+     * @param mixed $offset Row index.
+     * @throws LogicException Always throws.
+     */
+    #[Override] // ArrayAccess
+    public function offsetUnset(mixed $offset): void
+    {
+        throw new LogicException('Cannot unset Matrix rows.');
     }
 
     #endregion
@@ -1127,7 +1252,7 @@ final class Matrix implements Stringable, Countable
                 $row = [];
                 for ($j = 0; $j < $this->columnCount; $j++) {
                     if ($j !== $excludeColumn) {
-                        $row[] = $this->data[$i][$j];
+                        $row[] = $this->data[$i]->get($j);
                     }
                 }
                 $minor[] = $row;
