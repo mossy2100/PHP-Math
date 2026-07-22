@@ -11,6 +11,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixConversionTest extends TestCase
 {
+    #region Method toArray() tests.
+
     /**
      * Test toArray returns the correct 2D array.
      */
@@ -25,6 +27,10 @@ class MatrixConversionTest extends TestCase
             [4.0, 5.0, 6.0],
         ], $m->toArray());
     }
+
+    #endregion
+
+    #region Method __toString() tests.
 
     /**
      * Test __toString uses box-drawing characters.
@@ -99,4 +105,6 @@ class MatrixConversionTest extends TestCase
         $lines = explode("\n", $str);
         $this->assertLessThan(20, strlen($lines[1]));
     }
+
+    #endregion
 }

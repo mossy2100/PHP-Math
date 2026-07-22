@@ -14,7 +14,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixLinearAlgebraTest extends TestCase
 {
-    #region mulVector() tests
+    #region Method mulVector() tests.
 
     /**
      * Test multiplying a matrix by a vector.
@@ -72,7 +72,7 @@ class MatrixLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region transpose() tests
+    #region Method transpose() tests.
 
     /**
      * Test transposing a matrix.
@@ -96,7 +96,7 @@ class MatrixLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region det() tests
+    #region Method det() tests.
 
     /**
      * Test determinant of a 1x1 matrix.
@@ -168,7 +168,7 @@ class MatrixLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region trace() tests
+    #region Method trace() tests.
 
     /**
      * Test trace of identity matrix.
@@ -231,82 +231,6 @@ class MatrixLinearAlgebraTest extends TestCase
         $m = new Matrix(2, 3);
         $this->expectException(DomainException::class);
         $m->trace();
-    }
-
-    #endregion
-
-    #region norm() tests
-
-    /**
-     * Test Frobenius norm of identity matrix.
-     */
-    public function testNormFrobeniusIdentity(): void
-    {
-        // Identity 3x3: sqrt(1+1+1) = sqrt(3)
-        $this->assertEqualsWithDelta(sqrt(3), Matrix::identity(3)->norm(), EPSILON);
-    }
-
-    /**
-     * Test Frobenius norm of a simple matrix.
-     */
-    public function testNormFrobeniusSimple(): void
-    {
-        // [[1, 2], [3, 4]]: sqrt(1+4+9+16) = sqrt(30)
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $this->assertEqualsWithDelta(sqrt(30), $m->norm(), EPSILON);
-    }
-
-    /**
-     * Test Frobenius norm of a non-square matrix.
-     */
-    public function testNormFrobeniusNonSquare(): void
-    {
-        // [[1, 2, 3], [4, 5, 6]]: sqrt(1+4+9+16+25+36) = sqrt(91)
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
-        $this->assertEqualsWithDelta(sqrt(91), $m->norm(), EPSILON);
-    }
-
-    /**
-     * Test P1 norm (max absolute column sum).
-     */
-    public function testNormP1(): void
-    {
-        // [[1, -2], [3, 4]]: col0 = |1|+|3| = 4, col1 = |-2|+|4| = 6 => 6
-        $m = Matrix::fromArray([
-            [1, -2],
-            [3, 4],
-        ]);
-        $this->assertSame(6.0, $m->p1Norm());
-    }
-
-    /**
-     * Test P-infinity norm (max absolute row sum).
-     */
-    public function testNormPInf(): void
-    {
-        // [[1, -2], [3, 4]]: row0 = |1|+|-2| = 3, row1 = |3|+|4| = 7 => 7
-        $m = Matrix::fromArray([
-            [1, -2],
-            [3, 4],
-        ]);
-        $this->assertSame(7.0, $m->pInfNorm());
-    }
-
-    /**
-     * Test norm of zero matrix is zero.
-     */
-    public function testNormZeroMatrix(): void
-    {
-        $m = new Matrix(2, 2);
-        $this->assertSame(0.0, $m->norm());
-        $this->assertSame(0.0, $m->p1Norm());
-        $this->assertSame(0.0, $m->pInfNorm());
     }
 
     #endregion

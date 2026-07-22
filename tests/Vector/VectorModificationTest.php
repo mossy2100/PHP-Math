@@ -12,48 +12,9 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Vector::class)]
-class VectorElementAccessTest extends TestCase
+class VectorModificationTest extends TestCase
 {
-    /**
-     * Test get() returns the correct element value.
-     */
-    public function testGetReturnsCorrectValue(): void
-    {
-        $v = Vector::fromArray([10, 20, 30]);
-        $this->assertSame(10.0, $v->get(0));
-        $this->assertSame(20.0, $v->get(1));
-        $this->assertSame(30.0, $v->get(2));
-    }
-
-    /**
-     * Test get() with a negative index throws OutOfRangeException.
-     */
-    public function testGetWithNegativeIndexThrows(): void
-    {
-        $v = Vector::fromArray([10, 20, 30]);
-        $this->expectException(OutOfRangeException::class);
-        $v->get(-1);
-    }
-
-    /**
-     * Test get() with an index beyond the last element throws OutOfRangeException.
-     */
-    public function testGetWithIndexBeyondSizeThrows(): void
-    {
-        $v = Vector::fromArray([10, 20, 30]);
-        $this->expectException(OutOfRangeException::class);
-        $v->get(3);
-    }
-
-    /**
-     * Test get() on an empty vector throws OutOfRangeException.
-     */
-    public function testGetOnEmptyVectorThrows(): void
-    {
-        $v = new Vector(0);
-        $this->expectException(OutOfRangeException::class);
-        $v->get(0);
-    }
+    #region Method set() tests.
 
     /**
      * Test set() updates the element value.
@@ -150,6 +111,10 @@ class VectorElementAccessTest extends TestCase
         $this->assertSame(30.0, $v->get(2));
     }
 
+    #endregion
+
+    #region Method normalize() tests.
+
     /**
      * Test normalize() scales the vector to unit magnitude in place.
      */
@@ -194,4 +159,6 @@ class VectorElementAccessTest extends TestCase
             $this->assertSame([0.0, 0.0, 0.0], $v->toArray());
         }
     }
+
+    #endregion
 }

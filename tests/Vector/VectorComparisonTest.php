@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Vector::class)]
 class VectorComparisonTest extends TestCase
 {
-    #region Equal tests
+    #region Method equal() tests.
 
     /**
      * Test equal with identical vectors.
@@ -101,7 +101,7 @@ class VectorComparisonTest extends TestCase
 
     #endregion
 
-    #region Approximate equality tests
+    #region Method approxEqual() tests.
 
     /**
      * Test approxEqual with close values.

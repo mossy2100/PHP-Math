@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixArrayAccessTest extends TestCase
 {
-    #region offsetExists() tests
+    #region Method offsetExists() tests.
 
     /**
      * Test offsetExists with a valid index.
@@ -51,7 +51,7 @@ class MatrixArrayAccessTest extends TestCase
 
     #endregion
 
-    #region offsetGet() tests
+    #region Method offsetGet() tests.
 
     /**
      * Test offsetGet (single index) returns a Vector for the row.
@@ -106,7 +106,7 @@ class MatrixArrayAccessTest extends TestCase
 
     #endregion
 
-    #region offsetSet() tests
+    #region Method offsetSet() tests.
 
     /**
      * Test offsetSet (single index) sets the whole row.
@@ -158,7 +158,7 @@ class MatrixArrayAccessTest extends TestCase
 
     #endregion
 
-    #region offsetUnset() tests
+    #region Method offsetUnset() tests.
 
     /**
      * Test offsetUnset throws LogicException.
@@ -173,7 +173,7 @@ class MatrixArrayAccessTest extends TestCase
 
     #endregion
 
-    #region Live reference vs. independent copy tests
+    #region Live reference vs. independent copy tests.
 
     /**
      * Test $m[$row] returns a live reference: mutating it mutates the Matrix, unlike getRow(), which returns an

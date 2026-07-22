@@ -13,7 +13,7 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Matrix::class)]
 class MatrixComparisonTest extends TestCase
 {
-    #region Equal tests
+    #region Method equal() tests.
 
     /**
      * Test equal with identical matrices.
@@ -147,7 +147,7 @@ class MatrixComparisonTest extends TestCase
 
     #endregion
 
-    #region Approximate equality tests
+    #region Method approxEqual() tests.
 
     /**
      * Test approxEqual with close values within default tolerance.
