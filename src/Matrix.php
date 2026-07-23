@@ -824,7 +824,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @return self New matrix representing the Hadamard product.
      * @throws LengthException If matrices have different dimensions.
      */
-    public function hadamard(self $other): self
+    public function hadamardMul(self $other): self
     {
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
@@ -839,6 +839,39 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
                 $result->set($i, $j, $this->data[$i]->get($j) * $other->data[$i]->get($j));
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the Hadamard division (element-wise quotient) of this matrix by another.
+     *
+     * @param self $other Matrix to divide element-wise by.
+     * @return self New matrix representing the Hadamard quotient.
+     * @throws LengthException If matrices have different dimensions.
+     * @throws ArithmeticException If any element of $other is zero.
+     */
+    public function hadamardDiv(self $other): self
+    {
+        // Check if dimensions are the same.
+        if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
+            throw new LengthException(
+                'Cannot compute Hadamard quotient with Matrix of incorrect dimensions: ' .
+                "{$other->rowCount}x{$other->columnCount}. Expected {$this->rowCount}x{$this->columnCount}."
+            );
+        }
+
+        // Divide the matrices element-wise.
+        $result = new self($this->rowCount, $this->columnCount);
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $divisor = $other->data[$i]->get($j);
+                if ($divisor === 0.0) {
+                    throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
+                }
+                $result->set($i, $j, $this->data[$i]->get($j) / $divisor);
             }
         }
 

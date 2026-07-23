@@ -21,8 +21,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   denominator, reciprocal of zero, division by zero, raising zero to a negative power); `Vector::div()`/`normalized()`
   (zero scalar/magnitude); and `Matrix::inv()`/`div()`/`pow()` (zero determinant / non-invertible matrix). This
   displaces `DivisionByZeroError` throughout the package — see Removed.
-- **`Vector::hadamard()`**, **`Matrix::hadamard()`** — element-wise (Hadamard) product of two same-shaped
+- **`Vector::hadamardMul()`**, **`Matrix::hadamardMul()`** — element-wise (Hadamard) product of two same-shaped
   vectors/matrices.
+- **`Vector::hadamardDiv()`**, **`Matrix::hadamardDiv()`** — element-wise (Hadamard) quotient of two same-shaped
+  vectors/matrices, throwing `ArithmeticException` for a zero divisor element. The `Mul` suffix on `hadamardMul()`
+  exists specifically to leave room for this counterpart, matching the `mul()`/`div()` naming pattern already used for
+  scalar arithmetic.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
 - **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
   branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
@@ -92,10 +96,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   everywhere else in this package's tests. `FloatAssertions`'s relative-tolerance behavior wasn't being exercised by any
   of the seven call sites it had here (all in a similar, modest magnitude range), so the switch is a simplification, not
   a loss of coverage. The trait itself is untouched in Core.
-- **`Complex::fromString()` no longer accepts `j`/`J` as an imaginary unit suffix** — only `i`/`I` now. Frees up `j` (and
-  `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each mean something distinct; keeping `j` as a
-  synonym for `i` on `Complex` would make that ambiguous. A string like `'3+4j'` now throws `FormatException` instead of
-  parsing as `3 + 4i`.
+- **`Complex::fromString()` no longer accepts `j`/`J` as an imaginary unit suffix** — only `i`/`I` now. Frees up `j`
+  (and `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each mean something distinct; keeping `j` as
+  a synonym for `i` on `Complex` would make that ambiguous. A string like `'3+4j'` now throws `FormatException` instead
+  of parsing as `3 + 4i`.
 
 ### Fixed
 
@@ -116,19 +120,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `Error`, never caught by that block) to `ArithmeticException` (a `DomainException` subtype, which _is_ caught by it).
   Fixed by checking `$d === 0` explicitly before the `try`, bypassing the unrelated fallback entirely.
 - **`Rational`'s constructor** — the guard rejecting an unrepresentable `PHP_INT_MIN` ratio checked oddness with
-  `$den % 2 === 1`, which is wrong for negative odd values: PHP's `%` returns a result with the *dividend's* sign, so
+  `$den % 2 === 1`, which is wrong for negative odd values: PHP's `%` returns a result with the _dividend's_ sign, so
   `-1 % 2 === -1`, not `1`. This let calls like `new Rational(PHP_INT_MIN, -1)` slip past the guard, where negating
-  `PHP_INT_MIN` to fix up the denominator's sign silently overflows to a `float` (ordinary PHP int-overflow promotion)
-  — which then failed the strictly `int`-typed `$numerator`/`$denominator` property assignment with a confusing
+  `PHP_INT_MIN` to fix up the denominator's sign silently overflows to a `float` (ordinary PHP int-overflow promotion) —
+  which then failed the strictly `int`-typed `$numerator`/`$denominator` property assignment with a confusing
   `TypeError` instead of the intended `DomainException`. Fixed by checking `% 2 !== 0` instead.
 - **`Rational::div()`** incorrectly threw `OverflowException` for `0 ÷ PHP_INT_MIN` (and other zero-dividend cases
-  involving `PHP_INT_MIN`), even though the true result (`0`) is perfectly representable — the cross-cancellation
-  step computed `gcd(0, PHP_INT_MIN)`, which correctly overflows for its own sake but doesn't apply here. Now
-  short-circuits to `0` whenever the dividend's numerator is zero, before reaching that computation.
+  involving `PHP_INT_MIN`), even though the true result (`0`) is perfectly representable — the cross-cancellation step
+  computed `gcd(0, PHP_INT_MIN)`, which correctly overflows for its own sake but doesn't apply here. Now short-circuits
+  to `0` whenever the dividend's numerator is zero, before reaching that computation.
 - **`bootstrap.php`'s extension-loaded guard** checked `extension_loaded('oceanmoon/math-ext')` — a Composer package
   name, never a real registered PHP extension name — so it always evaluated `false` and silently redeclared
-  `OceanMoon\Math\M_I` in userland even when the native extension (which registers the same constant itself) was
-  loaded. Fixed to check `extension_loaded('oceanmoon_math')`, the extension's actual module name.
+  `OceanMoon\Math\M_I` in userland even when the native extension (which registers the same constant itself) was loaded.
+  Fixed to check `extension_loaded('oceanmoon_math')`, the extension's actual module name.
 
 ### Removed
 
@@ -165,18 +169,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
   `Matrix::mulVector()` instead (see Added).
 - **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
-  `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix
-  multiplication isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order
-  it means — an antipattern regardless of MATLAB's precedent for it. Use `$a->mul($b->inv())` directly to express the
-  specific order you want. For the same reason, `Vector::divMatrix()` (multiplying a vector by a matrix's inverse) was
-  considered but not added.
+  `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix multiplication
+  isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order it means — an
+  antipattern regardless of MATLAB's precedent for it. Use `$a->mul($b->inv())` directly to express the specific order
+  you want. For the same reason, `Vector::divMatrix()` (multiplying a vector by a matrix's inverse) was considered but
+  not added.
 - **`Complex::sec()`/`csc()`/`cot()`, `asec()`/`acsc()`/`acot()`, `sech()`/`csch()`/`coth()`, and
   `asech()`/`acsch()`/`acoth()`** — twelve reciprocal-trig convenience methods removed entirely. Each was a one-line
-  reciprocal identity over a method that still exists (e.g. `sec()` was just `$this->cos()->inv()`), so nothing is
-  lost — call the underlying method and `inv()`/`div()` directly instead. No mainstream complex-number library (C99's
+  reciprocal identity over a method that still exists (e.g. `sec()` was just `$this->cos()->inv()`), so nothing is lost
+  — call the underlying method and `inv()`/`div()` directly instead. No mainstream complex-number library (C99's
   `<complex.h>`, C++'s `std::complex`, Python's `cmath`) provides these either; keeping them was scope beyond the
-  standard twelve trig/hyperbolic functions for no real benefit, and every method here is one the native extension
-  (in development) would otherwise have to port and keep in sync.
+  standard twelve trig/hyperbolic functions for no real benefit, and every method here is one the native extension (in
+  development) would otherwise have to port and keep in sync.
 
 ### Documentation
 
@@ -188,12 +192,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   Inspection/Modification sections).
 - Fixed a pre-existing doc bug in all four files: `equal()`/`approxEqual()` docs claimed to "return false" for
   unconvertible values; corrected to document the (correct, existing) throwing behavior.
-- Re-synced `Complex.md` and `Rational.md` with the current source after the serialization removal and the
-  `Rational` arithmetic-method signature narrowing above: removed the "Serialization Methods" sections, updated
+- Re-synced `Complex.md` and `Rational.md` with the current source after the serialization removal and the `Rational`
+  arithmetic-method signature narrowing above: removed the "Serialization Methods" sections, updated
   `add()`/`sub()`/`mul()`/`div()`/`pow()` signatures and `Throws` lists, fixed a usage example that would now throw a
-  `TypeError` (`Rational::add()` called with a `float`), and made list-item punctuation consistent throughout both
-  files (sentence-like `Parameters`/`Returns`/`Throws`/`Behavior` bullets now consistently end with a period; label
-  and example lists consistently don't).
+  `TypeError` (`Rational::add()` called with a `float`), and made list-item punctuation consistent throughout both files
+  (sentence-like `Parameters`/`Returns`/`Throws`/`Behavior` bullets now consistently end with a period; label and
+  example lists consistently don't).
 - Removed the `sec()`/`csc()`/`cot()` (and inverse/hyperbolic variant) sections from `Complex.md`, matching their
   removal above.
 

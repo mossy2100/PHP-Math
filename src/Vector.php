@@ -461,7 +461,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @return self New vector representing the Hadamard product.
      * @throws LengthException If vectors have different sizes.
      */
-    public function hadamard(self $other): self
+    public function hadamardMul(self $other): self
     {
         // Check if vectors have the same size.
         if ($this->size !== $other->size) {
@@ -475,6 +475,36 @@ final class Vector implements Stringable, Countable, ArrayAccess
         $result = new self($this->size);
         for ($i = 0; $i < $this->size; $i++) {
             $result->set($i, $this->data[$i] * $other->data[$i]);
+        }
+
+        return $result;
+    }
+
+    /**
+     * Calculate the Hadamard division (element-wise quotient) of this vector by another.
+     *
+     * @param self $other Vector to divide element-wise by.
+     * @return self New vector representing the Hadamard quotient.
+     * @throws LengthException If vectors have different sizes.
+     * @throws ArithmeticException If any element of $other is zero.
+     */
+    public function hadamardDiv(self $other): self
+    {
+        // Check if vectors have the same size.
+        if ($this->size !== $other->size) {
+            throw new LengthException(
+                "Cannot compute Hadamard quotient with Vector of incorrect size: {$other->size}. " .
+                "Expected {$this->size}."
+            );
+        }
+
+        // Divide the vectors element-wise.
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            if ($other->data[$i] === 0.0) {
+                throw new ArithmeticException("Cannot divide by zero at index $i.");
+            }
+            $result->set($i, $this->data[$i] / $other->data[$i]);
         }
 
         return $result;

@@ -733,10 +733,10 @@ $result = $m->div(2);
 // [[1, 2], [3, 4]]
 ```
 
-### hadamard()
+### hadamardMul()
 
 ```php
-public function hadamard(self $other): self
+public function hadamardMul(self $other): self
 ```
 
 Calculate the Hadamard product (element-wise product) of this matrix with another. Both matrices must have the same
@@ -755,8 +755,37 @@ dimensions.
 ```php
 $a = Matrix::fromArray([[1, 2], [3, 4]]);
 $b = Matrix::fromArray([[5, 6], [7, 8]]);
-$result = $a->hadamard($b);
+$result = $a->hadamardMul($b);
 // [[5, 12], [21, 32]]
+```
+
+### hadamardDiv()
+
+```php
+public function hadamardDiv(self $other): self
+```
+
+Calculate the Hadamard division (element-wise quotient) of this matrix by another. Both matrices must have the same
+dimensions.
+
+**Parameters:**
+
+- `$other` (self) - Matrix to divide element-wise by.
+
+**Returns:** `self` - New matrix representing the Hadamard quotient.
+
+**Throws:**
+
+- `LengthException` if matrices have different dimensions.
+- `ArithmeticException` if any element of `$other` is zero.
+
+**Examples:**
+
+```php
+$a = Matrix::fromArray([[5, 12], [21, 32]]);
+$b = Matrix::fromArray([[5, 6], [7, 8]]);
+$result = $a->hadamardDiv($b);
+// [[1, 2], [3, 4]]
 ```
 
 ---

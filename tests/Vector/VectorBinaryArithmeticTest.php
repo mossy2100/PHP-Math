@@ -165,28 +165,65 @@ class VectorBinaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method hadamard() tests.
+    #region Method hadamardMul() tests.
 
     /**
      * Test the Hadamard (element-wise) product of two vectors.
      */
-    public function testHadamard(): void
+    public function testHadamardMul(): void
     {
         $a = Vector::fromArray([1, 2, 3]);
         $b = Vector::fromArray([4, 5, 6]);
-        $result = $a->hadamard($b);
+        $result = $a->hadamardMul($b);
         $this->assertEqualsWithDelta([4.0, 10.0, 18.0], $result->toArray(), EPSILON);
     }
 
     /**
      * Test the Hadamard product of vectors with different sizes throws LengthException.
      */
-    public function testHadamardWithDifferentSizesThrows(): void
+    public function testHadamardMulWithDifferentSizesThrows(): void
     {
         $a = Vector::fromArray([1, 2, 3]);
         $b = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
-        $a->hadamard($b);
+        $a->hadamardMul($b);
+    }
+
+    #endregion
+
+    #region Method hadamardDiv() tests.
+
+    /**
+     * Test the Hadamard (element-wise) division of two vectors.
+     */
+    public function testHadamardDiv(): void
+    {
+        $a = Vector::fromArray([4, 10, 18]);
+        $b = Vector::fromArray([4, 5, 6]);
+        $result = $a->hadamardDiv($b);
+        $this->assertEqualsWithDelta([1.0, 2.0, 3.0], $result->toArray(), EPSILON);
+    }
+
+    /**
+     * Test the Hadamard division of vectors with different sizes throws LengthException.
+     */
+    public function testHadamardDivWithDifferentSizesThrows(): void
+    {
+        $a = Vector::fromArray([1, 2, 3]);
+        $b = Vector::fromArray([1, 2]);
+        $this->expectException(LengthException::class);
+        $a->hadamardDiv($b);
+    }
+
+    /**
+     * Test the Hadamard division by a vector containing a zero element throws ArithmeticException.
+     */
+    public function testHadamardDivByZeroElementThrows(): void
+    {
+        $a = Vector::fromArray([1, 2, 3]);
+        $b = Vector::fromArray([1, 0, 1]);
+        $this->expectException(ArithmeticException::class);
+        $a->hadamardDiv($b);
     }
 
     #endregion

@@ -451,10 +451,10 @@ $v = Vector::fromArray([6, 9, 12]);
 $result = $v->div(3);  // [2, 3, 4]
 ```
 
-### hadamard()
+### hadamardMul()
 
 ```php
-public function hadamard(self $other): self
+public function hadamardMul(self $other): self
 ```
 
 Calculate the Hadamard product (element-wise product) of this vector with another.
@@ -472,7 +472,32 @@ Calculate the Hadamard product (element-wise product) of this vector with anothe
 ```php
 $v1 = Vector::fromArray([1, 2, 3]);
 $v2 = Vector::fromArray([4, 5, 6]);
-$result = $v1->hadamard($v2);  // [4, 10, 18]
+$result = $v1->hadamardMul($v2);  // [4, 10, 18]
+```
+
+### hadamardDiv()
+
+```php
+public function hadamardDiv(self $other): self
+```
+
+Calculate the Hadamard division (element-wise quotient) of this vector by another.
+
+**Parameters:**
+- `$other` (Vector) - Vector to divide element-wise by.
+
+**Returns:**
+- `self` - New vector representing the Hadamard quotient.
+
+**Throws:**
+- `LengthException` if vectors have different sizes.
+- `ArithmeticException` if any element of `$other` is zero.
+
+**Examples:**
+```php
+$v1 = Vector::fromArray([4, 10, 18]);
+$v2 = Vector::fromArray([4, 5, 6]);
+$result = $v1->hadamardDiv($v2);  // [1, 2, 3]
 ```
 
 ---

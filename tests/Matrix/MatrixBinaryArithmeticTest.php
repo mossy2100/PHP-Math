@@ -187,12 +187,12 @@ class MatrixBinaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method hadamard() tests.
+    #region Method hadamardMul() tests.
 
     /**
      * Test the Hadamard (element-wise) product of two matrices.
      */
-    public function testHadamard(): void
+    public function testHadamardMul(): void
     {
         $a = Matrix::fromArray([
             [1, 2],
@@ -202,7 +202,7 @@ class MatrixBinaryArithmeticTest extends TestCase
             [5, 6],
             [7, 8],
         ]);
-        $result = $a->hadamard($b);
+        $result = $a->hadamardMul($b);
         $this->assertEqualsWithDelta(5.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(12.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(21.0, $result->get(1, 0), EPSILON);
@@ -212,12 +212,64 @@ class MatrixBinaryArithmeticTest extends TestCase
     /**
      * Test the Hadamard product of matrices with different dimensions throws LengthException.
      */
-    public function testHadamardWithDifferentDimensionsThrows(): void
+    public function testHadamardMulWithDifferentDimensionsThrows(): void
     {
         $a = new Matrix(2, 2);
         $b = new Matrix(3, 3);
         $this->expectException(LengthException::class);
-        $a->hadamard($b);
+        $a->hadamardMul($b);
+    }
+
+    #endregion
+
+    #region Method hadamardDiv() tests.
+
+    /**
+     * Test the Hadamard (element-wise) division of two matrices.
+     */
+    public function testHadamardDiv(): void
+    {
+        $a = Matrix::fromArray([
+            [5, 12],
+            [21, 32],
+        ]);
+        $b = Matrix::fromArray([
+            [5, 6],
+            [7, 8],
+        ]);
+        $result = $a->hadamardDiv($b);
+        $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(3.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(4.0, $result->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test the Hadamard division of matrices with different dimensions throws LengthException.
+     */
+    public function testHadamardDivWithDifferentDimensionsThrows(): void
+    {
+        $a = new Matrix(2, 2);
+        $b = new Matrix(3, 3);
+        $this->expectException(LengthException::class);
+        $a->hadamardDiv($b);
+    }
+
+    /**
+     * Test the Hadamard division by a matrix containing a zero element throws ArithmeticException.
+     */
+    public function testHadamardDivByZeroElementThrows(): void
+    {
+        $a = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $b = Matrix::fromArray([
+            [1, 0],
+            [1, 1],
+        ]);
+        $this->expectException(ArithmeticException::class);
+        $a->hadamardDiv($b);
     }
 
     #endregion
