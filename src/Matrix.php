@@ -651,6 +651,31 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
+     * Calculate the element-wise reciprocal of this matrix.
+     *
+     * Not to be confused with `inv()`, the matrix inverse - this simply replaces each element with its own
+     * reciprocal, with no relationship to matrix multiplication.
+     *
+     * @return self A new matrix with each element replaced by its reciprocal.
+     * @throws ArithmeticException If any element is zero.
+     */
+    public function reciprocal(): self
+    {
+        $result = new self($this->rowCount, $this->columnCount);
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $value = $this->data[$i]->get($j);
+                if ($value === 0.0) {
+                    throw new ArithmeticException("Cannot compute reciprocal of zero at row $i, column $j.");
+                }
+                $result->set($i, $j, 1 / $value);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
      * Calculate the inverse of this matrix using cofactor expansion with the adjugate matrix.
      *
      * Warning: This algorithm has O(n! × n²) time complexity due to the underlying cofactor expansion used for

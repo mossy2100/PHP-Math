@@ -590,6 +590,27 @@ $result = $m->neg();
 // [[-1, 2], [-3, 4]]
 ```
 
+### reciprocal()
+
+```php
+public function reciprocal(): self
+```
+
+Calculate the element-wise reciprocal of this matrix. Not to be confused with `inv()`, the matrix inverse - this
+simply replaces each element with its own reciprocal, with no relationship to matrix multiplication.
+
+**Returns:** `self` - A new matrix with each element replaced by its reciprocal.
+
+**Throws:** `ArithmeticException` if any element is zero.
+
+**Example:**
+
+```php
+$m = Matrix::fromArray([[2, 4], [5, 10]]);
+$result = $m->reciprocal();
+// [[0.5, 0.25], [0.2, 0.1]]
+```
+
 ### inv()
 
 ```php

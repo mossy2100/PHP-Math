@@ -343,6 +343,26 @@ $v = Vector::fromArray([1, -2, 3]);
 $result = $v->neg();  // [-1, 2, -3]
 ```
 
+### reciprocal()
+
+```php
+public function reciprocal(): self
+```
+
+Calculate the element-wise reciprocal of this vector.
+
+**Returns:**
+- `self` - New vector with each element replaced by its reciprocal.
+
+**Throws:**
+- `ArithmeticException` if any element is zero.
+
+**Example:**
+```php
+$v = Vector::fromArray([2, 4, 5]);
+$result = $v->reciprocal();  // [0.5, 0.25, 0.2]
+```
+
 ---
 
 ## Binary Arithmetic Methods

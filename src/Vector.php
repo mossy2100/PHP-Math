@@ -348,6 +348,25 @@ final class Vector implements Stringable, Countable, ArrayAccess
         return $this->mul(-1);
     }
 
+    /**
+     * Calculate the element-wise reciprocal of this vector.
+     *
+     * @return self A new vector with each element replaced by its reciprocal.
+     * @throws ArithmeticException If any element is zero.
+     */
+    public function reciprocal(): self
+    {
+        $result = new self($this->size);
+        for ($i = 0; $i < $this->size; $i++) {
+            if ($this->data[$i] === 0.0) {
+                throw new ArithmeticException("Cannot compute reciprocal of zero at index $i.");
+            }
+            $result->set($i, 1 / $this->data[$i]);
+        }
+
+        return $result;
+    }
+
     #endregion
 
     #region Binary arithmetic methods

@@ -27,6 +27,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   vectors/matrices, throwing `ArithmeticException` for a zero divisor element. The `Mul` suffix on `hadamardMul()`
   exists specifically to leave room for this counterpart, matching the `mul()`/`div()` naming pattern already used for
   scalar arithmetic.
+- **`Vector::reciprocal()`**, **`Matrix::reciprocal()`** — element-wise reciprocal, throwing `ArithmeticException` for a
+  zero element. On `Matrix`, distinct from `inv()` (the matrix inverse) - `reciprocal()` has no relationship to matrix
+  multiplication, it's purely `1 / $element` applied to each entry. Combined with a scalar `*`, this gives a way to
+  express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor
+  any other existing method computes directly.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
 - **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
   branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
