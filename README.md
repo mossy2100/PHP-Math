@@ -86,7 +86,7 @@ Immutable class for rational numbers (p/q) with support for:
 Mutable numeric vector with support for:
 
 - Element-wise arithmetic (add, subtract, scalar multiply, scalar divide)
-- Dot product and cross product operations
+- Dot, cross, Hadamard, and outer product operations
 - Exact and approximate equality comparison
 - Conversion to arrays and matrices
 - Array-style element access via the `ArrayAccess` interface
@@ -107,11 +107,11 @@ Mutable two-dimensional matrix with support for:
 
 ## Constants
 
-### [globals.php](src/globals.php)
+### [constants.php](src/constants.php)
 
 Composer's PSR-4 autoloading only handles classes — a file that declares global constants or functions has nothing for
-it to load on demand. To solve this, a dedicated file `globals.php` is loaded from the `bootstrap.php` file whenever the
-Math extension is not present. The `bootstrap.php` file is registered via Composer's
+it to load on demand. To solve this, a dedicated file `constants.php` is loaded from the `bootstrap.php` file whenever
+the Math extension is not present. The `bootstrap.php` file is registered via Composer's
 [`files` autoload](https://getcomposer.org/doc/04-schema.md#files) mechanism, which includes it unconditionally whenever
 the package is loaded.
 

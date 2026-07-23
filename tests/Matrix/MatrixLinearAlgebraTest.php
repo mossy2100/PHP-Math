@@ -72,7 +72,7 @@ class MatrixLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region Method transpose() tests.
+    #region Method t() tests.
 
     /**
      * Test transposing a matrix.
@@ -83,7 +83,7 @@ class MatrixLinearAlgebraTest extends TestCase
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $t = $m->transpose();
+        $t = $m->t();
         $this->assertSame(3, $t->rowCount);
         $this->assertSame(2, $t->columnCount);
         $this->assertSame(1.0, $t->get(0, 0));

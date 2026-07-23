@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Vector;
 
 use LengthException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -105,6 +106,37 @@ class VectorBinaryArithmeticTest extends TestCase
         $v = Vector::fromArray([1, -2, 3]);
         $result = $v->mul(-2);
         $this->assertSame([-2.0, 4.0, -6.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a vector by a Matrix. The vector is treated as a single-row matrix, multiplied
+     * by the given Matrix, and the resulting single row is converted back to a Vector.
+     */
+    public function testMulByMatrix(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $m = Matrix::fromArray([
+            [1, 4],
+            [2, 5],
+            [3, 6],
+        ]);
+        $result = $v->mul($m);
+
+        $this->assertInstanceOf(Vector::class, $result);
+        // [1,2,3] * M = [1*1+2*2+3*3, 1*4+2*5+3*6] = [14, 32]
+        $this->assertSame([14.0, 32.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a vector by a Matrix with an incompatible row count throws LengthException.
+     */
+    public function testMulByMatrixIncompatibleDimensionsThrows(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $m = new Matrix(2, 2);
+
+        $this->expectException(LengthException::class);
+        $v->mul($m);
     }
 
     #endregion

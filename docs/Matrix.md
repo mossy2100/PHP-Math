@@ -712,37 +712,25 @@ $product = $m->mul($m2);
 ### div()
 
 ```php
-public function div(float|self $other): self
+public function div(float $scalar): self
 ```
 
-Divide this matrix by a scalar or another matrix. Division by a matrix is defined as A × B⁻¹.
+Divide this matrix by a scalar.
 
 **Parameters:**
 
-- `$other` (float|self) - Number or matrix to divide by
+- `$scalar` (float) - Number to divide by.
 
 **Returns:** `self` - New matrix representing the quotient.
 
-**Throws:**
-
-- `ArithmeticException` if dividing by zero, or by a non-invertible matrix (zero determinant).
-- `DomainException` if dividing by a non-square matrix.
-- `LengthException` if dividing by a matrix whose dimensions are incompatible for the resulting multiplication.
+**Throws:** `ArithmeticException` if `$scalar` is zero.
 
 **Examples:**
 
 ```php
 $m = Matrix::fromArray([[2, 4], [6, 8]]);
-
-// Scalar division
 $result = $m->div(2);
 // [[1, 2], [3, 4]]
-
-// Matrix division (A × B⁻¹)
-$a = Matrix::fromArray([[1, 0], [0, 1]]);
-$b = Matrix::fromArray([[2, 0], [0, 2]]);
-$result = $a->div($b);
-// [[0.5, 0], [0, 0.5]]
 ```
 
 ### hadamard()
@@ -841,7 +829,7 @@ public function mulVector(Vector $vector): Vector
 Multiply this matrix by a vector (_Ax_). The vector is treated as a column vector; its size must equal this matrix's
 column count.
 
-To go the other way (_xA_), use `Vector::mulMatrix()` instead.
+To go the other way (_xA_), use `Vector::mul()` instead.
 
 **Parameters:**
 
@@ -859,10 +847,10 @@ $v = Vector::fromArray([1, 2]);
 $result = $m->mulVector($v);  // Vector(5, 11)
 ```
 
-### transpose()
+### t()
 
 ```php
-public function transpose(): self
+public function t(): self
 ```
 
 Get the transpose of this matrix. Rows become columns and columns become rows.
@@ -873,7 +861,7 @@ Get the transpose of this matrix. Rows become columns and columns become rows.
 
 ```php
 $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$t = $m->transpose();
+$t = $m->t();
 // [[1, 4], [2, 5], [3, 6]]
 ```
 

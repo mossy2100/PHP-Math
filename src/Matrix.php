@@ -794,36 +794,27 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Divide this matrix by a number or another matrix (A × B⁻¹).
+     * Divide this matrix by a scalar.
      *
-     * @param float|self $other Number or matrix to divide by.
+     * @param float $scalar Number to divide by.
      * @return self New matrix representing the quotient.
-     * @throws ArithmeticException If dividing by zero, or by a non-invertible matrix (zero determinant).
-     * @throws DomainException If dividing by a non-square matrix.
-     * @throws LengthException If dividing by a matrix whose dimensions are incompatible for the resulting
-     * multiplication.
+     * @throws ArithmeticException If $scalar is zero.
      */
-    public function div(float|self $other): self
+    public function div(float $scalar): self
     {
-        // Check if dividing by a scalar.
-        if (is_float($other)) {
-            // Guard against division by zero.
-            if ($other === 0.0) {
-                throw new ArithmeticException('Cannot divide by zero.');
-            }
-
-            // Divide each element of the matrix by the scalar.
-            $scaled = new self($this->rowCount, $this->columnCount);
-            for ($i = 0; $i < $this->rowCount; $i++) {
-                for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->set($i, $j, $this->data[$i]->get($j) / $other);
-                }
-            }
-            return $scaled;
+        // Guard against division by zero.
+        if ($scalar === 0.0) {
+            throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        // Multiply by the inverse.
-        return $this->mul($other->inv());
+        // Divide each element of the matrix by the scalar.
+        $scaled = new self($this->rowCount, $this->columnCount);
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $scaled->set($i, $j, $this->data[$i]->get($j) / $scalar);
+            }
+        }
+        return $scaled;
     }
 
     /**
@@ -933,7 +924,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * Multiply this matrix by a vector: Ax.
      *
      * The vector is treated as a column vector; its size must equal this matrix's column count. To go the other way
-     * (xA), use `Vector::mulMatrix()` instead.
+     * (xA), use `Vector::mul()` instead.
      *
      * @param Vector $vector The vector to multiply by.
      * @return Vector New vector representing the result.
@@ -949,7 +940,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @return self New matrix representing the transpose.
      */
-    public function transpose(): self
+    public function t(): self
     {
         $result = new self($this->columnCount, $this->rowCount);
         for ($i = 0; $i < $this->rowCount; $i++) {

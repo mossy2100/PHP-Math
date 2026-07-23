@@ -1,8 +1,8 @@
 .DS_Store
 .phpunit.result.cache
 .idea/
-_old
-_dev
+_old/
+_dev/
 build/
 planning/
 vendor/

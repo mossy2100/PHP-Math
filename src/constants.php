@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @file globals.php
+ * @file constants.php
  * Global constants for the Math package.
  */
 
@@ -12,7 +12,7 @@ namespace OceanMoon\Math;
 /**
  * The imaginary unit 'i', represented as a Complex with real part 0 and imaginary part 1.
  *
- * To use it without requiring the namespace every time, include the following line:
+ * To use it in a script without having to provide the namespace every time, include the following line:
  * ```php
  * use const OceanMoon\Math\M_I;
  * ```

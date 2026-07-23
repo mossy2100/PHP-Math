@@ -26,9 +26,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
 - **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
   branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
-- **`Vector::mulMatrix()`** — multiply this vector by a matrix (_xA_), returning a `Vector`. Replaces the `Matrix`
-  branch removed from `Vector::mul()` (see Removed) with a dedicated, non-polymorphic method — the same
-  static-analysis motivation as `Matrix::mulVector()`, above, applied symmetrically to the other direction.
+- **`Vector::outer()`** — outer product of two vectors, returning an m×n `Matrix`. Unlike `dot()`/`cross()`, the two
+  vectors don't need to be the same size.
 - **`Vector::normalize()`** — normalizes the vector to unit magnitude (1) in place, mutating it and returning `void`.
   Complements the existing (now renamed) `normalized()`, which returns a new normalized vector without modifying the
   original — see Changed.
@@ -60,6 +59,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::normalize()` renamed to `normalized()`** — it returns a new normalized vector rather than mutating in
   place, so it needed the `-d` suffix to make room for a genuine in-place `normalize()` (see Added) without the two
   being confusable.
+- **`Matrix::transpose()` renamed to `t()`** — a well-established short form (NumPy's `.T`, R's `t()`).
 - **Comparison methods narrowed to a small, fixed set of accepted types**, matching Core's finalized comparison-trait
   policy (strict `instanceof self` checks, throw `InvalidArgumentException` for anything else — no silent conversion):
   `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` now only accept an instance of the same class
@@ -164,9 +164,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
   static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
   `Matrix::mulVector()` instead (see Added).
-- **`Vector::mul()` no longer accepts a `Matrix`** — narrowed from `float|Matrix` to `float`, for the same reason as
-  `Matrix::mul()` above (applied symmetrically, since `Vector::mul()`'s `Matrix` branch was itself one of the call
-  sites needing narrowing). Use the new `Vector::mulMatrix()` instead (see Added).
+- **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
+  `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix
+  multiplication isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order
+  it means — an antipattern regardless of MATLAB's precedent for it. Use `$a->mul($b->inv())` directly to express the
+  specific order you want. For the same reason, `Vector::divMatrix()` (multiplying a vector by a matrix's inverse) was
+  considered but not added.
 - **`Complex::sec()`/`csc()`/`cot()`, `asec()`/`acsc()`/`acot()`, `sech()`/`csch()`/`coth()`, and
   `asech()`/`acsch()`/`acoth()`** — twelve reciprocal-trig convenience methods removed entirely. Each was a one-line
   reciprocal identity over a method that still exists (e.g. `sec()` was just `$this->cos()->inv()`), so nothing is

@@ -401,20 +401,34 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Multiply this vector by a scalar.
+     * Multiply this vector by a scalar or a matrix.
      *
-     * @param float $scalar Number to multiply by.
+     * Multiplying by a matrix (_xA_) treats this vector as a row vector; its size must equal the matrix's row count.
+     * To go the other way (_Ax_), use `Matrix::mulVector()` instead.
+     *
+     * @param float|Matrix $other Number or matrix to multiply by.
      * @return self New vector representing the product.
+     * @throws LengthException If multiplying by a matrix whose row count doesn't equal this vector's size.
      */
-    public function mul(float $scalar): self
+    public function mul(float|Matrix $other): self
     {
-        // Multiply each element by the scalar.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
-            $result->set($i, $this->data[$i] * $scalar);
+        // Multiply vector by a float.
+        if (is_float($other)) {
+            // Multiply each element by the scalar.
+            $result = new self($this->size);
+            for ($i = 0; $i < $this->size; $i++) {
+                $result->set($i, $this->data[$i] * $other);
+            }
+
+            return $result;
         }
 
-        return $result;
+        // Multiply vector by a matrix. Convert the vector to a single-row matrix and multiply by the given matrix.
+        // The call to Matrix::mul() will fail if the vector size does not equal the number of rows in the matrix.
+        $result = $this->toRowMatrix()->mul($other);
+
+        // Convert the first and only row of the resulting matrix into a vector.
+        return $result->getRow(0);
     }
 
     /**
@@ -471,26 +485,6 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #region Linear algebra methods
 
     /**
-     * Multiply this vector by a matrix: xA.
-     *
-     * The vector is treated as a row vector; its size must equal the matrix's row count. To go the other way (Ax),
-     * use `Matrix::mulVector()` instead.
-     *
-     * @param Matrix $matrix The matrix to multiply by.
-     * @return self New vector representing the result.
-     * @throws LengthException If this vector's size doesn't equal the matrix's row count.
-     */
-    public function mulMatrix(Matrix $matrix): self
-    {
-        // Convert the vector to a single-row matrix and multiply by the given matrix.
-        // The call to Matrix::mul() will fail if the vector size does not equal the number of rows in the matrix.
-        $result = $this->toRowMatrix()->mul($matrix);
-
-        // Convert the first and only row of the resulting matrix into a vector.
-        return $result->getRow(0);
-    }
-
-    /**
      * Calculate the dot product of this vector with another vector.
      *
      * @param self $other Vector to calculate dot product with.
@@ -541,6 +535,21 @@ final class Vector implements Stringable, Countable, ArrayAccess
             $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
             $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
         ]);
+    }
+
+    /**
+     * Calculate the outer product of this vector with another vector.
+     *
+     * Unlike dot() and cross(), the vectors don't need to be the same size - the result is always an m×n Matrix,
+     * where m is this vector's size and n is $other's size.
+     *
+     * @param self $other Vector to calculate outer product with.
+     * @return Matrix New matrix representing the outer product.
+     */
+    public function outer(self $other): Matrix
+    {
+        // Treat this vector as a column matrix and $other as a row matrix, then multiply.
+        return $this->toColumnMatrix()->mul($other->toRowMatrix());
     }
 
     /**

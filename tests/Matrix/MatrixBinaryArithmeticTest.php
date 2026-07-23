@@ -185,27 +185,6 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m->div(0);
     }
 
-    /**
-     * Test dividing a matrix by another matrix (A * B^-1).
-     */
-    public function testDivByMatrix(): void
-    {
-        $a = Matrix::fromArray([
-            [1, 0],
-            [0, 1],
-        ]);
-        $b = Matrix::fromArray([
-            [2, 0],
-            [0, 2],
-        ]);
-        $result = $a->div($b);
-        // I * (2I)^-1 = 0.5I
-        $this->assertEqualsWithDelta(0.5, $result->get(0, 0), EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
-        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
-        $this->assertEqualsWithDelta(0.5, $result->get(1, 1), EPSILON);
-    }
-
     #endregion
 
     #region Method hadamard() tests.

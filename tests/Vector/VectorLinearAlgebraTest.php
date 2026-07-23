@@ -14,41 +14,6 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Vector::class)]
 class VectorLinearAlgebraTest extends TestCase
 {
-    #region Method mulMatrix() tests.
-
-    /**
-     * Test multiplying a vector by a Matrix. The vector is treated as a single-row matrix, multiplied
-     * by the given Matrix, and the resulting single row is converted back to a Vector.
-     */
-    public function testMulMatrix(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $m = Matrix::fromArray([
-            [1, 4],
-            [2, 5],
-            [3, 6],
-        ]);
-        $result = $v->mulMatrix($m);
-
-        $this->assertInstanceOf(Vector::class, $result);
-        // [1,2,3] * M = [1*1+2*2+3*3, 1*4+2*5+3*6] = [14, 32]
-        $this->assertSame([14.0, 32.0], $result->toArray());
-    }
-
-    /**
-     * Test multiplying a vector by a Matrix with an incompatible row count throws LengthException.
-     */
-    public function testMulMatrixIncompatibleDimensionsThrows(): void
-    {
-        $v = Vector::fromArray([1, 2, 3]);
-        $m = new Matrix(2, 2);
-
-        $this->expectException(LengthException::class);
-        $v->mulMatrix($m);
-    }
-
-    #endregion
-
     #region Method dot() tests.
 
     /**
@@ -121,6 +86,42 @@ class VectorLinearAlgebraTest extends TestCase
         $b = Vector::fromArray([4, 5]);
         $this->expectException(LengthException::class);
         $a->cross($b);
+    }
+
+    #endregion
+
+    #region Method outer() tests.
+
+    /**
+     * Test outer product of two same-size vectors.
+     */
+    public function testOuter(): void
+    {
+        $a = Vector::fromArray([1, 2]);
+        $b = Vector::fromArray([3, 4]);
+        $result = $a->outer($b);
+
+        $this->assertInstanceOf(Matrix::class, $result);
+        $this->assertSame(2, $result->rowCount);
+        $this->assertSame(2, $result->columnCount);
+        // [1,2] ⊗ [3,4] = [[1*3, 1*4], [2*3, 2*4]] = [[3, 4], [6, 8]]
+        $this->assertSame([[3.0, 4.0], [6.0, 8.0]], $result->toArray());
+    }
+
+    /**
+     * Test outer product of two different-size vectors. Unlike dot() and cross(), outer() doesn't
+     * require the vectors to be the same size.
+     */
+    public function testOuterWithDifferentSizes(): void
+    {
+        $a = Vector::fromArray([1, 2, 3]);
+        $b = Vector::fromArray([4, 5]);
+        $result = $a->outer($b);
+
+        $this->assertSame(3, $result->rowCount);
+        $this->assertSame(2, $result->columnCount);
+        // [1,2,3] ⊗ [4,5] = [[4, 5], [8, 10], [12, 15]]
+        $this->assertSame([[4.0, 5.0], [8.0, 10.0], [12.0, 15.0]], $result->toArray());
     }
 
     #endregion

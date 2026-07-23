@@ -28,7 +28,7 @@
         </include>
         <exclude>
             <file>src/bootstrap.php</file>
-            <file>src/globals.php</file>
+            <file>src/constants.php</file>
         </exclude>
     </source>
 

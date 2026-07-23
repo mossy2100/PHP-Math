@@ -398,21 +398,34 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 ### mul()
 
 ```php
-public function mul(float $scalar): self
+public function mul(float|Matrix $other): self
 ```
 
-Multiply this vector by a scalar.
+Multiply this vector by a scalar or a matrix.
+
+Multiplying by a matrix (_xA_) treats this vector as a row vector; its size must equal the matrix's row count. To go
+the other way (_Ax_), use `Matrix::mulVector()` instead.
 
 **Parameters:**
-- `$scalar` (float) - Number to multiply by.
+- `$other` (float|Matrix) - Number or matrix to multiply by.
 
 **Returns:**
 - `self` - New vector representing the product.
+
+**Throws:**
+- `LengthException` if multiplying by a matrix whose row count doesn't equal this vector's size.
 
 **Examples:**
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
+
+$m = Matrix::fromArray([
+    [1, 4],
+    [2, 5],
+    [3, 6],
+]);
+$result = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()
@@ -466,36 +479,6 @@ $result = $v1->hadamard($v2);  // [4, 10, 18]
 
 ## Linear Algebra Methods
 
-### mulMatrix()
-
-```php
-public function mulMatrix(Matrix $matrix): self
-```
-
-Multiply this vector by a matrix (_xA_). The vector is treated as a row vector; its size must equal the matrix's row
-count.
-
-To go the other way (_Ax_), use `Matrix::mulVector()` instead.
-
-**Parameters:**
-- `$matrix` (Matrix) - The matrix to multiply by.
-
-**Returns:**
-- `self` - New vector representing the result.
-
-**Throws:** `LengthException` if this vector's size doesn't equal the matrix's row count.
-
-**Examples:**
-```php
-$v = Vector::fromArray([1, 2, 3]);
-$m = Matrix::fromArray([
-    [1, 4],
-    [2, 5],
-    [3, 6],
-]);
-$result = $v->mulMatrix($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
-```
-
 ### dot()
 
 ```php
@@ -542,6 +525,28 @@ Calculate the cross product of this vector with another vector. Both vectors mus
 $v1 = Vector::fromArray([1, 0, 0]);
 $v2 = Vector::fromArray([0, 1, 0]);
 $result = $v1->cross($v2);  // [0, 0, 1]
+```
+
+### outer()
+
+```php
+public function outer(self $other): Matrix
+```
+
+Calculate the outer product of this vector with another vector. Unlike `dot()` and `cross()`, the vectors don't need to
+be the same size - the result is always an m×n `Matrix`, where m is this vector's size and n is `$other`'s size.
+
+**Parameters:**
+- `$other` (Vector) - Vector to calculate outer product with.
+
+**Returns:**
+- `Matrix` - New matrix representing the outer product.
+
+**Examples:**
+```php
+$v1 = Vector::fromArray([1, 2]);
+$v2 = Vector::fromArray([3, 4]);
+$result = $v1->outer($v2);  // [[3, 4], [6, 8]]
 ```
 
 ### normalized()
