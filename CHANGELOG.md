@@ -30,8 +30,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::reciprocal()`**, **`Matrix::reciprocal()`** — element-wise reciprocal, throwing `ArithmeticException` for a
   zero element. On `Matrix`, distinct from `inv()` (the matrix inverse) - `reciprocal()` has no relationship to matrix
   multiplication, it's purely `1 / $element` applied to each entry. Combined with a scalar `*`, this gives a way to
-  express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor
-  any other existing method computes directly.
+  express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor any
+  other existing method computes directly.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
 - **`Vector::outer()`** — outer product of two vectors, returning an m×n `Matrix`. Unlike `dot()`/`cross()`, the two
   vectors don't need to be the same size.
@@ -171,14 +171,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
   static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above.
 - **`Matrix::mulVector()`** — added earlier in this Unreleased cycle as a dedicated, non-polymorphic replacement for
-  `Matrix::mul()`'s old `Vector` branch, removed again for the same reason: a dedicated method for "matrix times
-  vector" (_Ax_) forces the same unsatisfying choice `Matrix::mul()`'s `Vector` branch did — return a `Vector`
-  (needing a `self|Vector` union return type PHPStan can't narrow without `assert()`, and breaking the fluent API),
-  or a single-column `Matrix` (technically valid but not what callers actually want from _Ax_). If
-  `oceanmoon/math-ext` is loaded, use the `*` operator instead (`$A * $v`), which isn't constrained by a declared PHP
-  return type. Without the extension, compose it explicitly: `$A->mul($v->toColumnMatrix())->getColumn(0)`, or via
-  the transpose identity `(Av)ᵀ = vᵀAᵀ`: `$v->mul($A->t())`. See `Matrix::mul()`'s docblock for the fuller
-  explanation.
+  `Matrix::mul()`'s old `Vector` branch, removed again for the same reason: a dedicated method for "matrix times vector"
+  (_Ax_) forces the same unsatisfying choice `Matrix::mul()`'s `Vector` branch did — return a `Vector` (needing a
+  `self|Vector` union return type PHPStan can't narrow without `assert()`, and breaking the fluent API), or a
+  single-column `Matrix` (technically valid but not what callers actually want from _Ax_). If `oceanmoon/math-ext` is
+  loaded, use the `*` operator instead (`$A * $v`), which isn't constrained by a declared PHP return type. Without the
+  extension, compose it explicitly: `$A->mul($v->toColumnMatrix())->getColumn(0)`, or via the transpose identity
+  `(Av)ᵀ = vᵀAᵀ`: `$v->mul($A->t())`. See `Matrix::mul()`'s docblock for the fuller explanation.
 - **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
   `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix multiplication
   isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order it means — an
@@ -212,8 +211,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - Removed the `sec()`/`csc()`/`cot()` (and inverse/hyperbolic variant) sections from `Complex.md`, matching their
   removal above.
 - **New "Strict Typing" section in `README.md`**, explaining the one PHP-level exception `declare(strict_types=1)`
-  makes: an `int` is always accepted where a `float` is type-hinted (lossless widening), but never the reverse. This
-  is why many methods throughout the package are typed `float` yet happily accept an `int` argument.
+  makes: an `int` is always accepted where a `float` is type-hinted (lossless widening), but never the reverse. This is
+  why many methods throughout the package are typed `float` yet happily accept an `int` argument.
 
 ---
 

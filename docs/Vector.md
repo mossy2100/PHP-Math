@@ -484,12 +484,12 @@ See [`Matrix::mul()`](Matrix.md#mul) for more information.
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
 
-$m = Matrix::fromArray([
+$A = Matrix::fromArray([
     [1, 4],
     [2, 5],
     [3, 6],
 ]);
-$result = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
+$result = $v->mul($A);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()

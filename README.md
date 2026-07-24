@@ -14,10 +14,10 @@ This package provides classes for working with complex numbers, rational numbers
 
 **Key Features:**
 
-- **Complex numbers** - Complex arithmetic, trigonometry, transcendental functions, polar/rectangular
-  conversions, and conversion to/from strings.
-- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, overflow
-  detection, and conversion to/from floats and strings.
+- **Complex numbers** - Complex arithmetic, trigonometry, transcendental functions, polar/rectangular conversions, and
+  conversion to/from strings.
+- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, overflow detection,
+  and conversion to/from floats and strings.
 - **Vectors** - Element-wise arithmetic, dot and cross products, array-style access, and conversion to/from arrays.
 - **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication.
 
@@ -63,14 +63,12 @@ composer require oceanmoon/math
 
 ## Strict Typing
 
-Strict typing (`declare(strict_types=1)`) is used throughout the library, with type hints on every property,
-parameter, and return type - this catches type errors at the call site instead of them surfacing as subtle bugs
-later.
+Strict typing (`declare(strict_types=1)`) is used throughout the library, with type hints on every property, parameter,
+and return type - this catches type errors at the call site instead of them surfacing as subtle bugs later.
 
-One PHP-level exception applies: an `int` is always accepted where a `float` is type-hinted, even under strict
-types, since PHP treats this as lossless "widening" (the reverse - passing a `float` where `int` is expected - is
-not allowed, and throws a `TypeError`). Many methods here are typed `float` for exactly this reason, so both forms
-work:
+One PHP-level exception applies: an `int` is always accepted where a `float` is type-hinted, even under strict types,
+since PHP treats this as lossless "widening" (the reverse - passing a `float` where `int` is expected - is not allowed,
+and throws a `TypeError`). Many methods here are typed `float` for exactly this reason, so both forms work:
 
 ```php
 $v = Vector::fromArray([1, 2, 3]);

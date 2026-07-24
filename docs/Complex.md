@@ -52,7 +52,9 @@ For z = a + bi: |z| = √(a² + b²)
 private(set) ?float $phase
 ```
 
-The phase (argument or angle) of the complex number in radians, normalized to the [principal value](https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value), which is in the range **(-π, π]**. (This means the range excludes -π but includes π.)
+The phase (argument or angle) of the complex number in radians, normalized to the
+[principal value](<https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value>), which is in the range
+**(-π, π]**. (This means the range excludes -π but includes π.)
 
 Automatically computed and cached on first access.
 
@@ -73,7 +75,6 @@ Create a new complex number from real and imaginary parts.
 - `$real` (float) - The real part (default: 0).
 - `$imag` (float) - The imaginary part (default: 0).
 
-
 **Examples:**
 
 ```php
@@ -86,6 +87,7 @@ $z4 = new Complex();            // 0 + 0i (zero)
 **Throws:** `DomainException` if either part is not finite (±INF or NAN).
 
 **Note:**
+
 1. To create a complex number from a string, use the `fromString()` method (see below).
 2. To create a complex number from a magnitude and phase, use the `fromPolar()` method (see below).
 
@@ -112,7 +114,10 @@ Create a Complex from a string. Supports various formats.
 - Whitespace tolerant: `" 3 + 4i "`, `"5 - 2i"`
 - Case insensitive: `"I"`, `"5I"`, `"3 + 4I"`
 
-There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself (meaning `1i`), but generally there cannot be a space between the number and the `i` it relates to; for example, `5.67i` is ok, `5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
+There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space
+between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself
+(meaning `1i`), but generally there cannot be a space between the number and the `i` it relates to; for example, `5.67i`
+is ok, `5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
 
 **Examples:**
 
@@ -157,7 +162,9 @@ $z1 = Complex::fromPolar(5, M_PI / 4);
 public function __toString(): string
 ```
 
-Convert to string representation. This will format the real and imaginary parts using the PHP default style for `float` values, which may or may not include a decimal point (`.`) or exponent (`e`, `+`, and/or `-`). You may wish to call `round(3)` (for example) before echoing.
+Convert to string representation. This will format the real and imaginary parts using the PHP default style for `float`
+values, which may or may not include a decimal point (`.`) or exponent (`e`, `+`, and/or `-`). You may wish to call
+`round(3)` (for example) before echoing.
 
 **Format:**
 
