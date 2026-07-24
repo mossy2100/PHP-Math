@@ -211,6 +211,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   example lists consistently don't).
 - Removed the `sec()`/`csc()`/`cot()` (and inverse/hyperbolic variant) sections from `Complex.md`, matching their
   removal above.
+- **New "Strict Typing" section in `README.md`**, explaining the one PHP-level exception `declare(strict_types=1)`
+  makes: an `int` is always accepted where a `float` is type-hinted (lossless widening), but never the reverse. This
+  is why many methods throughout the package are typed `float` yet happily accept an `int` argument.
 
 ---
 

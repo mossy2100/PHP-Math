@@ -23,7 +23,7 @@ Matrix data is stored privately to prevent non-rectangular or non-numeric mutati
 
 ## Properties
 
-### rowCount
+### $rowCount
 
 ```php
 private(set) int $rowCount
@@ -32,7 +32,7 @@ private(set) int $rowCount
 The number of rows in the matrix. Read-only from outside the class. Stored explicitly (not derived from the data array)
 to support 0-column matrices where the row count cannot be inferred from data.
 
-### columnCount
+### $columnCount
 
 ```php
 private(set) int $columnCount

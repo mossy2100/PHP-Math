@@ -20,7 +20,7 @@ The `Rational` class provides exact representation of rational numbers using two
 
 ## Properties
 
-### numerator
+### $numerator
 
 ```php
 private(set) int $numerator
@@ -28,7 +28,7 @@ private(set) int $numerator
 
 The numerator. Always in canonical form (sign stored here). Read-only from outside the class.
 
-### denominator
+### $denominator
 
 ```php
 private(set) int $denominator

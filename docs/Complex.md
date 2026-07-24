@@ -20,7 +20,7 @@ All operations return new instances, maintaining immutability.
 
 ## Properties
 
-### real
+### $real
 
 ```php
 private(set) float $real
@@ -28,7 +28,7 @@ private(set) float $real
 
 The real part of the complex number. Read-only from outside the class.
 
-### imaginary
+### $imaginary
 
 ```php
 private(set) float $imaginary
@@ -36,7 +36,7 @@ private(set) float $imaginary
 
 The imaginary part of the complex number. Read-only from outside the class.
 
-### magnitude
+### $magnitude
 
 ```php
 private(set) ?float $magnitude
@@ -46,18 +46,17 @@ The magnitude (absolute value or modulus) of the complex number. Automatically c
 
 For z = a + bi: |z| = √(a² + b²)
 
-### phase
+### $phase
 
 ```php
 private(set) ?float $phase
 ```
 
-The phase (argument or angle) of the complex number in radians, normalized to the principal value range **(-π, π]**.
+The phase (argument or angle) of the complex number in radians, normalized to the [principal value](https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value), which is in the range **(-π, π]**. (This means the range excludes -π but includes π.)
+
 Automatically computed and cached on first access.
 
 For z = a + bi: arg(z) = atan2(b, a), then wrapped to (-π, π]
-
-The range excludes -π but includes π, following the standard mathematical convention for complex number arguments.
 
 ---
 
@@ -74,6 +73,7 @@ Create a new complex number from real and imaginary parts.
 - `$real` (float) - The real part (default: 0).
 - `$imag` (float) - The imaginary part (default: 0).
 
+
 **Examples:**
 
 ```php
@@ -83,9 +83,11 @@ $z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
 $z4 = new Complex();            // 0 + 0i (zero)
 ```
 
-**Note:** To create a complex number from a string, use the `fromString()` method.
-
 **Throws:** `DomainException` if either part is not finite (±INF or NAN).
+
+**Note:**
+1. To create a complex number from a string, use the `fromString()` method (see below).
+2. To create a complex number from a magnitude and phase, use the `fromPolar()` method (see below).
 
 ---
 
@@ -108,7 +110,9 @@ Create a Complex from a string. Supports various formats.
 - Complex (real first): `"3+4i"`, `"5-2i"`, `"-1+i"`
 - Complex (imaginary first): `"4i+3"`, `"-2i+5"`, `"i-1"`
 - Whitespace tolerant: `" 3 + 4i "`, `"5 - 2i"`
-- Case insensitive: `"I"`
+- Case insensitive: `"I"`, `"5I"`, `"3 + 4I"`
+
+There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself (meaning `1i`), but generally there cannot be a space between the number and the `i` it relates to; for example, `5.67i` is ok, `5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
 
 **Examples:**
 
@@ -153,7 +157,7 @@ $z1 = Complex::fromPolar(5, M_PI / 4);
 public function __toString(): string
 ```
 
-Convert to string representation.
+Convert to string representation. This will format the real and imaginary parts using the PHP default style for `float` values, which may or may not include a decimal point (`.`) or exponent (`e`, `+`, and/or `-`). You may wish to call `round(3)` (for example) before echoing.
 
 **Format:**
 
@@ -478,8 +482,7 @@ $result = M_I->pow(2);  // -1 + 0i
 **Special cases:**
 
 - z^0 = 1 for any z (including 0 by convention)
-- 0^(positive) = 0
-- 0^(negative or complex) throws `ArithmeticException`
+- 0^(positive real number) = 0
 
 **Throws:**
 
@@ -515,7 +518,7 @@ Calculate all nth roots of this complex number.
 
 **Parameters:**
 
-- `$degree` (int) - The degree of the root, e.g. 2 for square root, 3 for cube root (must be positive).
+- `$degree` (int) - The degree of the root, e.g. 2 for square root, 3 for cube root, etc. Must be positive.
 
 **Returns:**
 

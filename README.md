@@ -14,16 +14,20 @@ This package provides classes for working with complex numbers, rational numbers
 
 **Key Features:**
 
-- **Complex numbers** - Full support for complex arithmetic, trigonometry, transcendental functions, polar/rectangular
-  conversions, and converting to/from strings.
-- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, and overflow
-  detection.
-- **Vectors** - Element-wise arithmetic, dot and cross products, and array-style access.
+- **Complex numbers** - Complex arithmetic, trigonometry, transcendental functions, polar/rectangular
+  conversions, and conversion to/from strings.
+- **Rational numbers** - Exact fraction arithmetic using integer ratios, automatic simplification, overflow
+  detection, and conversion to/from floats and strings.
+- **Vectors** - Element-wise arithmetic, dot and cross products, array-style access, and conversion to/from arrays.
 - **Matrices** - Matrix arithmetic, inverse, determinant, transpose, power, and matrix-vector multiplication.
-- **Type flexibility** - Methods accept int or float (int widens to float automatically); `Rational` uses a dedicated
-  `fromFloat()` method for approximate conversion, keeping its constructor exact-integer-only.
-- **Serialization** - `Complex` and `Rational` support native PHP serialization and JSON encoding.
-- **Comprehensive testing** - 100% code coverage with extensive test suites.
+
+The salient features of the package include:
+
+- Careful attention to precision, efficiency, usefulness, clear documentation, and coding standards.
+- Seamless interoperation with PHP `int`, `float`, `string`, and `array` types.
+- A fluent API that enables expressive operations.
+- Expressive exception types and messages.
+- Comprehensive tests providing 100% code coverage.
 
 ---
 
@@ -57,6 +61,28 @@ composer require oceanmoon/math
 
 ---
 
+## Strict Typing
+
+Strict typing (`declare(strict_types=1)`) is used throughout the library, with type hints on every property,
+parameter, and return type - this catches type errors at the call site instead of them surfacing as subtle bugs
+later.
+
+One PHP-level exception applies: an `int` is always accepted where a `float` is type-hinted, even under strict
+types, since PHP treats this as lossless "widening" (the reverse - passing a `float` where `int` is expected - is
+not allowed, and throws a `TypeError`). Many methods here are typed `float` for exactly this reason, so both forms
+work:
+
+```php
+$v = Vector::fromArray([1, 2, 3]);
+$v->mul(3);      // int - accepted, widens to 3.0
+$v->mul(3.0);    // float - also fine
+```
+
+See the ["Strict typing" section](https://www.php.net/manual/en/language.types.declarations.php) of the PHP manual's
+Type Declarations page for the full rules.
+
+---
+
 ## Classes
 
 ### [Complex](docs/Complex.md)
@@ -65,7 +91,7 @@ Immutable class for complex numbers (a + bi) with support for:
 
 - Basic arithmetic operations (add, subtract, multiply, divide)
 - Transcendental functions (exp, ln, log, pow, roots)
-- Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan)
+- Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan, etc.)
 - Polar and rectangular form conversions
 - Epsilon-based equality comparison
 - String parsing and formatting

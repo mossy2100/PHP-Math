@@ -24,7 +24,7 @@ Size-0 vectors are allowed.
 
 ## Properties
 
-### magnitude
+### $magnitude
 
 ```php
 public float $magnitude { get; }
@@ -35,7 +35,7 @@ whenever the vector is mutated via `set()`.
 
 For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 
-### size
+### $size
 
 ```php
 public int $size { get; }
