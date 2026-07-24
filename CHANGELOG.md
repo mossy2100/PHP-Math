@@ -33,8 +33,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor
   any other existing method computes directly.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
-- **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
-  branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
 - **`Vector::outer()`** — outer product of two vectors, returning an m×n `Matrix`. Unlike `dot()`/`cross()`, the two
   vectors don't need to be the same size.
 - **`Vector::normalize()`** — normalizes the vector to unit magnitude (1) in place, mutating it and returning `void`.
@@ -171,8 +169,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `float|self` (returning `self`). The polymorphic return type forced `assert($result instanceof self)` at every
   internal call site that multiplies by a known scalar or `Matrix` (`neg()`, `div()`, `pow()`, `sqr()`, and
   `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
-  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
-  `Matrix::mulVector()` instead (see Added).
+  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above.
+- **`Matrix::mulVector()`** — added earlier in this Unreleased cycle as a dedicated, non-polymorphic replacement for
+  `Matrix::mul()`'s old `Vector` branch, removed again for the same reason: a dedicated method for "matrix times
+  vector" (_Ax_) forces the same unsatisfying choice `Matrix::mul()`'s `Vector` branch did — return a `Vector`
+  (needing a `self|Vector` union return type PHPStan can't narrow without `assert()`, and breaking the fluent API),
+  or a single-column `Matrix` (technically valid but not what callers actually want from _Ax_). If
+  `oceanmoon/math-ext` is loaded, use the `*` operator instead (`$A * $v`), which isn't constrained by a declared PHP
+  return type. Without the extension, compose it explicitly: `$A->mul($v->toColumnMatrix())->getColumn(0)`, or via
+  the transpose identity `(Av)ᵀ = vᵀAᵀ`: `$v->mul($A->t())`. See `Matrix::mul()`'s docblock for the fuller
+  explanation.
 - **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
   `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix multiplication
   isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order it means — an

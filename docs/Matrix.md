@@ -705,7 +705,27 @@ Multiply this matrix by a scalar or another matrix.
 When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is
 performed (the number of columns in this matrix must equal the number of rows in the other).
 
-To multiply by a `Vector` (_Ax_), use [`mulVector()`](#mulvector) instead.
+There's no `Vector` form. "Matrix times vector" (_Ax_, treating the vector as a column vector) is a valid operation,
+but a dedicated method for it forces an unsatisfying choice: return a `Vector` - meaning this method would need a
+`self|Vector` union return type, which PHPStan can't narrow by argument type without `assert()` at every call site,
+and which breaks the fluent API (chaining another `Matrix` method straight off the result no longer type-checks
+without narrowing first) - or return a single-column `Matrix`, which is technically valid (_Ax_ is an m×1 matrix) but
+not what callers actually want from _Ax_.
+
+To multiply this matrix by a vector (_Ax_):
+- If `oceanmoon/math-ext` is loaded, use the `*` operator (`$A * $v`) - operator overloads aren't constrained by a
+  declared PHP return type, so they don't have this problem. See the extension's `docs/Matrix.md`.
+- Otherwise, compose it explicitly from existing methods, in either of these equivalent ways:
+  ```php
+  $b = $A->mul($v->toColumnMatrix())->getColumn(0);
+  // or, via the transpose identity (Av)ᵀ = vᵀAᵀ:
+  $b = $v->mul($A->t());
+  ```
+  The second form is just `Vector::mul()`'s own `Matrix` branch, which already does `$v->toRowMatrix()->
+  mul($other)->getRow(0)` internally - so it needs no explicit transpose of `$v` or of the result: unlike a `Matrix`,
+  a `Vector` has no row/column orientation of its own, so "vᵀ" is just `$v` itself, and the untransposed result
+  `bᵀᵀ = b` needs no further conversion either, since row 0 of `(Av)ᵀ` holds the same values as column 0 of `Av`. To
+  go the other way (_xA_), use [`Vector::mul()`](Vector.md#mul) directly.
 
 **Parameters:**
 
@@ -869,33 +889,6 @@ $result = $m->sqr();  // [[7, 10], [15, 22]]
 ---
 
 ## Linear Algebra Methods
-
-### mulVector()
-
-```php
-public function mulVector(Vector $vector): Vector
-```
-
-Multiply this matrix by a vector (_Ax_). The vector is treated as a column vector; its size must equal this matrix's
-column count.
-
-To go the other way (_xA_), use `Vector::mul()` instead.
-
-**Parameters:**
-
-- `$vector` (Vector) - The vector to multiply by.
-
-**Returns:** `Vector` - New vector representing the result.
-
-**Throws:** `LengthException` if the vector's size doesn't equal this matrix's column count.
-
-**Examples:**
-
-```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-$v = Vector::fromArray([1, 2]);
-$result = $m->mulVector($v);  // Vector(5, 11)
-```
 
 ### t()
 
@@ -1165,7 +1158,7 @@ $i = Matrix::identity(3);
 $a = Matrix::fromArray([[2, 1], [5, 3]]);
 $b = Vector::fromArray([4, 7]);
 
-$x = $a->inv()->mulVector($b);  // Vector(5, -6)
+$x = $a->inv()->mul($b->toColumnMatrix())->getColumn(0);  // Vector(5, -6)
 ```
 
 ### 3D Transformations
@@ -1183,7 +1176,7 @@ $rot90 = Matrix::fromArray([
 ]);
 
 $point = Vector::fromArray([1, 0, 0]);
-$rotated = $rot90->mulVector($point);  // Vector(0, 1, 0)
+$rotated = $rot90->mul($point->toColumnMatrix())->getColumn(0);  // Vector(0, 1, 0)
 
 // Scale by 2x in all axes.
 $scale = Matrix::fromArray([
@@ -1191,11 +1184,11 @@ $scale = Matrix::fromArray([
     [0, 2, 0],
     [0, 0, 2],
 ]);
-$scaled = $scale->mulVector($point);  // Vector(2, 0, 0)
+$scaled = $scale->mul($point->toColumnMatrix())->getColumn(0);  // Vector(2, 0, 0)
 
 // Chain transformations: scale then rotate.
 $combined = $rot90->mul($scale);
-$result = $combined->mulVector($point);  // Vector(0, 2, 0)
+$result = $combined->mul($point->toColumnMatrix())->getColumn(0);  // Vector(0, 2, 0)
 ```
 
 ### Matrix Powers

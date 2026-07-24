@@ -774,11 +774,32 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Multiply this matrix by a scalar or another matrix.
      *
-     * To multiply by a Vector, use `mulVector()` instead.
+     * There's no `Vector` form. "Matrix times vector" (_Ax_, treating the vector as a column vector) is a valid
+     * operation, but a dedicated method for it forces an unsatisfying choice: return a `Vector` - meaning this method
+     * would need a `self|Vector` union return type, which PHPStan can't narrow by argument type without `assert()`
+     * at every call site, and which breaks the fluent API (chaining another `Matrix` method straight off the result
+     * no longer type-checks without narrowing first) - or return a single-column `Matrix`, which is technically
+     * valid (_Ax_ is an m×1 matrix) but not what callers actually want from _Ax_.
+     *
+     * To multiply this matrix by a vector (_Ax_):
+     * - If `oceanmoon/math-ext` is loaded, use the `*` operator (`$A * $v`) - operator overloads aren't constrained
+     *   by a declared PHP return type, so they don't have this problem. See the extension's `docs/Matrix.md`.
+     * - Otherwise, compose it explicitly from existing methods, in either of these equivalent ways:
+     *   ```php
+     *   $b = $A->mul($v->toColumnMatrix())->getColumn(0);
+     *   // or, via the transpose identity (Av)ᵀ = vᵀAᵀ:
+     *   $b = $v->mul($A->t());
+     *   ```
+     *   The second form is just `Vector::mul()`'s own `Matrix` branch, which already does `$v->toRowMatrix()->
+     *   mul($other)->getRow(0)` internally - so it needs no explicit transpose of `$v` or of the result: unlike a
+     *   `Matrix`, a `Vector` has no row/column orientation of its own, so "vᵀ" is just `$v` itself, and the
+     *   untransposed result `bᵀᵀ = b` needs no further conversion either, since row 0 of `(Av)ᵀ` holds the same
+     *   values as column 0 of `Av`. To go the other way (_xA_), use `Vector::mul()` directly.
      *
      * @param float|self $other Number or matrix to multiply by.
      * @return self New matrix representing the product.
      * @throws LengthException If dimensions are incompatible for multiplication.
+     * @see Vector::mul()
      */
     public function mul(float|self $other): self
     {
@@ -977,21 +998,6 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     #endregion
 
     #region Linear algebra methods
-
-    /**
-     * Multiply this matrix by a vector: Ax.
-     *
-     * The vector is treated as a column vector; its size must equal this matrix's column count. To go the other way
-     * (xA), use `Vector::mul()` instead.
-     *
-     * @param Vector $vector The vector to multiply by.
-     * @return Vector New vector representing the result.
-     * @throws LengthException If the vector's size doesn't equal this matrix's column count.
-     */
-    public function mulVector(Vector $vector): Vector
-    {
-        return $this->mul($vector->toColumnMatrix())->getColumn(0);
-    }
 
     /**
      * Get the transpose of this matrix.

@@ -423,7 +423,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * Multiply this vector by a scalar or a matrix.
      *
      * Multiplying by a matrix (_xA_) treats this vector as a row vector; its size must equal the matrix's row count.
-     * To go the other way (_Ax_), use `Matrix::mulVector()` instead.
+     * To go the other way (_Ax_), there's no dedicated method - see `Matrix::mul()`'s docblock for the two
+     * composable alternatives, and why a dedicated method for it isn't provided.
      *
      * @param float|Matrix $other Number or matrix to multiply by.
      * @return self New vector representing the product.
