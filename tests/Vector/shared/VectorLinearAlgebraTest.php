@@ -105,7 +105,10 @@ class VectorLinearAlgebraTest extends TestCase
         $this->assertSame(2, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
         // [1,2] ⊗ [3,4] = [[1*3, 1*4], [2*3, 2*4]] = [[3, 4], [6, 8]]
-        $this->assertSame([[3.0, 4.0], [6.0, 8.0]], $result->toArray());
+        $this->assertSame([
+            [3.0, 4.0],
+            [6.0, 8.0],
+        ], $result->toArray());
     }
 
     /**
@@ -121,7 +124,11 @@ class VectorLinearAlgebraTest extends TestCase
         $this->assertSame(3, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
         // [1,2,3] ⊗ [4,5] = [[4, 5], [8, 10], [12, 15]]
-        $this->assertSame([[4.0, 5.0], [8.0, 10.0], [12.0, 15.0]], $result->toArray());
+        $this->assertSame([
+            [4.0, 5.0],
+            [8.0, 10.0],
+            [12.0, 15.0],
+        ], $result->toArray());
     }
 
     #endregion
