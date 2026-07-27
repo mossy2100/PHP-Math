@@ -20,15 +20,15 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testAdd(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]);
-        $result = $a->add($b);
+        $result = $matA->add($matB);
         $this->assertSame([
             [6.0, 8.0],
             [10.0, 12.0],
@@ -40,10 +40,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testAddDifferentDimensionsThrows(): void
     {
-        $a = new Matrix(2, 2);
-        $b = new Matrix(2, 3);
+        $matA = new Matrix(2, 2);
+        $matB = new Matrix(2, 3);
         $this->expectException(LengthException::class);
-        $a->add($b);
+        $matA->add($matB);
     }
 
     #endregion
@@ -55,15 +55,15 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testSub(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $result = $a->sub($b);
+        $result = $matA->sub($matB);
         $this->assertSame([
             [4.0, 4.0],
             [4.0, 4.0],
@@ -75,10 +75,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testSubDifferentDimensionsThrows(): void
     {
-        $a = new Matrix(2, 3);
-        $b = new Matrix(3, 2);
+        $matA = new Matrix(2, 3);
+        $matB = new Matrix(3, 2);
         $this->expectException(LengthException::class);
-        $a->sub($b);
+        $matA->sub($matB);
     }
 
     #endregion
@@ -90,11 +90,11 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByIntScalar(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $result = $m->mul(3);
+        $result = $mat->mul(3);
         $this->assertSame([
             [3.0, 6.0],
             [9.0, 12.0],
@@ -106,11 +106,11 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByFloatScalar(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 4],
             [6, 8],
         ]);
-        $result = $m->mul(0.5);
+        $result = $mat->mul(0.5);
         $this->assertSame([
             [1.0, 2.0],
             [3.0, 4.0],
@@ -123,16 +123,16 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testMulByMatrix(): void
     {
         // 2x3 * 3x2 = 2x2
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [7, 8],
             [9, 10],
             [11, 12],
         ]);
-        $result = $a->mul($b);
+        $result = $matA->mul($matB);
         $this->assertInstanceOf(Matrix::class, $result);
         $this->assertSame(2, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
@@ -149,10 +149,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByMatrixIncompatibleDimensionsThrows(): void
     {
-        $a = new Matrix(2, 3);
-        $b = new Matrix(2, 2);
+        $matA = new Matrix(2, 3);
+        $matB = new Matrix(2, 2);
         $this->expectException(LengthException::class);
-        $a->mul($b);
+        $matA->mul($matB);
     }
 
     #endregion
@@ -164,11 +164,11 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testDivByScalar(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [4, 8],
             [12, 16],
         ]);
-        $result = $m->div(4);
+        $result = $mat->div(4);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(3.0, $result->get(1, 0), EPSILON);
@@ -180,9 +180,9 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testDivByZeroThrows(): void
     {
-        $m = new Matrix(2, 2);
+        $mat = new Matrix(2, 2);
         $this->expectException(ArithmeticException::class);
-        $m->div(0);
+        $mat->div(0);
     }
 
     #endregion
@@ -194,15 +194,15 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardMul(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]);
-        $result = $a->hadamardMul($b);
+        $result = $matA->hadamardMul($matB);
         $this->assertEqualsWithDelta(5.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(12.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(21.0, $result->get(1, 0), EPSILON);
@@ -214,10 +214,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardMulWithDifferentDimensionsThrows(): void
     {
-        $a = new Matrix(2, 2);
-        $b = new Matrix(3, 3);
+        $matA = new Matrix(2, 2);
+        $matB = new Matrix(3, 3);
         $this->expectException(LengthException::class);
-        $a->hadamardMul($b);
+        $matA->hadamardMul($matB);
     }
 
     #endregion
@@ -229,15 +229,15 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDiv(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [5, 12],
             [21, 32],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]);
-        $result = $a->hadamardDiv($b);
+        $result = $matA->hadamardDiv($matB);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(3.0, $result->get(1, 0), EPSILON);
@@ -249,10 +249,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDivWithDifferentDimensionsThrows(): void
     {
-        $a = new Matrix(2, 2);
-        $b = new Matrix(3, 3);
+        $matA = new Matrix(2, 2);
+        $matB = new Matrix(3, 3);
         $this->expectException(LengthException::class);
-        $a->hadamardDiv($b);
+        $matA->hadamardDiv($matB);
     }
 
     /**
@@ -260,16 +260,16 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDivByZeroElementThrows(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1, 0],
             [1, 1],
         ]);
         $this->expectException(ArithmeticException::class);
-        $a->hadamardDiv($b);
+        $matA->hadamardDiv($matB);
     }
 
     #endregion

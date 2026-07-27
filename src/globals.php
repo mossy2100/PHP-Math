@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @file constants.php
- * Global constants for the Math package.
+ * @file globals.php
+ * Global constants and maybe other things for the Math package.
  */
 
 declare(strict_types=1);
@@ -17,4 +17,4 @@ namespace OceanMoon\Math;
  * use const OceanMoon\Math\M_I;
  * ```
  */
-const M_I = new Complex(0, 1);
+const M_I = new Complex(0, 1); // @codeCoverageIgnore

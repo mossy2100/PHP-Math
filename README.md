@@ -76,8 +76,8 @@ $v->mul(3);      // int - accepted, widens to 3.0
 $v->mul(3.0);    // float - also fine
 ```
 
-See the ["Strict typing" section](https://www.php.net/manual/en/language.types.declarations.php) of the PHP manual's
-Type Declarations page for the full rules.
+See the "Strict typing" section of the
+[PHP manual's Type Declarations page](https://www.php.net/manual/en/language.types.declarations.php) for the full rules.
 
 ---
 

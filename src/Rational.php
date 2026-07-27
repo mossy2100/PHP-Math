@@ -10,6 +10,7 @@ use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Integers;
+use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
@@ -17,8 +18,6 @@ use RoundingMode;
 use Stringable;
 
 use function OceanMoon\Core\ex;
-use function OceanMoon\Core\is_number;
-use function OceanMoon\Core\sign;
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
@@ -42,8 +41,6 @@ final class Rational implements Stringable
 
     #region Properties
 
-    #region Public properties (readonly)
-
     /**
      * The numerator.
      */
@@ -53,8 +50,6 @@ final class Rational implements Stringable
      * The denominator.
      */
     private(set) int $denominator;
-
-    #endregion
 
     #endregion
 
@@ -156,7 +151,7 @@ final class Rational implements Stringable
 
         // Get number info and range limits.
         $absValue = abs($value);
-        $sign = sign($value, false);
+        $sign = Numbers::sign($value, false);
         $min = 1.0 / PHP_INT_MAX;
         $max = (float) PHP_INT_MAX;
 
@@ -381,7 +376,7 @@ final class Rational implements Stringable
     public function compare(mixed $other): int
     {
         // Check type.
-        if (!$other instanceof self && !is_number($other)) {
+        if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
                 'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.'
             );
@@ -409,26 +404,26 @@ final class Rational implements Stringable
 
             // Use the spaceship operator to compare. Note, the spaceship operator only guarantees sign, not specific
             // values, so we call sign to normalize the result to -1, 0, or 1 for predictable behavior.
-            return sign($this->toFloat() <=> $other);
+            return Numbers::sign($this->toFloat() <=> $other);
         }
 
         // $other is a Rational.
         // If the denominators are equal, we only need to compare numerators.
         if ($this->denominator === $other->denominator) {
-            return sign($this->numerator <=> $other->numerator);
+            return Numbers::sign($this->numerator <=> $other->numerator);
         }
 
         try {
             // We can avoid a float conversin by cross multiplying and comparing a*d with b*c (for a/b vs c/d).
             $ad = Integers::mul($this->numerator, $other->denominator);
             $bc = Integers::mul($this->denominator, $other->numerator);
-            return sign($ad <=> $bc);
+            return Numbers::sign($ad <=> $bc);
         } catch (OverflowException) {
             // In case of integer overflow, compare equivalent floating point values.
             // NB: This could produce a result of 0 (equal) if two different rationals convert to the same float, which
             // is possible for values with a magnitude greater than or equal to 2^53 (64-bit platforms only). But that
             // should be ok.
-            return sign($this->toFloat() <=> $other->toFloat());
+            return Numbers::sign($this->toFloat() <=> $other->toFloat());
         }
     }
 
@@ -459,7 +454,7 @@ final class Rational implements Stringable
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         // Check type.
-        if (!$other instanceof self && !is_number($other)) {
+        if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
                 'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.'
             );

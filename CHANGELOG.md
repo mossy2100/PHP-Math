@@ -10,8 +10,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 > **Version not yet decided.** This batch includes several breaking changes (exception types changed throughout, several
-> conversion methods removed, comparison methods narrowed to stricter type acceptance) that likely warrant a major
-> version bump — to be decided before this is tagged as a release.
+> conversion methods removed, comparison methods narrowed to stricter type acceptance, `Vector::$magnitude` converted
+> from a property to a method) that likely warrant a major version bump — to be decided before this is tagged as a
+> release.
 
 ### Added
 
@@ -103,6 +104,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   (and `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each mean something distinct; keeping `j` as
   a synonym for `i` on `Complex` would make that ambiguous. A string like `'3+4j'` now throws `FormatException` instead
   of parsing as `3 + 4i`.
+- **`Vector::$magnitude` is now a method, `magnitude()`, instead of a readonly property.** Unlike `Complex`'s
+  `$magnitude`/`$phase` (still properties — see below), `Vector` is mutable, so a cached property value needed explicit
+  invalidation on every mutating call (`offsetSet()` was resetting it to `null`). Rather than keep that bookkeeping in
+  sync as more mutating methods are added, the value is now computed directly from the current elements on every call,
+  and the caching machinery is gone entirely. Update `$v->magnitude` to `$v->magnitude()`.
+- **`Complex::$magnitude`/`$phase`** are now computed eagerly in the constructor instead of lazily on first access via
+  a property hook. `Complex` is immutable, so laziness was never load-bearing for correctness — the values themselves
+  are unchanged — but it did mean both properties were internally `?float` with a caching `get` hook, requiring
+  `assert()`/`@var` hints elsewhere in the class to convince PHPStan the values were non-null after the first access.
+  `fromPolar()` no longer manually re-assigns the known magnitude/phase onto the constructed instance afterward either
+  — the constructor now computes them itself from the resulting real/imaginary parts, the same as any other
+  constructor call. This trades a small amount of precision (the recomputed magnitude/phase now round-trips through
+  `cos()`/`sin()` and back rather than storing the original input exactly) for a single, uniform code path.
 
 ### Fixed
 
@@ -191,6 +205,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `<complex.h>`, C++'s `std::complex`, Python's `cmath`) provides these either; keeping them was scope beyond the
   standard twelve trig/hyperbolic functions for no real benefit, and every method here is one the native extension (in
   development) would otherwise have to port and keep in sync.
+
+### Tests
+
+- Added `MatrixArrayAccessTest::testOffsetSetNonIntegerOffsetThrows()`, covering `offsetSet()`'s non-int-offset guard
+  (e.g. `$mat['row'] = ...`), which previously had no direct test — only its `offsetGet()` counterpart did.
 
 ### Documentation
 

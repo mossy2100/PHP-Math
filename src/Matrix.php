@@ -12,13 +12,13 @@ use LengthException;
 use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
+use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
 
 use function OceanMoon\Core\ex;
-use function OceanMoon\Core\is_number;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
@@ -31,7 +31,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
     #region Properties
 
-    #region Private properties
+    /**
+     * The number of rows in the matrix.
+     */
+    private(set) int $rowCount;
+
+    /**
+     * The number of columns in the matrix.
+     */
+    private(set) int $columnCount;
 
     /**
      * The matrix data: one Vector per row.
@@ -48,22 +56,6 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @var list<Vector>
      */
     private array $data;
-
-    #endregion
-
-    #region Public properties (readonly)
-
-    /**
-     * The number of rows in the matrix.
-     */
-    private(set) int $rowCount;
-
-    /**
-     * The number of columns in the matrix.
-     */
-    private(set) int $columnCount;
-
-    #endregion
 
     #endregion
 
@@ -153,7 +145,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             // Check each row contains only numbers.
             foreach ($row as $j => $value) {
                 // Check if each value is a number.
-                if (!is_number($value)) {
+                if (!Numbers::isNumber($value)) {
                     throw new DomainException("Invalid element type at row $i, column $j: " . get_debug_type($value) .
                         '. Must be int or float.');
                 }
@@ -782,13 +774,13 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * valid (_Ax_ is an m×1 matrix) but not what callers actually want from _Ax_.
      *
      * To multiply this matrix by a vector (_Ax_):
-     * - If `oceanmoon/math-ext` is loaded, use the `*` operator (`$A * $v`) - operator overloads aren't constrained
+     * - If `oceanmoon/math-ext` is loaded, use the `*` operator (`$matA * $v`) - operator overloads aren't constrained
      *   by a declared PHP return type, so they don't have this problem. See the extension's `docs/Matrix.md`.
      * - Otherwise, compose it explicitly from existing methods, in either of these equivalent ways:
      *   ```php
-     *   $b = $A->mul($v->toColumnMatrix())->getColumn(0);
+     *   $u = $matA->mul($v->toColumnMatrix())->getColumn(0);
      *   // or, via the transpose identity (Av)ᵀ = vᵀAᵀ:
-     *   $b = $v->mul($A->t());
+     *   $u = $v->mul($matA->t());
      *   ```
      *   The second form is just `Vector::mul()`'s own `Matrix` branch, which already does `$v->toRowMatrix()->
      *   mul($other)->getRow(0)` internally - so it needs no explicit transpose of `$v` or of the result: unlike a

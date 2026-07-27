@@ -96,8 +96,8 @@ class ComplexUnaryArithmeticTest extends TestCase
      */
     public function testConj(): void
     {
-        $z = new Complex(3, 4);
-        $result = $z->conj();
+        $z1 = new Complex(3, 4);
+        $result = $z1->conj();
 
         $this->assertSame(3.0, $result->real);
         $this->assertSame(-4.0, $result->imaginary);
@@ -241,11 +241,11 @@ class ComplexUnaryArithmeticTest extends TestCase
      */
     public function testConjOfPowEqualsPowOfConjs(): void
     {
-        $z = new Complex(3, 4);
-        $w = new Complex(2, 1);
+        $z1 = new Complex(3, 4);
+        $z2 = new Complex(2, 1);
 
-        $lhs = $z->pow($w)->conj();
-        $rhs = $z->conj()->pow($w->conj());
+        $lhs = $z1->pow($z2)->conj();
+        $rhs = $z1->conj()->pow($z2->conj());
 
         $this->assertEqualsWithDelta($rhs->real, $lhs->real, EPSILON);
         $this->assertEqualsWithDelta($rhs->imaginary, $lhs->imaginary, EPSILON);

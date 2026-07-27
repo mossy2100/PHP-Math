@@ -19,11 +19,11 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTranspose(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $t = $m->t();
+        $t = $mat->t();
         $this->assertSame(3, $t->rowCount);
         $this->assertSame(2, $t->columnCount);
         $this->assertSame(1.0, $t->get(0, 0));
@@ -43,10 +43,10 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetOneByOne(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [5],
         ]);
-        $this->assertEqualsWithDelta(5.0, $m->det(), EPSILON);
+        $this->assertEqualsWithDelta(5.0, $mat->det(), EPSILON);
     }
 
     /**
@@ -54,12 +54,12 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetTwoByTwo(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
         // det = 1*4 - 2*3 = -2
-        $this->assertEqualsWithDelta(-2.0, $m->det(), EPSILON);
+        $this->assertEqualsWithDelta(-2.0, $mat->det(), EPSILON);
     }
 
     /**
@@ -67,7 +67,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetThreeByThree(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [6, 1, 1],
             [4, -2, 5],
             [2, 8, 7],
@@ -75,7 +75,7 @@ class MatrixLinearAlgebraTest extends TestCase
         // det = 6(-2*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)
         //     = 6(-14-40) - 1(28-10) + 1(32+4)
         //     = 6(-54) - 18 + 36 = -324 - 18 + 36 = -306
-        $this->assertEqualsWithDelta(-306.0, $m->det(), EPSILON);
+        $this->assertEqualsWithDelta(-306.0, $mat->det(), EPSILON);
     }
 
     /**
@@ -85,7 +85,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetFourByFour(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 0, 1, 3],
             [1, 3, 2, 0],
             [0, 1, 4, 1],
@@ -93,7 +93,7 @@ class MatrixLinearAlgebraTest extends TestCase
         ]);
         // Verified via cofactor expansion along row 0 and independently via row reduction to
         // upper-triangular form (product of pivots 2, 3, 3.5, -3): det = -63.
-        $this->assertEqualsWithDelta(-63.0, $m->det(), EPSILON);
+        $this->assertEqualsWithDelta(-63.0, $mat->det(), EPSILON);
     }
 
     /**
@@ -101,9 +101,9 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetNonSquareThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(DomainException::class);
-        $m->det();
+        $mat->det();
     }
 
     #endregion
@@ -123,11 +123,11 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceTwoByTwo(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $this->assertSame(5.0, $m->trace());
+        $this->assertSame(5.0, $mat->trace());
     }
 
     /**
@@ -135,12 +135,12 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceThreeByThree(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9],
         ]);
-        $this->assertSame(15.0, $m->trace());
+        $this->assertSame(15.0, $mat->trace());
     }
 
     /**
@@ -148,10 +148,10 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceOneByOne(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [7],
         ]);
-        $this->assertSame(7.0, $m->trace());
+        $this->assertSame(7.0, $mat->trace());
     }
 
     /**
@@ -159,8 +159,8 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceZeroMatrix(): void
     {
-        $m = new Matrix(3, 3);
-        $this->assertSame(0.0, $m->trace());
+        $mat = new Matrix(3, 3);
+        $this->assertSame(0.0, $mat->trace());
     }
 
     /**
@@ -168,9 +168,9 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceNonSquareThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(DomainException::class);
-        $m->trace();
+        $mat->trace();
     }
 
     #endregion

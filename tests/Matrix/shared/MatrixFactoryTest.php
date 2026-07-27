@@ -20,14 +20,14 @@ class MatrixFactoryTest extends TestCase
      */
     public function testFromArrayWithValidData(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertSame(2, $m->rowCount);
-        $this->assertSame(3, $m->columnCount);
-        $this->assertSame(1.0, $m->get(0, 0));
-        $this->assertSame(6.0, $m->get(1, 2));
+        $this->assertSame(2, $mat->rowCount);
+        $this->assertSame(3, $mat->columnCount);
+        $this->assertSame(1.0, $mat->get(0, 0));
+        $this->assertSame(6.0, $mat->get(1, 2));
     }
 
     /**
@@ -35,12 +35,12 @@ class MatrixFactoryTest extends TestCase
      */
     public function testFromArrayWithFloats(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.5, 2.5],
             [3.5, 4.5],
         ]);
-        $this->assertSame(1.5, $m->get(0, 0));
-        $this->assertSame(4.5, $m->get(1, 1));
+        $this->assertSame(1.5, $mat->get(0, 0));
+        $this->assertSame(4.5, $mat->get(1, 1));
     }
 
     /**
@@ -48,9 +48,9 @@ class MatrixFactoryTest extends TestCase
      */
     public function testFromArrayWithEmptyArray(): void
     {
-        $m = Matrix::fromArray([]);
-        $this->assertSame(0, $m->rowCount);
-        $this->assertSame(0, $m->columnCount);
+        $mat = Matrix::fromArray([]);
+        $this->assertSame(0, $mat->rowCount);
+        $this->assertSame(0, $mat->columnCount);
     }
 
     /**
@@ -121,10 +121,10 @@ class MatrixFactoryTest extends TestCase
      */
     public function testIdentityOneByOne(): void
     {
-        $m = Matrix::identity(1);
-        $this->assertSame(1, $m->rowCount);
-        $this->assertSame(1, $m->columnCount);
-        $this->assertSame(1.0, $m->get(0, 0));
+        $matI = Matrix::identity(1);
+        $this->assertSame(1, $matI->rowCount);
+        $this->assertSame(1, $matI->columnCount);
+        $this->assertSame(1.0, $matI->get(0, 0));
     }
 
     /**
@@ -132,17 +132,17 @@ class MatrixFactoryTest extends TestCase
      */
     public function testIdentityThreeByThree(): void
     {
-        $m = Matrix::identity(3);
-        $this->assertSame(3, $m->rowCount);
-        $this->assertSame(3, $m->columnCount);
+        $matI = Matrix::identity(3);
+        $this->assertSame(3, $matI->rowCount);
+        $this->assertSame(3, $matI->columnCount);
 
         // Verify diagonal is 1 and off-diagonal is 0.
         for ($i = 0; $i < 3; $i++) {
             for ($j = 0; $j < 3; $j++) {
                 if ($i === $j) {
-                    $this->assertSame(1.0, $m->get($i, $j));
+                    $this->assertSame(1.0, $matI->get($i, $j));
                 } else {
-                    $this->assertSame(0.0, $m->get($i, $j));
+                    $this->assertSame(0.0, $matI->get($i, $j));
                 }
             }
         }

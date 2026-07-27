@@ -12,13 +12,13 @@ use LengthException;
 use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
+use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
 
 use function OceanMoon\Core\ex;
-use function OceanMoon\Core\is_number;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.
@@ -31,7 +31,10 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
     #region Properties
 
-    #region Private properties
+    /**
+     * The number of elements in the vector.
+     */
+    private(set) int $size;
 
     /**
      * The vector data.
@@ -39,35 +42,6 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @var list<float>
      */
     private array $data;
-
-    #endregion
-
-    #region Public properties (readonly)
-
-    /**
-     * The number of elements in the vector.
-     */
-    private(set) int $size;
-
-    #endregion
-
-    #region Public properties (computed, readonly)
-
-    /**
-     * The magnitude (norm) of the vector. Cached on first access and invalidated on mutation.
-     */
-    private(set) ?float $magnitude = null {
-        get {
-            // Compute and cache if necessary.
-            if ($this->magnitude === null) {
-                $this->magnitude = sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
-            }
-
-            return $this->magnitude;
-        }
-    }
-
-    #endregion
 
     #endregion
 
@@ -117,7 +91,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // Check all elements are numbers.
         foreach ($arr as $index => $value) {
             // Check if the value is a number.
-            if (!is_number($value)) {
+            if (!Numbers::isNumber($value)) {
                 throw new DomainException(
                     "Invalid element type at index $index: " . get_debug_type($value) . '. Must be int or float.'
                 );
@@ -235,7 +209,6 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         $this->data[$index] = $value;
-        $this->magnitude = null;
     }
 
     /**
@@ -603,6 +576,16 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
+     * Calculate the magnitude (norm) of the vector.
+     *
+     * @return float The magnitude. 0.0 for an empty or zero vector.
+     */
+    public function magnitude(): float
+    {
+        return sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
+    }
+
+    /**
      * Get this vector normalized to a unit vector (magnitude 1).
      *
      * @return self A new vector with the same direction and magnitude 1.
@@ -610,8 +593,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function normalized(): self
     {
-        assert($this->magnitude !== null);
-        return $this->div($this->magnitude);
+        return $this->div($this->magnitude());
     }
 
     #endregion
@@ -701,7 +683,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Check element type.
-        if (!is_number($value)) {
+        if (!Numbers::isNumber($value)) {
             throw new InvalidArgumentException(
                 'Invalid element type: ' . get_debug_type($offset) . '. Must be int or float.'
             );

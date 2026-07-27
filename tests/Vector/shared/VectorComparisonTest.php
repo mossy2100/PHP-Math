@@ -20,9 +20,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testEqualWithIdenticalVectors(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2, 3]);
-        $this->assertTrue($a->equal($b));
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2, 3]);
+        $this->assertTrue($v1->equal($v2));
     }
 
     /**
@@ -30,9 +30,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testEqualWithDifferentValues(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2, 4]);
-        $this->assertFalse($a->equal($b));
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2, 4]);
+        $this->assertFalse($v1->equal($v2));
     }
 
     /**
@@ -40,9 +40,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testEqualWithDifferentSizes(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2]);
-        $this->assertFalse($a->equal($b));
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
+        $this->assertFalse($v1->equal($v2));
     }
 
     /**
@@ -108,9 +108,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testApproxEqualWithCloseValues(): void
     {
-        $a = Vector::fromArray([1.0, 2.0, 3.0]);
-        $b = Vector::fromArray([1.0 + 1e-12, 2.0 - 1e-12, 3.0 + 1e-12]);
-        $this->assertTrue($a->approxEqual($b));
+        $v1 = Vector::fromArray([1.0, 2.0, 3.0]);
+        $v2 = Vector::fromArray([1.0 + 1e-12, 2.0 - 1e-12, 3.0 + 1e-12]);
+        $this->assertTrue($v1->approxEqual($v2));
     }
 
     /**
@@ -118,9 +118,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testApproxEqualWithValuesOutsideTolerance(): void
     {
-        $a = Vector::fromArray([1.0, 2.0, 3.0]);
-        $b = Vector::fromArray([1.1, 2.0, 3.0]);
-        $this->assertFalse($a->approxEqual($b));
+        $v1 = Vector::fromArray([1.0, 2.0, 3.0]);
+        $v2 = Vector::fromArray([1.1, 2.0, 3.0]);
+        $this->assertFalse($v1->approxEqual($v2));
     }
 
     /**
@@ -128,9 +128,9 @@ class VectorComparisonTest extends TestCase
      */
     public function testApproxEqualWithDifferentSizes(): void
     {
-        $a = Vector::fromArray([1.0, 2.0, 3.0]);
-        $b = Vector::fromArray([1.0, 2.0]);
-        $this->assertFalse($a->approxEqual($b));
+        $v1 = Vector::fromArray([1.0, 2.0, 3.0]);
+        $v2 = Vector::fromArray([1.0, 2.0]);
+        $this->assertFalse($v1->approxEqual($v2));
     }
 
     /**

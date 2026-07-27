@@ -15,5 +15,5 @@ namespace OceanMoon\Math;
 // registers the M_I constant itself. Redeclaring it causes an error.
 if (!extension_loaded('oceanmoon_math')) {
     // We need to use require_once because `const` isn't allowed inside an `if` block.
-    require_once __DIR__ . '/constants.php';
+    require_once __DIR__ . '/globals.php';
 }

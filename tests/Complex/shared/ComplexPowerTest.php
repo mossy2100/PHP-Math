@@ -87,11 +87,11 @@ class ComplexPowerTest extends TestCase
      */
     public function testPowEBase(): void
     {
-        $w = new Complex(2, 3);
-        $result = new Complex(M_E)->pow($w);
+        $z = new Complex(2, 3);
+        $result = new Complex(M_E)->pow($z);
 
         // e^(2+3i) should equal exp(2+3i)
-        $expected = $w->exp();
+        $expected = $z->exp();
 
         $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);

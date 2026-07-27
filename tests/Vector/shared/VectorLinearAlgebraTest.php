@@ -21,10 +21,10 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testDot(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([4, 5, 6]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5, 6]);
         // 1*4 + 2*5 + 3*6 = 4 + 10 + 18 = 32
-        $this->assertSame(32.0, $a->dot($b));
+        $this->assertSame(32.0, $v1->dot($v2));
     }
 
     /**
@@ -32,10 +32,10 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testDotWithDifferentSizesThrows(): void
     {
-        $a = Vector::fromArray([1, 2]);
-        $b = Vector::fromArray([1, 2, 3]);
+        $v1 = Vector::fromArray([1, 2]);
+        $v2 = Vector::fromArray([1, 2, 3]);
         $this->expectException(LengthException::class);
-        $a->dot($b);
+        $v1->dot($v2);
     }
 
     #endregion
@@ -59,9 +59,9 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testCrossKnownResult(): void
     {
-        $a = Vector::fromArray([2, 3, 4]);
-        $b = Vector::fromArray([5, 6, 7]);
-        $result = $a->cross($b);
+        $v1 = Vector::fromArray([2, 3, 4]);
+        $v2 = Vector::fromArray([5, 6, 7]);
+        $result = $v1->cross($v2);
         // (3*7 - 4*6, 4*5 - 2*7, 2*6 - 3*5) = (21-24, 20-14, 12-15) = (-3, 6, -3)
         $this->assertSame([-3.0, 6.0, -3.0], $result->toArray());
     }
@@ -71,10 +71,10 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testCrossWithFirstVectorNotSize3Throws(): void
     {
-        $a = Vector::fromArray([1, 2]);
-        $b = Vector::fromArray([3, 4, 5]);
+        $v1 = Vector::fromArray([1, 2]);
+        $v2 = Vector::fromArray([3, 4, 5]);
         $this->expectException(LengthException::class);
-        $a->cross($b);
+        $v1->cross($v2);
     }
 
     /**
@@ -82,10 +82,10 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testCrossWithSecondVectorNotSize3Throws(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([4, 5]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5]);
         $this->expectException(LengthException::class);
-        $a->cross($b);
+        $v1->cross($v2);
     }
 
     #endregion
@@ -97,9 +97,9 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testOuter(): void
     {
-        $a = Vector::fromArray([1, 2]);
-        $b = Vector::fromArray([3, 4]);
-        $result = $a->outer($b);
+        $v1 = Vector::fromArray([1, 2]);
+        $v2 = Vector::fromArray([3, 4]);
+        $result = $v1->outer($v2);
 
         $this->assertInstanceOf(Matrix::class, $result);
         $this->assertSame(2, $result->rowCount);
@@ -117,9 +117,9 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testOuterWithDifferentSizes(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([4, 5]);
-        $result = $a->outer($b);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5]);
+        $result = $v1->outer($v2);
 
         $this->assertSame(3, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
@@ -129,6 +129,37 @@ class VectorLinearAlgebraTest extends TestCase
             [8.0, 10.0],
             [12.0, 15.0],
         ], $result->toArray());
+    }
+
+    #endregion
+
+    #region Method magnitude() tests.
+
+    /**
+     * Test magnitude of a [3, 4] vector equals 5.
+     */
+    public function testMagnitudeThreeFourEqualsFive(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+        $this->assertSame(5.0, $v->magnitude());
+    }
+
+    /**
+     * Test magnitude of an empty vector equals zero.
+     */
+    public function testMagnitudeEmptyVectorEqualsZero(): void
+    {
+        $v = new Vector(0);
+        $this->assertSame(0.0, $v->magnitude());
+    }
+
+    /**
+     * Test magnitude of a single-element vector equals the absolute value of the element.
+     */
+    public function testMagnitudeSingleElement(): void
+    {
+        $v = Vector::fromArray([1]);
+        $this->assertSame(1.0, $v->magnitude());
     }
 
     #endregion
@@ -143,8 +174,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v = Vector::fromArray([3, 4]);
         $unit = $v->normalized();
 
-        $this->assertNotNull($unit->magnitude);
-        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude(), EPSILON);
         $this->assertEqualsWithDelta(3.0 / 5.0, $unit->get(0), EPSILON);
         $this->assertEqualsWithDelta(4.0 / 5.0, $unit->get(1), EPSILON);
     }
@@ -157,8 +187,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v = Vector::fromArray([1, 0, 0]);
         $unit = $v->normalized();
 
-        $this->assertNotNull($unit->magnitude);
-        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude(), EPSILON);
         $this->assertSame(1.0, $unit->get(0));
         $this->assertSame(0.0, $unit->get(1));
         $this->assertSame(0.0, $unit->get(2));

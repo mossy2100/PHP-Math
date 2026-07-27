@@ -19,12 +19,12 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeGrow(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $r = $m->resize(3, 3);
+        $r = $mat->resize(3, 3);
         $this->assertSame([
             [1.0, 2.0, 0.0],
             [3.0, 4.0, 0.0],
@@ -37,13 +37,13 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeShrink(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9],
         ]);
 
-        $r = $m->resize(2, 2);
+        $r = $mat->resize(2, 2);
         $this->assertSame([
             [1.0, 2.0],
             [4.0, 5.0],
@@ -55,12 +55,12 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeMixed(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
 
-        $r = $m->resize(4, 1);
+        $r = $mat->resize(4, 1);
         $this->assertSame([
             [1.0],
             [4.0],
@@ -74,14 +74,14 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeSameDimensions(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $r = $m->resize(2, 2);
-        $this->assertTrue($m->equal($r));
-        $this->assertNotSame($m, $r);
+        $r = $mat->resize(2, 2);
+        $this->assertTrue($mat->equal($r));
+        $this->assertNotSame($mat, $r);
     }
 
     /**
@@ -89,12 +89,12 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeToZero(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $r = $m->resize(0, 0);
+        $r = $mat->resize(0, 0);
         $this->assertSame(0, $r->rowCount);
         $this->assertSame(0, $r->columnCount);
     }
@@ -104,9 +104,9 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeFromZero(): void
     {
-        $m = new Matrix(0, 0);
+        $mat = new Matrix(0, 0);
 
-        $r = $m->resize(2, 2);
+        $r = $mat->resize(2, 2);
         $this->assertSame([
             [0.0, 0.0],
             [0.0, 0.0],
@@ -118,18 +118,18 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeDoesNotMutateOriginal(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $r = $m->resize(1, 1);
+        $r = $mat->resize(1, 1);
         $r->set(0, 0, 99);
 
         $this->assertSame([
             [1.0, 2.0],
             [3.0, 4.0],
-        ], $m->toArray());
+        ], $mat->toArray());
     }
 
     /**
@@ -137,9 +137,9 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeWithNegativeDimensionThrows(): void
     {
-        $m = Matrix::identity(2);
+        $mat = Matrix::identity(2);
         $this->expectException(DomainException::class);
-        $m->resize(-1, 2);
+        $mat->resize(-1, 2);
     }
 
     #endregion

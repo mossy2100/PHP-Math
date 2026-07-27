@@ -237,12 +237,12 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatConvergentOverflow(): void
     {
-        $value = 2.1213650134300899e-10;
-        $r = Rational::fromFloat($value);
+        $f = 2.1213650134300899e-10;
+        $r = Rational::fromFloat($f);
 
         $this->assertSame(431, $r->numerator);
         $this->assertSame(2031710701701, $r->denominator);
-        $this->assertEqualsWithDelta($value, $r->numerator / $r->denominator, 1e-15);
+        $this->assertEqualsWithDelta($f, $r->numerator / $r->denominator, 1e-15);
     }
 
     /**
@@ -250,12 +250,12 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatZeroRemainder(): void
     {
-        $value = 2.176543618258578e-17;
-        $r = Rational::fromFloat($value);
+        $f = 2.176543618258578e-17;
+        $r = Rational::fromFloat($f);
 
         $this->assertSame(1, $r->numerator);
         $this->assertSame(45944404312011256, $r->denominator);
-        $this->assertEqualsWithDelta($value, $r->numerator / $r->denominator, 1e-25);
+        $this->assertEqualsWithDelta($f, $r->numerator / $r->denominator, 1e-25);
     }
 
     /**

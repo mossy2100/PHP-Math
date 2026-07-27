@@ -20,8 +20,8 @@ class ComplexPropertiesTest extends TestCase
      */
     public function testRealProperty(): void
     {
-        $z = new Complex(3, 4);
-        $this->assertSame(3.0, $z->real);
+        $z1 = new Complex(3, 4);
+        $this->assertSame(3.0, $z1->real);
 
         $z2 = new Complex(-5.5, 2.3);
         $this->assertSame(-5.5, $z2->real);
@@ -39,8 +39,8 @@ class ComplexPropertiesTest extends TestCase
      */
     public function testImagProperty(): void
     {
-        $z = new Complex(3, 4);
-        $this->assertSame(4.0, $z->imaginary);
+        $z1 = new Complex(3, 4);
+        $this->assertSame(4.0, $z1->imaginary);
 
         $z2 = new Complex(-5.5, 2.3);
         $this->assertSame(2.3, $z2->imaginary);
@@ -59,8 +59,8 @@ class ComplexPropertiesTest extends TestCase
     public function testMagnitudeComplex(): void
     {
         // 3-4-5 triangle
-        $z = new Complex(3, 4);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
+        $z1 = new Complex(3, 4);
+        $this->assertEqualsWithDelta(5.0, $z1->magnitude, EPSILON);
 
         // 5-12-13 triangle
         $z2 = new Complex(5, 12);
@@ -81,8 +81,8 @@ class ComplexPropertiesTest extends TestCase
     public function testMagnitudeReal(): void
     {
         // Positive real
-        $z = new Complex(5, 0);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
+        $z1 = new Complex(5, 0);
+        $this->assertEqualsWithDelta(5.0, $z1->magnitude, EPSILON);
 
         // Negative real
         $z2 = new Complex(-7, 0);
@@ -99,25 +99,12 @@ class ComplexPropertiesTest extends TestCase
     public function testMagnitudePureImaginary(): void
     {
         // Positive imaginary
-        $z = new Complex(0, 5);
-        $this->assertEqualsWithDelta(5.0, $z->magnitude, EPSILON);
+        $z1 = new Complex(0, 5);
+        $this->assertEqualsWithDelta(5.0, $z1->magnitude, EPSILON);
 
         // Negative imaginary
         $z2 = new Complex(0, -7);
         $this->assertEqualsWithDelta(7.0, $z2->magnitude, EPSILON);
-    }
-
-    /**
-     * Test that magnitude is cached (same value returned on multiple accesses).
-     */
-    public function testMagnitudeIsCached(): void
-    {
-        $z = new Complex(3, 4);
-
-        $mag1 = $z->magnitude;
-        $mag2 = $z->magnitude;
-
-        $this->assertSame($mag1, $mag2);
     }
 
     #endregion
@@ -203,19 +190,6 @@ class ComplexPropertiesTest extends TestCase
 
         $z4 = new Complex(0, -3);
         $this->assertEqualsWithDelta(-M_PI / 2, $z4->phase, EPSILON);
-    }
-
-    /**
-     * Test that phase is cached (same value returned on multiple accesses).
-     */
-    public function testPhaseIsCached(): void
-    {
-        $z = new Complex(3, 4);
-
-        $phase1 = $z->phase;
-        $phase2 = $z->phase;
-
-        $this->assertSame($phase1, $phase2);
     }
 
     /**

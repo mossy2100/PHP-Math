@@ -20,8 +20,8 @@ class MatrixInspectionTest extends TestCase
      */
     public function testIsSquareWithSquareMatrix(): void
     {
-        $m = new Matrix(3, 3);
-        $this->assertTrue($m->isSquare());
+        $mat = new Matrix(3, 3);
+        $this->assertTrue($mat->isSquare());
     }
 
     /**
@@ -29,8 +29,8 @@ class MatrixInspectionTest extends TestCase
      */
     public function testIsSquareWithNonSquareMatrix(): void
     {
-        $m = new Matrix(2, 3);
-        $this->assertFalse($m->isSquare());
+        $mat = new Matrix(2, 3);
+        $this->assertFalse($mat->isSquare());
     }
 
     /**
@@ -38,8 +38,8 @@ class MatrixInspectionTest extends TestCase
      */
     public function testIsSquareWithSpecificSizeMatches(): void
     {
-        $m = new Matrix(3, 3);
-        $this->assertTrue($m->isSquare(3));
+        $mat = new Matrix(3, 3);
+        $this->assertTrue($mat->isSquare(3));
     }
 
     /**
@@ -47,8 +47,8 @@ class MatrixInspectionTest extends TestCase
      */
     public function testIsSquareWithSpecificSizeDoesNotMatch(): void
     {
-        $m = new Matrix(3, 3);
-        $this->assertFalse($m->isSquare(2));
+        $mat = new Matrix(3, 3);
+        $this->assertFalse($mat->isSquare(2));
     }
 
     /**
@@ -56,8 +56,8 @@ class MatrixInspectionTest extends TestCase
      */
     public function testIsSquareWithSpecificSizeOnNonSquareMatrix(): void
     {
-        $m = new Matrix(2, 3);
-        $this->assertFalse($m->isSquare(2));
+        $mat = new Matrix(2, 3);
+        $this->assertFalse($mat->isSquare(2));
     }
 
     #endregion
@@ -69,13 +69,13 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetValidElement(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertSame(1.0, $m->get(0, 0));
-        $this->assertSame(5.0, $m->get(1, 1));
-        $this->assertSame(6.0, $m->get(1, 2));
+        $this->assertSame(1.0, $mat->get(0, 0));
+        $this->assertSame(5.0, $mat->get(1, 1));
+        $this->assertSame(6.0, $mat->get(1, 2));
     }
 
     /**
@@ -83,9 +83,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetElementRowOutOfRangeThrows(): void
     {
-        $m = new Matrix(2, 2);
+        $mat = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
-        $m->get(2, 0);
+        $mat->get(2, 0);
     }
 
     /**
@@ -93,9 +93,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetElementNegativeRowThrows(): void
     {
-        $m = new Matrix(2, 2);
+        $mat = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
-        $m->get(-1, 0);
+        $mat->get(-1, 0);
     }
 
     /**
@@ -103,9 +103,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetElementColumnOutOfRangeThrows(): void
     {
-        $m = new Matrix(2, 2);
+        $mat = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
-        $m->get(0, 2);
+        $mat->get(0, 2);
     }
 
     #endregion
@@ -117,15 +117,15 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowReturnsCorrectVector(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $row = $m->getRow(0);
+        $row = $mat->getRow(0);
         $this->assertInstanceOf(Vector::class, $row);
         $this->assertSame([1.0, 2.0, 3.0], $row->toArray());
 
-        $row1 = $m->getRow(1);
+        $row1 = $mat->getRow(1);
         $this->assertSame([4.0, 5.0, 6.0], $row1->toArray());
     }
 
@@ -134,9 +134,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowOutOfRangeThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->getRow(2);
+        $mat->getRow(2);
     }
 
     /**
@@ -144,9 +144,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowNegativeThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->getRow(-1);
+        $mat->getRow(-1);
     }
 
     /**
@@ -154,14 +154,14 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowReturnsIndependentCopy(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $row = $m->getRow(0);
+        $row = $mat->getRow(0);
         $row->set(0, 999);
 
-        $this->assertSame(1.0, $m->get(0, 0));
+        $this->assertSame(1.0, $mat->get(0, 0));
     }
 
     #endregion
@@ -173,15 +173,15 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetColumnReturnsCorrectVector(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $col = $m->getColumn(0);
+        $col = $mat->getColumn(0);
         $this->assertInstanceOf(Vector::class, $col);
         $this->assertSame([1.0, 4.0], $col->toArray());
 
-        $col2 = $m->getColumn(2);
+        $col2 = $mat->getColumn(2);
         $this->assertSame([3.0, 6.0], $col2->toArray());
     }
 
@@ -190,9 +190,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetColumnOutOfRangeThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->getColumn(3);
+        $mat->getColumn(3);
     }
 
     /**
@@ -200,9 +200,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetColumnNegativeIndexThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->getColumn(-1);
+        $mat->getColumn(-1);
     }
 
     #endregion
@@ -214,13 +214,13 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopy(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
             [7, 8, 9],
         ]);
 
-        $sub = $m->copy(1, 1, 2, 2);
+        $sub = $mat->copy(1, 1, 2, 2);
         $this->assertSame(2, $sub->rowCount);
         $this->assertSame(2, $sub->columnCount);
         $this->assertSame([
@@ -234,12 +234,12 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyFromOrigin(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
 
-        $sub = $m->copy(0, 0, 1, 2);
+        $sub = $mat->copy(0, 0, 1, 2);
         $this->assertSame([
             [1.0, 2.0],
         ], $sub->toArray());
@@ -250,14 +250,14 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyEntireMatrix(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $sub = $m->copy(0, 0, 2, 2);
-        $this->assertTrue($m->equal($sub));
-        $this->assertNotSame($m, $sub);
+        $sub = $mat->copy(0, 0, 2, 2);
+        $this->assertTrue($mat->equal($sub));
+        $this->assertNotSame($mat, $sub);
     }
 
     /**
@@ -265,16 +265,16 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithZeroDimension(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $rows = $m->copy(0, 0, 0, 2);
+        $rows = $mat->copy(0, 0, 0, 2);
         $this->assertSame(0, $rows->rowCount);
         $this->assertSame(2, $rows->columnCount);
 
-        $cols = $m->copy(0, 0, 2, 0);
+        $cols = $mat->copy(0, 0, 2, 0);
         $this->assertSame(2, $cols->rowCount);
         $this->assertSame(0, $cols->columnCount);
     }
@@ -284,15 +284,15 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyDoesNotMutateOriginal(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
-        $sub = $m->copy(0, 0, 1, 1);
+        $sub = $mat->copy(0, 0, 1, 1);
         $sub->set(0, 0, 99);
 
-        $this->assertSame(1.0, $m->get(0, 0));
+        $this->assertSame(1.0, $mat->get(0, 0));
     }
 
     /**
@@ -300,9 +300,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithNegativeRowThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(-1, 0, 1, 1);
+        $mat->copy(-1, 0, 1, 1);
     }
 
     /**
@@ -310,9 +310,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithNegativeRowCountThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(0, 0, -1, 1);
+        $mat->copy(0, 0, -1, 1);
     }
 
     /**
@@ -320,9 +320,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithRowRangeOutOfBoundsThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(2, 0, 2, 1);
+        $mat->copy(2, 0, 2, 1);
     }
 
     /**
@@ -330,9 +330,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithNegativeColumnThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(0, -1, 1, 1);
+        $mat->copy(0, -1, 1, 1);
     }
 
     /**
@@ -340,9 +340,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithNegativeColumnCountThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(0, 0, 1, -1);
+        $mat->copy(0, 0, 1, -1);
     }
 
     /**
@@ -350,9 +350,9 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithColumnRangeOutOfBoundsThrows(): void
     {
-        $m = new Matrix(3, 3);
+        $mat = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->copy(0, 2, 1, 2);
+        $mat->copy(0, 2, 1, 2);
     }
 
     #endregion

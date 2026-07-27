@@ -11,6 +11,7 @@ use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
+use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
@@ -18,7 +19,6 @@ use RoundingMode;
 use Stringable;
 
 use function OceanMoon\Core\ex;
-use function OceanMoon\Core\is_number;
 
 use const OceanMoon\Core\M_TAU;
 
@@ -33,8 +33,6 @@ final class Complex implements Stringable, ArrayAccess
 
     #region Properties
 
-    #region Public properties (readonly)
-
     /**
      * The real part of the complex number.
      */
@@ -45,48 +43,18 @@ final class Complex implements Stringable, ArrayAccess
      */
     private(set) float $imaginary;
 
-    #endregion
-
-    #region Public properties (computed, readonly)
-
     /**
-     * The magnitude (a.k.a. absolute value or modulus) of this complex number. Cached on first access.
+     * The magnitude (a.k.a. absolute value or modulus) of this complex number.
      */
-    private(set) ?float $magnitude = null {
-        get {
-            // Compute and cache if necessary.
-            if ($this->magnitude === null) {
-                $this->magnitude = $this->isReal() ? abs($this->real) : hypot($this->real, $this->imaginary);
-            }
-
-            return $this->magnitude;
-        }
-    }
+    private(set) float $magnitude;
 
     /**
-     * The phase (a.k.a. argument) of this complex number in radians. Cached on first access.
+     * The phase (a.k.a. argument) of this complex number in radians.
      *
-     * It is stored in a canonical form, in the range (-π, π]. This is known as the principal value.
+     * The value is normalized to the range (-π, π]. This is known as the principal value.
      * @see https://en.wikipedia.org/wiki/Principal_value#Complex_argument
      */
-    private(set) ?float $phase = null {
-        get {
-            // Compute and cache if necessary.
-            if ($this->phase === null) {
-                if ($this->isReal()) {
-                    $this->phase = $this->real < 0 ? M_PI : 0;
-                } else {
-                    // atan2() can return a value in the range [-π, π] inclusive, which isn't canonical.
-                    // The call to wrap() will convert the value to a range of (-π to π]
-                    $this->phase = Floats::wrap(atan2($this->imaginary, $this->real));
-                }
-            }
-
-            return $this->phase;
-        }
-    }
-
-    #endregion
+    private(set) float $phase;
 
     #endregion
 
@@ -112,6 +80,18 @@ final class Complex implements Stringable, ArrayAccess
         // Set the properties.
         $this->real = $real;
         $this->imaginary = $imag;
+
+        if ($imag === 0.0) {
+            $this->magnitude = abs($real);
+            $this->phase = $real < 0 ? M_PI : 0.0;
+        } else {
+            $this->magnitude = hypot($real, $imag);
+            // The phase must be in the range (-π, π].
+            // In this branch, we know the imaginary part is not 0, so the result of atan2() should theoretically never
+            // equal π or -π. In practice it can be, however, it can be, if the imaginary part is very close to 0.
+            // So, we call wrap().
+            $this->phase = Floats::wrap(atan2($imag, $real));
+        }
     }
 
     #endregion
@@ -197,17 +177,8 @@ final class Complex implements Stringable, ArrayAccess
             throw new DomainException('Cannot create Complex with negative magnitude: ' . ex($mag) . '.');
         }
 
-        // Get the phase as radians in the normal range (-pi, pi]
-        $phase = Floats::wrap($phase);
-
         // Construct the new Complex.
-        $z = new self($mag * cos($phase), $mag * sin($phase));
-
-        // Remember the magnitude and phase since we know them.
-        $z->magnitude = $mag;
-        $z->phase = $phase;
-
-        return $z;
+        return new self($mag * cos($phase), $mag * sin($phase));
     }
 
     #endregion
@@ -275,7 +246,7 @@ final class Complex implements Stringable, ArrayAccess
     public function equal(mixed $other): bool
     {
         // Check type.
-        if (!$other instanceof self && !is_number($other)) {
+        if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
                 'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
             );
@@ -294,7 +265,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Get other value as a Complex.
-        if (is_number($other)) {
+        if (Numbers::isNumber($other)) {
             $other = new self($other);
         }
 
@@ -325,7 +296,7 @@ final class Complex implements Stringable, ArrayAccess
         float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
     ): bool {
         // Check type.
-        if (!$other instanceof self && !is_number($other)) {
+        if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
                 'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
             );
@@ -344,7 +315,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Get other value as a Complex.
-        if (is_number($other)) {
+        if (Numbers::isNumber($other)) {
             $other = new self($other);
         }
 
@@ -617,7 +588,6 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function sqrt(): self
     {
-        assert(is_float($this->magnitude) && is_float($this->phase));
         return self::fromPolar(sqrt($this->magnitude), $this->phase / 2);
     }
 
@@ -704,11 +674,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // General solution. Calculate ln(z) = ln|z| + i*arg(z)
-        /** @var float $mag */
-        $mag = $this->magnitude;
-        /** @var float $phase */
-        $phase = $this->phase;
-        return new self(log($mag), $phase);
+        return new self(log($this->magnitude), $this->phase);
     }
 
     /**

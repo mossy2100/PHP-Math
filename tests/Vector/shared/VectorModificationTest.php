@@ -123,8 +123,7 @@ class VectorModificationTest extends TestCase
         $v = Vector::fromArray([3, 4]);
         $v->normalize();
 
-        $this->assertNotNull($v->magnitude);
-        $this->assertEqualsWithDelta(1.0, $v->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $v->magnitude(), EPSILON);
         $this->assertEqualsWithDelta(3.0 / 5.0, $v->get(0), EPSILON);
         $this->assertEqualsWithDelta(4.0 / 5.0, $v->get(1), EPSILON);
     }
@@ -137,8 +136,7 @@ class VectorModificationTest extends TestCase
         $v = Vector::fromArray([1, 0, 0]);
         $v->normalize();
 
-        $this->assertNotNull($v->magnitude);
-        $this->assertEqualsWithDelta(1.0, $v->magnitude, EPSILON);
+        $this->assertEqualsWithDelta(1.0, $v->magnitude(), EPSILON);
         $this->assertSame(1.0, $v->get(0));
         $this->assertSame(0.0, $v->get(1));
         $this->assertSame(0.0, $v->get(2));

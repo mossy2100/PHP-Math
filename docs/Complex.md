@@ -147,7 +147,7 @@ Create a complex number from polar coordinates (magnitude and phase).
 
 ```php
 // Create from magnitude and phase
-$z1 = Complex::fromPolar(5, M_PI / 4);
+$z = Complex::fromPolar(5, M_PI / 4);
 ```
 
 **Throws:** `DomainException` if the magnitude or phase is not finite (±INF or NAN), or if the magnitude is negative.
@@ -431,12 +431,12 @@ Multiply this complex number by another value.
 **Example:**
 
 ```php
-$z = new Complex(3, 4);
-$result = $z->mul(2);  // 6 + 8i
+$z1 = new Complex(3, 4);
+$result = $z1->mul(2);  // 6 + 8i
 
-$z1 = new Complex(1, 2);
-$z2 = new Complex(3, 4);
-$product = $z1->mul($z2);  // -5 + 10i
+$z2 = new Complex(1, 2);
+$z3 = new Complex(3, 4);
+$product = $z2->mul($z3);  // -5 + 10i
 ```
 
 **Throws:** `DomainException` if `$other` is a non-finite float (±INF or NAN).
@@ -452,12 +452,12 @@ Divide this complex number by another value.
 **Example:**
 
 ```php
-$z = new Complex(6, 8);
-$result = $z->div(2);  // 3 + 4i
+$z1 = new Complex(6, 8);
+$result = $z1->div(2);  // 3 + 4i
 
-$z1 = new Complex(1, 2);
-$z2 = new Complex(3, 4);
-$quotient = $z1->div($z2);
+$z2 = new Complex(1, 2);
+$z3 = new Complex(3, 4);
+$quotient = $z2->div($z3);
 ```
 
 **Throws:**
@@ -737,8 +737,8 @@ Round the real and imaginary parts to the given number of decimal places, using 
 **Examples:**
 
 ```php
-$z = new Complex(7 / 3, 8 / 3);
-echo $z->round(0);  // 2 + 3i (2.333... rounds down, 2.666... rounds up)
+$z1 = new Complex(7 / 3, 8 / 3);
+echo $z1->round(0);  // 2 + 3i (2.333... rounds down, 2.666... rounds up)
 
 $z2 = new Complex(1.2345, -1.2345);
 echo $z2->round(2);  // 1.23 - 1.23i

@@ -19,11 +19,11 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowPositive(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 1],
             [0, 1],
         ]);
-        $result = $m->pow(3);
+        $result = $mat->pow(3);
         // [[1,1],[0,1]]^3 = [[1,3],[0,1]]
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(3.0, $result->get(0, 1), EPSILON);
@@ -36,11 +36,11 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowZero(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 3],
             [4, 5],
         ]);
-        $result = $m->pow(0);
+        $result = $mat->pow(0);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
@@ -52,14 +52,14 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowOne(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 3],
             [4, 5],
         ]);
-        $result = $m->pow(1);
+        $result = $mat->pow(1);
 
-        $this->assertNotSame($m, $result);
-        $this->assertTrue($m->equal($result));
+        $this->assertNotSame($mat, $result);
+        $this->assertTrue($mat->equal($result));
     }
 
     /**
@@ -68,14 +68,14 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowOneCloneIsIndependent(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 3],
             [4, 5],
         ]);
-        $result = $m->pow(1);
+        $result = $mat->pow(1);
         $result->set(0, 0, 999);
 
-        $this->assertSame(2.0, $m->get(0, 0));
+        $this->assertSame(2.0, $mat->get(0, 0));
     }
 
     /**
@@ -83,14 +83,14 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowNegative(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 1],
             [0, 1],
         ]);
-        $result = $m->pow(-1);
+        $result = $mat->pow(-1);
 
         // Verify M * M^-1 = I.
-        $product = $m->mul($result);
+        $product = $mat->mul($result);
         $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
@@ -109,10 +109,10 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowIntMinExponent(): void
     {
-        $identity = Matrix::identity(2);
-        $result = $identity->pow(PHP_INT_MIN);
+        $matI = Matrix::identity(2);
+        $result = $matI->pow(PHP_INT_MIN);
 
-        $this->assertTrue($identity->equal($result));
+        $this->assertTrue($matI->equal($result));
     }
 
     /**
@@ -120,9 +120,9 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowNonSquareThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(DomainException::class);
-        $m->pow(2);
+        $mat->pow(2);
     }
 
     #endregion
@@ -135,11 +135,11 @@ class MatrixPowerTest extends TestCase
     public function testSqr(): void
     {
         // [[1, 2], [3, 4]]² = [[7, 10], [15, 22]]
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $result = $m->sqr();
+        $result = $mat->sqr();
 
         $expected = Matrix::fromArray([
             [7, 10],
@@ -153,11 +153,11 @@ class MatrixPowerTest extends TestCase
      */
     public function testSqrEqualsPowTwo(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [2, 1],
             [0, 3],
         ]);
-        $this->assertTrue($m->sqr()->equal($m->pow(2)));
+        $this->assertTrue($mat->sqr()->equal($mat->pow(2)));
     }
 
     /**
@@ -165,9 +165,9 @@ class MatrixPowerTest extends TestCase
      */
     public function testSqrNonSquareThrows(): void
     {
-        $m = new Matrix(2, 3);
+        $mat = new Matrix(2, 3);
         $this->expectException(DomainException::class);
-        $m->sqr();
+        $mat->sqr();
     }
 
     #endregion

@@ -170,8 +170,8 @@ Convert the rational number to a float.
 **Example:**
 
 ```php
-$r = new Rational(1, 2);
-echo $r->toFloat();  // 0.5
+$r1 = new Rational(1, 2);
+echo $r1->toFloat();  // 0.5
 
 $r2 = new Rational(1, 3);
 echo $r2->toFloat();  // 0.33333...
@@ -194,8 +194,8 @@ added to reconstruct the original value.
 **Examples:**
 
 ```php
-$r = new Rational(9, 4);
-[$int, $frac] = $r->toMixedNumber();
+$r1 = new Rational(9, 4);
+[$int, $frac] = $r1->toMixedNumber();
 echo $int;   // 2
 echo $frac;  // "1/4"
 
@@ -520,8 +520,8 @@ Calculate the multiplicative inverse (reciprocal).
 **Example:**
 
 ```php
-$r = new Rational(3, 4);
-$result = $r->inv();  // 4/3
+$r1 = new Rational(3, 4);
+$result = $r1->inv();  // 4/3
 
 $r2 = new Rational(-2, 5);
 $result2 = $r2->inv();  // -5/2
@@ -646,8 +646,8 @@ Raise this rational number to an integer power.
 **Examples:**
 
 ```php
-$r = new Rational(2, 3);
-$result = $r->pow(2);   // 4/9
+$r1 = new Rational(2, 3);
+$result = $r1->pow(2);   // 4/9
 
 $r2 = new Rational(1, 2);
 $result2 = $r2->pow(3);  // 1/8
@@ -795,17 +795,17 @@ echo $sum;  // "1"
 
 ```php
 // Auto-reduction
-$r = new Rational(6, 8);
-echo $r;  // "3/4"
+$r1 = new Rational(6, 8);
+echo $r1;  // "3/4"
 
 // Combining Rationals; convert a float first with fromFloat() if needed
-$r1 = new Rational(1, 2);
-$r2 = $r1->add(new Rational(1, 4));  // 1/2 + 1/4
-echo $r2;                            // "3/4"
+$r2 = new Rational(1, 2);
+$r3 = $r2->add(new Rational(1, 4));  // 1/2 + 1/4
+echo $r3;                            // "3/4"
 
 // Complex calculations
-$r = new Rational(2, 3);
-$result = $r->sqr()->mul(new Rational(9, 4));
+$r4 = new Rational(2, 3);
+$result = $r4->sqr()->mul(new Rational(9, 4));
 echo $result;  // "1"
 ```
 
@@ -813,8 +813,8 @@ echo $result;  // "1"
 
 ```php
 try {
-    $r = new Rational(PHP_INT_MAX, 1);
-    $r2 = $r->add(1);  // Would overflow
+    $r1 = new Rational(PHP_INT_MAX, 1);
+    $r2 = $r1->add(1);  // Would overflow
 } catch (OverflowException $e) {
     echo "Overflow detected!";
 }

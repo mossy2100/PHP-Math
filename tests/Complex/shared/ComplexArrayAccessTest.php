@@ -52,7 +52,7 @@ class ComplexArrayAccessTest extends TestCase
         $z = new Complex(3, 4);
 
         $this->expectException(OutOfRangeException::class);
-        $value = $z[2];
+        $f = $z[2];
     }
 
     /**
@@ -63,7 +63,7 @@ class ComplexArrayAccessTest extends TestCase
         $z = new Complex(3, 4);
 
         $this->expectException(InvalidArgumentException::class);
-        $value = $z['real'];
+        $f = $z['real'];
     }
 
     #endregion

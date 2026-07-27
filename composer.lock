@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "dd8898fc8232bbf2f6b8efbc77cc965861678e1e"
+                "reference": "8123c41982307bdccb52cf16b10eefd5ac48ff70"
             },
             "require": {
                 "php": "^8.4"
@@ -33,9 +33,7 @@
                     "OceanMoon\\Core\\": "src/"
                 },
                 "files": [
-                    "src/Globals/constants.php",
-                    "src/Globals/strings.php",
-                    "src/Globals/numbers.php"
+                    "src/globals.php"
                 ]
             },
             "autoload-dev": {
@@ -328,7 +326,7 @@
             "dist": {
                 "type": "path",
                 "url": "../CodingStandard",
-                "reference": "553d0eb786cb3f2896cf5c964251253b2b8eb9ad"
+                "reference": "b557ffa21208f97cedfabaa7a08630bfdb4d389c"
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",

@@ -21,9 +21,9 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testAdd(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([4, 5, 6]);
-        $result = $a->add($b);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $result = $v1->add($v2);
         $this->assertSame([5.0, 7.0, 9.0], $result->toArray());
     }
 
@@ -32,10 +32,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testAddWithDifferentSizesThrows(): void
     {
-        $a = Vector::fromArray([1, 2]);
-        $b = Vector::fromArray([1, 2, 3]);
+        $v1 = Vector::fromArray([1, 2]);
+        $v2 = Vector::fromArray([1, 2, 3]);
         $this->expectException(LengthException::class);
-        $a->add($b);
+        $v1->add($v2);
     }
 
     #endregion
@@ -47,9 +47,9 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testSub(): void
     {
-        $a = Vector::fromArray([10, 20, 30]);
-        $b = Vector::fromArray([1, 2, 3]);
-        $result = $a->sub($b);
+        $v1 = Vector::fromArray([10, 20, 30]);
+        $v2 = Vector::fromArray([1, 2, 3]);
+        $result = $v1->sub($v2);
         $this->assertSame([9.0, 18.0, 27.0], $result->toArray());
     }
 
@@ -58,10 +58,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testSubWithDifferentSizesThrows(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
-        $a->sub($b);
+        $v1->sub($v2);
     }
 
     #endregion
@@ -172,9 +172,9 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testHadamardMul(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([4, 5, 6]);
-        $result = $a->hadamardMul($b);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $result = $v1->hadamardMul($v2);
         $this->assertEqualsWithDelta([4.0, 10.0, 18.0], $result->toArray(), EPSILON);
     }
 
@@ -183,10 +183,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testHadamardMulWithDifferentSizesThrows(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
-        $a->hadamardMul($b);
+        $v1->hadamardMul($v2);
     }
 
     #endregion
@@ -198,9 +198,9 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDiv(): void
     {
-        $a = Vector::fromArray([4, 10, 18]);
-        $b = Vector::fromArray([4, 5, 6]);
-        $result = $a->hadamardDiv($b);
+        $v1 = Vector::fromArray([4, 10, 18]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $result = $v1->hadamardDiv($v2);
         $this->assertEqualsWithDelta([1.0, 2.0, 3.0], $result->toArray(), EPSILON);
     }
 
@@ -209,10 +209,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDivWithDifferentSizesThrows(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 2]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
-        $a->hadamardDiv($b);
+        $v1->hadamardDiv($v2);
     }
 
     /**
@@ -220,10 +220,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDivByZeroElementThrows(): void
     {
-        $a = Vector::fromArray([1, 2, 3]);
-        $b = Vector::fromArray([1, 0, 1]);
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 0, 1]);
         $this->expectException(ArithmeticException::class);
-        $a->hadamardDiv($b);
+        $v1->hadamardDiv($v2);
     }
 
     #endregion

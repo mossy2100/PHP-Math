@@ -28,11 +28,11 @@ class MatrixNormTest extends TestCase
     public function testNormFrobeniusSimple(): void
     {
         // [[1, 2], [3, 4]]: sqrt(1+4+9+16) = sqrt(30)
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $this->assertEqualsWithDelta(sqrt(30), $m->norm(), EPSILON);
+        $this->assertEqualsWithDelta(sqrt(30), $mat->norm(), EPSILON);
     }
 
     /**
@@ -41,11 +41,11 @@ class MatrixNormTest extends TestCase
     public function testNormFrobeniusNonSquare(): void
     {
         // [[1, 2, 3], [4, 5, 6]]: sqrt(1+4+9+16+25+36) = sqrt(91)
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertEqualsWithDelta(sqrt(91), $m->norm(), EPSILON);
+        $this->assertEqualsWithDelta(sqrt(91), $mat->norm(), EPSILON);
     }
 
     #endregion
@@ -58,11 +58,11 @@ class MatrixNormTest extends TestCase
     public function testNormP1(): void
     {
         // [[1, -2], [3, 4]]: col0 = |1|+|3| = 4, col1 = |-2|+|4| = 6 => 6
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, -2],
             [3, 4],
         ]);
-        $this->assertSame(6.0, $m->p1Norm());
+        $this->assertSame(6.0, $mat->p1Norm());
     }
 
     #endregion
@@ -75,11 +75,11 @@ class MatrixNormTest extends TestCase
     public function testNormPInf(): void
     {
         // [[1, -2], [3, 4]]: row0 = |1|+|-2| = 3, row1 = |3|+|4| = 7 => 7
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, -2],
             [3, 4],
         ]);
-        $this->assertSame(7.0, $m->pInfNorm());
+        $this->assertSame(7.0, $mat->pInfNorm());
     }
 
     #endregion
@@ -91,10 +91,10 @@ class MatrixNormTest extends TestCase
      */
     public function testNormZeroMatrix(): void
     {
-        $m = new Matrix(2, 2);
-        $this->assertSame(0.0, $m->norm());
-        $this->assertSame(0.0, $m->p1Norm());
-        $this->assertSame(0.0, $m->pInfNorm());
+        $mat = new Matrix(2, 2);
+        $this->assertSame(0.0, $mat->norm());
+        $this->assertSame(0.0, $mat->p1Norm());
+        $this->assertSame(0.0, $mat->pInfNorm());
     }
 
     #endregion

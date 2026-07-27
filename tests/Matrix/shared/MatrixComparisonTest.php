@@ -20,15 +20,15 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithIdenticalMatrices(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $this->assertTrue($a->equal($b));
+        $this->assertTrue($matA->equal($matB));
     }
 
     /**
@@ -36,15 +36,15 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithDifferentValues(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1, 2],
             [3, 5],
         ]);
-        $this->assertFalse($a->equal($b));
+        $this->assertFalse($matA->equal($matB));
     }
 
     /**
@@ -52,15 +52,15 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithDifferentDimensions(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $this->assertFalse($a->equal($b));
+        $this->assertFalse($matA->equal($matB));
     }
 
     /**
@@ -68,13 +68,13 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithArrayThrows(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $m->equal([
+        $mat->equal([
             [1, 2],
             [3, 4],
         ]);
@@ -86,14 +86,14 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithVectorThrows(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1],
             [2],
             [3],
         ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $m->equal(Vector::fromArray([1, 2, 3]));
+        $mat->equal(Vector::fromArray([1, 2, 3]));
     }
 
     /**
@@ -102,11 +102,11 @@ class MatrixComparisonTest extends TestCase
     public function testEqualWithStringThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $m->equal('not a matrix');
+        $mat->equal('not a matrix');
     }
 
     /**
@@ -115,11 +115,11 @@ class MatrixComparisonTest extends TestCase
     public function testEqualWithNullThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $m->equal(null);
+        $mat->equal(null);
     }
 
     /**
@@ -128,11 +128,11 @@ class MatrixComparisonTest extends TestCase
     public function testEqualWithIntThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $m->equal(42);
+        $mat->equal(42);
     }
 
     /**
@@ -140,9 +140,9 @@ class MatrixComparisonTest extends TestCase
      */
     public function testEqualWithEmptyMatrices(): void
     {
-        $a = new Matrix(0, 0);
-        $b = new Matrix(0, 0);
-        $this->assertTrue($a->equal($b));
+        $matA = new Matrix(0, 0);
+        $matB = new Matrix(0, 0);
+        $this->assertTrue($matA->equal($matB));
     }
 
     #endregion
@@ -154,15 +154,15 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithCloseValues(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1.0 + 1e-12, 2.0 - 1e-12],
             [3.0 + 1e-12, 4.0 - 1e-12],
         ]);
-        $this->assertTrue($a->approxEqual($b));
+        $this->assertTrue($matA->approxEqual($matB));
     }
 
     /**
@@ -170,15 +170,15 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithValuesOutsideTolerance(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1.1, 2.0],
             [3.0, 4.0],
         ]);
-        $this->assertFalse($a->approxEqual($b));
+        $this->assertFalse($matA->approxEqual($matB));
     }
 
     /**
@@ -186,14 +186,14 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithDifferentDimensions(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $b = Matrix::fromArray([
+        $matB = Matrix::fromArray([
             [1.0, 2.0, 3.0],
         ]);
-        $this->assertFalse($a->approxEqual($b));
+        $this->assertFalse($matA->approxEqual($matB));
     }
 
     /**
@@ -201,13 +201,13 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithArrayThrows(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $m->approxEqual([
+        $mat->approxEqual([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
@@ -219,14 +219,14 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithVectorThrows(): void
     {
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.0],
             [2.0],
             [3.0],
         ]);
 
         $this->expectException(InvalidArgumentException::class);
-        $m->approxEqual(Vector::fromArray([1.0, 2.0, 3.0]));
+        $mat->approxEqual(Vector::fromArray([1.0, 2.0, 3.0]));
     }
 
     /**
@@ -235,11 +235,11 @@ class MatrixComparisonTest extends TestCase
     public function testApproxEqualWithStringThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $m->approxEqual('not a matrix');
+        $mat->approxEqual('not a matrix');
     }
 
     /**
@@ -248,11 +248,11 @@ class MatrixComparisonTest extends TestCase
     public function testApproxEqualWithIntThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $m->approxEqual(42);
+        $mat->approxEqual(42);
     }
 
     /**
@@ -261,11 +261,11 @@ class MatrixComparisonTest extends TestCase
     public function testApproxEqualWithNullThrows(): void
     {
         $this->expectException(InvalidArgumentException::class);
-        $m = Matrix::fromArray([
+        $mat = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $m->approxEqual(null);
+        $mat->approxEqual(null);
     }
 
     /**
@@ -273,7 +273,7 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithCustomTightTolerance(): void
     {
-        $a = Matrix::fromArray([
+        $matA = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
@@ -283,14 +283,14 @@ class MatrixComparisonTest extends TestCase
             [1.0 + 1e-8, 2.0],
             [3.0, 4.0],
         ]);
-        $this->assertFalse($a->approxEqual($close, relTol: 1e-15, absTol: 1e-15));
+        $this->assertFalse($matA->approxEqual($close, relTol: 1e-15, absTol: 1e-15));
 
         // But values that are actually equal should still pass.
         $same = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $this->assertTrue($a->approxEqual($same, relTol: 1e-15, absTol: 1e-15));
+        $this->assertTrue($matA->approxEqual($same, relTol: 1e-15, absTol: 1e-15));
     }
 
     /**
@@ -298,9 +298,9 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithEmptyMatrices(): void
     {
-        $a = new Matrix(0, 0);
-        $b = new Matrix(0, 0);
-        $this->assertTrue($a->approxEqual($b));
+        $matA = new Matrix(0, 0);
+        $matB = new Matrix(0, 0);
+        $this->assertTrue($matA->approxEqual($matB));
     }
 
     #endregion
