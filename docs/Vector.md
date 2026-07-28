@@ -18,7 +18,7 @@ The `Vector` class provides a general-purpose numeric vector with support for:
 Vectors are directionless (neither row nor column). When converted to a `Matrix`, use `toColumnMatrix()` or
 `toRowMatrix()` to pick the orientation explicitly.
 
-Size-0 vectors are allowed.
+Vectors with a count of 0 are allowed.
 
 ---
 
@@ -30,15 +30,15 @@ Size-0 vectors are allowed.
 public float $magnitude { get; }
 ```
 
-The magnitude (Euclidean norm) of the vector. Automatically computed and cached on first access, and invalidated
-whenever the vector is mutated via `set()`.
+The magnitude (Euclidean norm) of the vector. Computed on demand from the current elements every time it's read - not
+cached, so it's always up to date even after mutating the vector via `set()`.
 
 For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 
-### $size
+### $count
 
 ```php
-public int $size { get; }
+public int $count { get; }
 ```
 
 The number of elements in the vector.
@@ -50,18 +50,18 @@ The number of elements in the vector.
 ### \_\_construct()
 
 ```php
-public function __construct(int $size)
+public function __construct(int $count)
 ```
 
 Create a new vector with the specified number of elements, all initialised to zero.
 
 **Parameters:**
 
-- `$size` (int) - Number of elements.
+- `$count` (int) - Number of elements.
 
 **Throws:**
 
-- `DomainException` if size is negative.
+- `DomainException` if count is negative.
 
 **Examples:**
 
@@ -98,7 +98,7 @@ non-sequential array is rejected rather than silently re-indexed. Integer values
 ```php
 $v1 = Vector::fromArray([1, 2, 3]);
 $v2 = Vector::fromArray([3.14, -1, 0]);
-$v3 = Vector::fromArray([]);  // Size-0 vector
+$v3 = Vector::fromArray([]);  // Count-0 vector
 
 // Non-sequential arrays are rejected, not re-indexed
 Vector::fromArray([5 => 10, 10 => 20]);  // throws DomainException
@@ -216,7 +216,7 @@ echo $v->get(2);  // 30.0
 public function set(int $index, float $value): void
 ```
 
-Set a vector element by index. Integer values are cast to float. Invalidates the cached `magnitude`.
+Set a vector element by index. Integer values are cast to float.
 
 **Parameters:**
 
@@ -276,7 +276,7 @@ public function equal(mixed $other): bool
 
 Check if this vector exactly equals another value.
 
-Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
+Two vectors are equal if they have the same count and all corresponding elements are exactly equal.
 
 **Parameters:**
 
@@ -284,7 +284,7 @@ Two vectors are equal if they have the same size and all corresponding elements 
 
 **Returns:**
 
-- `bool` - True if the vectors are the same size and all elements are exactly equal.
+- `bool` - True if the vectors are the same count and all elements are exactly equal.
 
 **Throws:** `InvalidArgumentException` if `$other` is not a `Vector`.
 
@@ -327,7 +327,7 @@ then relative tolerance.
 
 **Returns:**
 
-- `bool` - True if the vectors are the same size and all elements are approximately equal.
+- `bool` - True if the vectors are the same count and all elements are approximately equal.
 
 **Throws:**
 
@@ -349,6 +349,12 @@ var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
 // Anything else throws, rather than silently returning false
 $v1->approxEqual('string');  // throws InvalidArgumentException
 ```
+
+---
+
+## Comparison Operators
+
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 
 ---
 
@@ -414,7 +420,7 @@ Add another vector to this one, element by element.
 
 **Throws:**
 
-- `LengthException` if vectors have different sizes.
+- `LengthException` if vectors have different counts.
 
 **Examples:**
 
@@ -442,7 +448,7 @@ Subtract another vector from this one, element by element.
 
 **Throws:**
 
-- `LengthException` if vectors have different sizes.
+- `LengthException` if vectors have different counts.
 
 **Examples:**
 
@@ -460,7 +466,7 @@ public function mul(float|Matrix $other): self
 
 Multiply this vector by a scalar or a matrix.
 
-Multiplying by a matrix (_v \* A_) treats this vector as a row vector; its size must equal the matrix's row count. To
+Multiplying by a matrix (_v \* A_) treats this vector as a row vector; its count must equal the matrix's row count. To
 multiply a Matrix by a Vector in order to get a new Vector, there's no Matrix method for this. Instead, use this method,
 but transpose the Matrix first, e.g. `$v->mul($matA->t())`.
 
@@ -476,7 +482,7 @@ See [`Matrix::mul()`](Matrix.md#mul) for more information.
 
 **Throws:**
 
-- `LengthException` if multiplying by a matrix whose row count doesn't equal this vector's size.
+- `LengthException` if multiplying by a matrix whose row count doesn't equal this vector's count.
 
 **Examples:**
 
@@ -537,7 +543,7 @@ Calculate the Hadamard product (element-wise product) of this vector with anothe
 
 **Throws:**
 
-- `LengthException` if vectors have different sizes.
+- `LengthException` if vectors have different counts.
 
 **Examples:**
 
@@ -565,7 +571,7 @@ Calculate the Hadamard division (element-wise quotient) of this vector by anothe
 
 **Throws:**
 
-- `LengthException` if vectors have different sizes.
+- `LengthException` if vectors have different counts.
 - `ArithmeticException` if any element of `$other` is zero.
 
 **Examples:**
@@ -598,7 +604,7 @@ Calculate the dot product of this vector with another vector.
 
 **Throws:**
 
-- `LengthException` if vectors have different sizes.
+- `LengthException` if vectors have different counts.
 
 **Examples:**
 
@@ -614,7 +620,7 @@ $result = $v1->dot($v2);  // 32.0 (1*4 + 2*5 + 3*6)
 public function cross(self $other): self
 ```
 
-Calculate the cross product of this vector with another vector. Both vectors must be size 3.
+Calculate the cross product of this vector with another vector. Both vectors must have a count of 3.
 
 **Parameters:**
 
@@ -626,7 +632,7 @@ Calculate the cross product of this vector with another vector. Both vectors mus
 
 **Throws:**
 
-- `LengthException` if either vector is not size 3.
+- `LengthException` if either vector's count isn't 3.
 
 **Examples:**
 
@@ -643,7 +649,7 @@ public function outer(self $other): Matrix
 ```
 
 Calculate the outer product of this vector with another vector. Unlike `dot()` and `cross()`, the vectors don't need to
-be the same size - the result is always an m×n `Matrix`, where m is this vector's size and n is `$other`'s size.
+have the same count - the result is always an m×n `Matrix`, where m is this vector's count and n is `$other`'s count.
 
 **Parameters:**
 
@@ -736,7 +742,7 @@ echo $v->prod();  // 24.0
 public function count(): int
 ```
 
-Get the number of elements in the vector, via the `Countable` interface. Equivalent to the `size` property.
+Get the number of elements in the vector, via the `Countable` interface. Equivalent to the `count` property.
 
 **Examples:**
 

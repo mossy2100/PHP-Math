@@ -15,36 +15,36 @@ class VectorConstructorTest extends TestCase
     #region Method __construct() tests.
 
     /**
-     * Test constructor with size zero creates an empty vector.
+     * Test constructor with count zero creates an empty vector.
      */
-    public function testConstructorWithSizeZero(): void
+    public function testConstructorWithCountZero(): void
     {
         $v = new Vector(0);
-        $this->assertSame(0, $v->size);
+        $this->assertSame(0, $v->count);
     }
 
     /**
-     * Test constructor with size one creates a single-element vector.
+     * Test constructor with count one creates a single-element vector.
      */
-    public function testConstructorWithSizeOne(): void
+    public function testConstructorWithCountOne(): void
     {
         $v = new Vector(1);
-        $this->assertSame(1, $v->size);
+        $this->assertSame(1, $v->count);
     }
 
     /**
-     * Test constructor with size five creates a five-element vector.
+     * Test constructor with count five creates a five-element vector.
      */
-    public function testConstructorWithSizeFive(): void
+    public function testConstructorWithCountFive(): void
     {
         $v = new Vector(5);
-        $this->assertSame(5, $v->size);
+        $this->assertSame(5, $v->count);
     }
 
     /**
-     * Test constructor with negative size throws DomainException.
+     * Test constructor with negative count throws DomainException.
      */
-    public function testConstructorWithNegativeSizeThrows(): void
+    public function testConstructorWithNegativeCountThrows(): void
     {
         $this->expectException(DomainException::class);
         new Vector(-1);

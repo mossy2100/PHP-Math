@@ -10,9 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 ## [Unreleased]
 
 > **Version not yet decided.** This batch includes several breaking changes (exception types changed throughout, several
-> conversion methods removed, comparison methods narrowed to stricter type acceptance, `Vector::$magnitude` converted
-> from a property to a method) that likely warrant a major version bump — to be decided before this is tagged as a
-> release.
+> conversion methods removed, comparison methods narrowed to stricter type acceptance) that likely warrant a major
+> version bump — to be decided before this is tagged as a release.
 
 ### Added
 
@@ -34,6 +33,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor any
   other existing method computes directly.
 - **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
+- **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
+  branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
 - **`Vector::outer()`** — outer product of two vectors, returning an m×n `Matrix`. Unlike `dot()`/`cross()`, the two
   vectors don't need to be the same size.
 - **`Vector::normalize()`** — normalizes the vector to unit magnitude (1) in place, mutating it and returning `void`.
@@ -64,6 +65,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **`Vector::$size` renamed to `$count`**, for consistency with `Matrix`'s `rowCount`/`columnCount` naming and to
+  reduce the risk of confusion with `$magnitude` (both describe "how big is this vector" in a loose sense, but only
+  one of them is the element count). Purely a rename — behavior, including the `Countable::count()` method (which
+  now just returns `$this->count`), is unchanged. Update `$v->size` to `$v->count`, and `new Vector(size: ...)` to
+  `new Vector(count: ...)` if you're using named arguments.
 - **`Vector::normalize()` renamed to `normalized()`** — it returns a new normalized vector rather than mutating in
   place, so it needed the `-d` suffix to make room for a genuine in-place `normalize()` (see Added) without the two
   being confusable.
@@ -104,11 +110,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   (and `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each mean something distinct; keeping `j` as
   a synonym for `i` on `Complex` would make that ambiguous. A string like `'3+4j'` now throws `FormatException` instead
   of parsing as `3 + 4i`.
-- **`Vector::$magnitude` is now a method, `magnitude()`, instead of a readonly property.** Unlike `Complex`'s
-  `$magnitude`/`$phase` (still properties — see below), `Vector` is mutable, so a cached property value needed explicit
-  invalidation on every mutating call (`offsetSet()` was resetting it to `null`). Rather than keep that bookkeeping in
-  sync as more mutating methods are added, the value is now computed directly from the current elements on every call,
-  and the caching machinery is gone entirely. Update `$v->magnitude` to `$v->magnitude()`.
+- **`Vector::$magnitude` is no longer cached.** It's still a readonly property (unlike the brief detour through a
+  `magnitude()` method earlier in this Unreleased cycle), but the property hook now recomputes it from the current
+  elements on every read instead of caching the value and invalidating it on mutation (`offsetSet()` no longer needs
+  to reset it to `null`). Same reasoning as `Complex`'s `$magnitude`/`$phase` below: keeping a cache in sync forever
+  needs every mutating method to remember to invalidate it, so it's simpler to just not cache.
 - **`Complex::$magnitude`/`$phase`** are now computed eagerly in the constructor instead of lazily on first access via
   a property hook. `Complex` is immutable, so laziness was never load-bearing for correctness — the values themselves
   are unchanged — but it did mean both properties were internally `?float` with a caching `get` hook, requiring
@@ -183,15 +189,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `float|self` (returning `self`). The polymorphic return type forced `assert($result instanceof self)` at every
   internal call site that multiplies by a known scalar or `Matrix` (`neg()`, `div()`, `pow()`, `sqr()`, and
   `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
-  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above.
-- **`Matrix::mulVector()`** — added earlier in this Unreleased cycle as a dedicated, non-polymorphic replacement for
-  `Matrix::mul()`'s old `Vector` branch, removed again for the same reason: a dedicated method for "matrix times vector"
-  (_Ax_) forces the same unsatisfying choice `Matrix::mul()`'s `Vector` branch did — return a `Vector` (needing a
-  `self|Vector` union return type PHPStan can't narrow without `assert()`, and breaking the fluent API), or a
-  single-column `Matrix` (technically valid but not what callers actually want from _Ax_). If `oceanmoon/math-ext` is
-  loaded, use the `*` operator instead (`$A * $v`), which isn't constrained by a declared PHP return type. Without the
-  extension, compose it explicitly: `$A->mul($v->toColumnMatrix())->getColumn(0)`, or via the transpose identity
-  `(Av)ᵀ = vᵀAᵀ`: `$v->mul($A->t())`. See `Matrix::mul()`'s docblock for the fuller explanation.
+  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
+  `Matrix::mulVector()` instead (see Added).
 - **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
   `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix multiplication
   isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order it means — an

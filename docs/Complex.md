@@ -331,6 +331,12 @@ $z1->approxEqual('3.0000000001+4.0000000001i');  // throws InvalidArgumentExcept
 
 ---
 
+## Comparison Operators
+
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+
+---
+
 ## Unary Arithmetic Methods
 
 ### neg()

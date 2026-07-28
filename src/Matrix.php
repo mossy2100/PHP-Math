@@ -44,9 +44,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * The matrix data: one Vector per row.
      *
-     * This must be private because even if it's private(set) if they can get $this->data they could add new elements
-     * (inadvertently sizing the matrix without changing rowCount/colCount or making it non-rectangular) or they could
-     * set elements to non-numbers.
+     * This must be private because even if it's private(set) if they can get $this->data they could add new elements,
+     * inadvertently sizing the matrix without changing rowCount/colCount, or making it store non-Vectors or Vectors of
+     * the wrong count.
      *
      * Each row Vector's object identity is established once (in the constructor or a factory method) and never
      * replaced afterward -- methods that change row content (set(), setRow()) mutate the existing Vector in place
@@ -412,7 +412,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
         }
 
-        assert($row < count($this->data) && $col < $this->data[$row]->size);
+        assert($row < count($this->data) && $col < $this->data[$row]->count);
         $this->data[$row]->set($col, $value);
     }
 
@@ -427,7 +427,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param int $row Row index (0-based).
      * @param Vector $vec The row Vector.
      * @throws OutOfRangeException If row index is outside valid range.
-     * @throws LengthException If the Vector is the wrong size.
+     * @throws LengthException If the Vector has the wrong count.
      */
     public function setRow(int $row, Vector $vec): void
     {
@@ -439,10 +439,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         }
 
         // Check length.
-        $vectorSize = count($vec);
-        if ($vectorSize !== $this->columnCount) {
+        $vectorCount = count($vec);
+        if ($vectorCount !== $this->columnCount) {
             throw new LengthException(
-                "Cannot set row due to incorrect Vector size: $vectorSize. Expected {$this->columnCount}."
+                "Cannot set row due to incorrect Vector count: $vectorCount. Expected {$this->columnCount}."
             );
         }
 
@@ -470,16 +470,16 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         }
 
         // Check length.
-        $vectorSize = count($vec);
-        if ($vectorSize !== $this->rowCount) {
+        $vectorCount = count($vec);
+        if ($vectorCount !== $this->rowCount) {
             throw new LengthException(
-                "Cannot set column due to incorrect Vector size: $vectorSize. Expected {$this->rowCount}."
+                "Cannot set column due to incorrect Vector count: $vectorCount. Expected {$this->rowCount}."
             );
         }
 
         // Set values.
         for ($row = 0; $row < $this->rowCount; $row++) {
-            assert($row < count($this->data) && $col < $this->data[$row]->size);
+            assert($row < count($this->data) && $col < $this->data[$row]->count);
             $this->data[$row]->set($col, $vec->get($row));
         }
     }
@@ -764,29 +764,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Multiply this matrix by a scalar or another matrix.
+     * Multiply this Matrix by a scalar or another Matrix.
      *
-     * There's no `Vector` form. "Matrix times vector" (_Ax_, treating the vector as a column vector) is a valid
-     * operation, but a dedicated method for it forces an unsatisfying choice: return a `Vector` - meaning this method
-     * would need a `self|Vector` union return type, which PHPStan can't narrow by argument type without `assert()`
-     * at every call site, and which breaks the fluent API (chaining another `Matrix` method straight off the result
-     * no longer type-checks without narrowing first) - or return a single-column `Matrix`, which is technically
-     * valid (_Ax_ is an m×1 matrix) but not what callers actually want from _Ax_.
-     *
-     * To multiply this matrix by a vector (_Ax_):
-     * - If `oceanmoon/math-ext` is loaded, use the `*` operator (`$matA * $v`) - operator overloads aren't constrained
-     *   by a declared PHP return type, so they don't have this problem. See the extension's `docs/Matrix.md`.
-     * - Otherwise, compose it explicitly from existing methods, in either of these equivalent ways:
-     *   ```php
-     *   $u = $matA->mul($v->toColumnMatrix())->getColumn(0);
-     *   // or, via the transpose identity (Av)ᵀ = vᵀAᵀ:
-     *   $u = $v->mul($matA->t());
-     *   ```
-     *   The second form is just `Vector::mul()`'s own `Matrix` branch, which already does `$v->toRowMatrix()->
-     *   mul($other)->getRow(0)` internally - so it needs no explicit transpose of `$v` or of the result: unlike a
-     *   `Matrix`, a `Vector` has no row/column orientation of its own, so "vᵀ" is just `$v` itself, and the
-     *   untransposed result `bᵀᵀ = b` needs no further conversion either, since row 0 of `(Av)ᵀ` holds the same
-     *   values as column 0 of `Av`. To go the other way (_xA_), use `Vector::mul()` directly.
+     * To multiply by a Vector, use `mulVector()` instead.
      *
      * @param float|self $other Number or matrix to multiply by.
      * @return self New matrix representing the product.
@@ -990,6 +970,25 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     #endregion
 
     #region Linear algebra methods
+
+    /**
+     * Multiply this matrix by a vector: Ax.
+     *
+     * The vector is treated as a column vector; its count must equal this matrix's column count. To go the other way
+     * (xA), use `Vector::mul()` instead.
+     *
+     * This operation is not handled by the mul() method because the return type is different.
+     * Although we could set up mul() to return Matrix|Vector, this causes problems for static analysis and breaks the
+     * fluent API.
+     *
+     * @param Vector $vector The vector to multiply by.
+     * @return Vector New vector representing the result.
+     * @throws LengthException If the vector's count doesn't equal this matrix's column count.
+     */
+    public function mulVector(Vector $vector): Vector
+    {
+        return $this->mul($vector->toColumnMatrix())->getColumn(0);
+    }
 
     /**
      * Get the transpose of this matrix.

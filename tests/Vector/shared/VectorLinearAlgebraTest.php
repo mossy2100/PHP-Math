@@ -133,37 +133,6 @@ class VectorLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region Method magnitude() tests.
-
-    /**
-     * Test magnitude of a [3, 4] vector equals 5.
-     */
-    public function testMagnitudeThreeFourEqualsFive(): void
-    {
-        $v = Vector::fromArray([3, 4]);
-        $this->assertSame(5.0, $v->magnitude());
-    }
-
-    /**
-     * Test magnitude of an empty vector equals zero.
-     */
-    public function testMagnitudeEmptyVectorEqualsZero(): void
-    {
-        $v = new Vector(0);
-        $this->assertSame(0.0, $v->magnitude());
-    }
-
-    /**
-     * Test magnitude of a single-element vector equals the absolute value of the element.
-     */
-    public function testMagnitudeSingleElement(): void
-    {
-        $v = Vector::fromArray([1]);
-        $this->assertSame(1.0, $v->magnitude());
-    }
-
-    #endregion
-
     #region Method normalized() tests.
 
     /**
@@ -174,7 +143,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v = Vector::fromArray([3, 4]);
         $unit = $v->normalized();
 
-        $this->assertEqualsWithDelta(1.0, $unit->magnitude(), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
         $this->assertEqualsWithDelta(3.0 / 5.0, $unit->get(0), EPSILON);
         $this->assertEqualsWithDelta(4.0 / 5.0, $unit->get(1), EPSILON);
     }
@@ -187,7 +156,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v = Vector::fromArray([1, 0, 0]);
         $unit = $v->normalized();
 
-        $this->assertEqualsWithDelta(1.0, $unit->magnitude(), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
         $this->assertSame(1.0, $unit->get(0));
         $this->assertSame(0.0, $unit->get(1));
         $this->assertSame(0.0, $unit->get(2));

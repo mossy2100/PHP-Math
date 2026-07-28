@@ -21,7 +21,7 @@ class VectorFactoryTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $this->assertSame([1.0, 2.0, 3.0], $v->toArray());
-        $this->assertSame(3, $v->size);
+        $this->assertSame(3, $v->count);
     }
 
     /**
@@ -43,12 +43,12 @@ class VectorFactoryTest extends TestCase
     }
 
     /**
-     * Test fromArray with empty array creates a size-zero vector.
+     * Test fromArray with empty array creates a count-zero vector.
      */
     public function testFromArrayWithEmptyArray(): void
     {
         $v = Vector::fromArray([]);
-        $this->assertSame(0, $v->size);
+        $this->assertSame(0, $v->count);
         $this->assertSame([], $v->toArray());
     }
 

@@ -477,6 +477,12 @@ var_dump($r2->greaterThan(0));          // true
 
 ---
 
+## Comparison Operators
+
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+
+---
+
 ## Unary Arithmetic Methods
 
 ### abs()

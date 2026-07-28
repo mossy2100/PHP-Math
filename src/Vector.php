@@ -34,7 +34,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * The number of elements in the vector.
      */
-    private(set) int $size;
+    private(set) int $count;
 
     /**
      * The vector data.
@@ -43,24 +43,32 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     private array $data;
 
+    /**
+     * Calculate the magnitude (norm) of the vector.
+     */
+    public float $magnitude
+    {
+        get => sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
+    }
+
     #endregion
 
     #region Constructor
 
     /**
-     * Create a new vector with the specified size.
+     * Create a new vector with the specified count.
      *
-     * @param int $size Number of elements.
-     * @throws DomainException If size is negative.
+     * @param int $count Number of elements.
+     * @throws DomainException If count is negative.
      */
-    public function __construct(int $size)
+    public function __construct(int $count)
     {
-        if ($size < 0) {
-            throw new DomainException("Cannot create Vector with negative size: $size.");
+        if ($count < 0) {
+            throw new DomainException("Cannot create Vector with negative count: $count.");
         }
 
-        $this->size = $size;
-        $this->data = array_fill(0, $size, 0.0);
+        $this->count = $count;
+        $this->data = array_fill(0, $count, 0.0);
     }
 
     #endregion
@@ -144,8 +152,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function toColumnMatrix(): Matrix
     {
-        $result = new Matrix($this->size, 1);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new Matrix($this->count, 1);
+        for ($i = 0; $i < $this->count; $i++) {
             $result->set($i, 0, $this->data[$i]);
         }
         return $result;
@@ -178,7 +186,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.');
+            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->count - 1) . '.');
         }
 
         return $this->data[$index];
@@ -200,7 +208,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->size - 1) . '.');
+            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->count - 1) . '.');
         }
 
         // Check the value is finite.
@@ -219,7 +227,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     public function normalize(): void
     {
         $unit = $this->normalized();
-        for ($i = 0; $i < $this->size; $i++) {
+        for ($i = 0; $i < $this->count; $i++) {
             $this->set($i, $unit->get($i));
         }
     }
@@ -231,10 +239,10 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Check if this Vector equals another.
      *
-     * Two vectors are equal if they have the same size and all corresponding elements are exactly equal.
+     * Two vectors are equal if they have the same count and all corresponding elements are exactly equal.
      *
      * @param mixed $other The value to compare with.
-     * @return bool True if the vectors are the same size and all elements are equal.
+     * @return bool True if the vectors have the same count and all elements are equal.
      * @throws InvalidArgumentException If $other is not a Vector.
      */
     /** @disregard P1128 */
@@ -249,13 +257,13 @@ final class Vector implements Stringable, Countable, ArrayAccess
             );
         }
 
-        // Check sizes are equal.
-        if ($this->size !== $other->size) {
+        // Check counts are equal.
+        if ($this->count !== $other->count) {
             return false;
         }
 
         // Check elements are equal.
-        for ($i = 0; $i < $this->size; $i++) {
+        for ($i = 0; $i < $this->count; $i++) {
             if ($this->data[$i] !== $other->data[$i]) {
                 return false;
             }
@@ -273,7 +281,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @param mixed $other The value to compare with.
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
-     * @return bool True if the vectors are the same size and all elements are approximately equal.
+     * @return bool True if the vectors have the same count and all elements are approximately equal.
      * @throws InvalidArgumentException If $other is not a Vector.
      * @throws DomainException If either tolerance is negative.
      * @see Floats::approxEqual()
@@ -292,13 +300,13 @@ final class Vector implements Stringable, Countable, ArrayAccess
             );
         }
 
-        // Check sizes are equal.
-        if ($this->size !== $other->size) {
+        // Check counts are equal.
+        if ($this->count !== $other->count) {
             return false;
         }
 
         // Check elements are approximately equal.
-        for ($i = 0; $i < $this->size; $i++) {
+        for ($i = 0; $i < $this->count; $i++) {
             if (!Floats::approxEqual($this->data[$i], $other->data[$i], $relTol, $absTol)) {
                 return false;
             }
@@ -329,8 +337,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function reciprocal(): self
     {
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             if ($this->data[$i] === 0.0) {
                 throw new ArithmeticException("Cannot compute reciprocal of zero at index $i.");
             }
@@ -349,18 +357,20 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to add.
      * @return self New vector representing the sum.
-     * @throws LengthException If vectors have different sizes.
+     * @throws LengthException If vectors have different counts.
      */
     public function add(self $other): self
     {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
-            throw new LengthException("Cannot add Vector of incorrect size: {$other->size}. Expected {$this->size}.");
+        // Check if vectors have the same count.
+        if ($this->count !== $other->count) {
+            throw new LengthException(
+                "Cannot add Vector of incorrect count: {$other->count}. Expected {$this->count}."
+            );
         }
 
         // Add the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             $result->set($i, $this->data[$i] + $other->data[$i]);
         }
 
@@ -372,20 +382,20 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to subtract.
      * @return self New vector representing the difference.
-     * @throws LengthException If vectors have different sizes.
+     * @throws LengthException If vectors have different counts.
      */
     public function sub(self $other): self
     {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
+        // Check if vectors have the same count.
+        if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot subtract Vector of incorrect size: {$other->size}. Expected {$this->size}."
+                "Cannot subtract Vector of incorrect count: {$other->count}. Expected {$this->count}."
             );
         }
 
         // Subtract the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             $result->set($i, $this->data[$i] - $other->data[$i]);
         }
 
@@ -395,21 +405,21 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Multiply this vector by a scalar or a matrix.
      *
-     * Multiplying by a matrix (_xA_) treats this vector as a row vector; its size must equal the matrix's row count.
+     * Multiplying by a matrix (_xA_) treats this vector as a row vector; its count must equal the matrix's row count.
      * To go the other way (_Ax_), there's no dedicated method - see `Matrix::mul()`'s docblock for the two
      * composable alternatives, and why a dedicated method for it isn't provided.
      *
      * @param float|Matrix $other Number or matrix to multiply by.
      * @return self New vector representing the product.
-     * @throws LengthException If multiplying by a matrix whose row count doesn't equal this vector's size.
+     * @throws LengthException If multiplying by a matrix whose row count doesn't equal this vector's count.
      */
     public function mul(float|Matrix $other): self
     {
         // Multiply vector by a float.
         if (is_float($other)) {
             // Multiply each element by the scalar.
-            $result = new self($this->size);
-            for ($i = 0; $i < $this->size; $i++) {
+            $result = new self($this->count);
+            for ($i = 0; $i < $this->count; $i++) {
                 $result->set($i, $this->data[$i] * $other);
             }
 
@@ -417,7 +427,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Multiply vector by a matrix. Convert the vector to a single-row matrix and multiply by the given matrix.
-        // The call to Matrix::mul() will fail if the vector size does not equal the number of rows in the matrix.
+        // The call to Matrix::mul() will fail if the vector count does not equal the number of rows in the matrix.
         $result = $this->toRowMatrix()->mul($other);
 
         // Convert the first and only row of the resulting matrix into a vector.
@@ -439,8 +449,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Divide the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             $result->set($i, $this->data[$i] / $scalar);
         }
 
@@ -452,21 +462,21 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to multiply element-wise with.
      * @return self New vector representing the Hadamard product.
-     * @throws LengthException If vectors have different sizes.
+     * @throws LengthException If vectors have different counts.
      */
     public function hadamardMul(self $other): self
     {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
+        // Check if vectors have the same count.
+        if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute Hadamard product with Vector of incorrect size: {$other->size}. " .
-                "Expected {$this->size}."
+                "Cannot compute Hadamard product with Vector of incorrect count: {$other->count}. " .
+                "Expected {$this->count}."
             );
         }
 
         // Multiply the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             $result->set($i, $this->data[$i] * $other->data[$i]);
         }
 
@@ -478,22 +488,22 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to divide element-wise by.
      * @return self New vector representing the Hadamard quotient.
-     * @throws LengthException If vectors have different sizes.
+     * @throws LengthException If vectors have different counts.
      * @throws ArithmeticException If any element of $other is zero.
      */
     public function hadamardDiv(self $other): self
     {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
+        // Check if vectors have the same count.
+        if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute Hadamard quotient with Vector of incorrect size: {$other->size}. " .
-                "Expected {$this->size}."
+                "Cannot compute Hadamard quotient with Vector of incorrect count: {$other->count}. " .
+                "Expected {$this->count}."
             );
         }
 
         // Divide the vectors element-wise.
-        $result = new self($this->size);
-        for ($i = 0; $i < $this->size; $i++) {
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
             if ($other->data[$i] === 0.0) {
                 throw new ArithmeticException("Cannot divide by zero at index $i.");
             }
@@ -512,20 +522,20 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to calculate dot product with.
      * @return float The dot product.
-     * @throws LengthException If vectors have different sizes.
+     * @throws LengthException If vectors have different counts.
      */
     public function dot(self $other): float
     {
-        // Check if vectors have the same size.
-        if ($this->size !== $other->size) {
+        // Check if vectors have the same count.
+        if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute dot product with Vector of incorrect size: {$other->size}. Expected {$this->size}."
+                "Cannot compute dot product with Vector of incorrect count: {$other->count}. Expected {$this->count}."
             );
         }
 
         // Calculate the dot product element-wise.
         $result = 0.0;
-        for ($i = 0; $i < $this->size; $i++) {
+        for ($i = 0; $i < $this->count; $i++) {
             $result += $this->data[$i] * $other->data[$i];
         }
 
@@ -533,23 +543,23 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Calculate the cross product of this vector with another vector. Both must be size 3.
+     * Calculate the cross product of this vector with another vector. Both must have a count of 3.
      *
      * @param self $other Vector to calculate cross product with.
      * @return self New vector representing the cross product.
-     * @throws LengthException If either vector is not of size 3.
+     * @throws LengthException If either vector's count isn't 3.
      */
     public function cross(self $other): self
     {
-        // Check if vectors are size 3.
-        if ($this->size !== 3) {
+        // Check if vectors have a count of 3.
+        if ($this->count !== 3) {
             throw new LengthException(
-                'Cannot compute cross product with first Vector size: ' . $this->size . '. Must be 3.'
+                'Cannot compute cross product with first Vector count: ' . $this->count . '. Must be 3.'
             );
         }
-        if ($other->size !== 3) {
+        if ($other->count !== 3) {
             throw new LengthException(
-                'Cannot compute cross product with second Vector size: ' . $other->size . '. Must be 3.'
+                'Cannot compute cross product with second Vector count: ' . $other->count . '. Must be 3.'
             );
         }
 
@@ -563,26 +573,16 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Calculate the outer product of this vector with another vector.
      *
-     * Unlike dot() and cross(), the vectors don't need to be the same size - the result is always an m×n Matrix,
-     * where m is this vector's size and n is $other's size.
+     * Unlike dot() and cross(), the vectors don't need to be the same count - the result is always an m×n Matrix,
+     * where m is this vector's count and n is $other's count.
      *
      * @param self $other Vector to calculate outer product with.
      * @return Matrix New matrix representing the outer product.
      */
     public function outer(self $other): Matrix
     {
-        // Treat this vector as a column matrix and $other as a row matrix, then multiply.
+        // Treat $this vector as a column matrix and $other as a row matrix, then multiply.
         return $this->toColumnMatrix()->mul($other->toRowMatrix());
-    }
-
-    /**
-     * Calculate the magnitude (norm) of the vector.
-     *
-     * @return float The magnitude. 0.0 for an empty or zero vector.
-     */
-    public function magnitude(): float
-    {
-        return sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
     }
 
     /**
@@ -593,7 +593,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function normalized(): self
     {
-        return $this->div($this->magnitude());
+        return $this->div($this->magnitude);
     }
 
     #endregion
@@ -628,7 +628,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // Countable
     public function count(): int
     {
-        return $this->size;
+        return $this->count;
     }
 
     #endregion
@@ -644,7 +644,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #[Override] // ArrayAccess
     public function offsetExists(mixed $offset): bool
     {
-        return is_int($offset) && $offset >= 0 && $offset < $this->size;
+        return is_int($offset) && $offset >= 0 && $offset < $this->count;
     }
 
     /**
@@ -693,7 +693,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Unset is not supported for Vector, which has a fixed size and contains only floats.
+     * Unset is not supported for Vector, which has a fixed count and contains only floats.
      *
      * @param mixed $offset Index.
      * @throws LogicException Always throws.

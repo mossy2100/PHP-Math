@@ -67,13 +67,13 @@ class VectorAggregationTest extends TestCase
     #region Method count() tests.
 
     /**
-     * Test count() matches size for a non-empty vector.
+     * Test count() matches the $count property for a non-empty vector.
      */
     public function testCount(): void
     {
         $v = new Vector(5);
         $this->assertSame(5, $v->count());
-        $this->assertSame($v->size, $v->count());
+        $this->assertSame($v->count, $v->count());
     }
 
     /**
