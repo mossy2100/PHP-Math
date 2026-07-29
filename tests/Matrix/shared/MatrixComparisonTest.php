@@ -159,8 +159,14 @@ class MatrixComparisonTest extends TestCase
             [3.0, 4.0],
         ]);
         $matB = Matrix::fromArray([
-            [1.0 + 1e-12, 2.0 - 1e-12],
-            [3.0 + 1e-12, 4.0 - 1e-12],
+            [
+                1.0 + 1e-12,
+                2.0 - 1e-12,
+            ],
+            [
+                3.0 + 1e-12,
+                4.0 - 1e-12,
+            ],
         ]);
         $this->assertTrue($matA->approxEqual($matB));
     }
@@ -280,7 +286,10 @@ class MatrixComparisonTest extends TestCase
 
         // With an extremely tight tolerance, even tiny differences should fail.
         $close = Matrix::fromArray([
-            [1.0 + 1e-8, 2.0],
+            [
+                1.0 + 1e-8,
+                2.0,
+            ],
             [3.0, 4.0],
         ]);
         $this->assertFalse($matA->approxEqual($close, relTol: 1e-15, absTol: 1e-15));

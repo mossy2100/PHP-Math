@@ -49,6 +49,9 @@
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
+        },
+        "platform": {
+            "php": "8.4.0"
         }
     },
     "autoload": {
@@ -69,8 +72,8 @@
         "check": "vendor/bin/phpcs -s",
         "report": "vendor/bin/phpcs -q --report=summary",
         "analyze": "scripts/analyze",
-        "test": "php -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
-        "coverage": "php scripts/coverage-check.php",
+        "test": "php8.4 -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result",
+        "coverage": "php8.4 scripts/coverage-check.php",
         "coverage-report": "open build/coverage/index.html",
         "quality": [
             "@fix",

@@ -324,12 +324,18 @@ final class Rational implements Stringable
     {
         // If the numerator is 0, the integer part is 0 and the remainder is 0/1.
         if ($this->numerator === 0) {
-            return [0, new self(0)];
+            return [
+                0,
+                new self(0),
+            ];
         }
 
         // If the denominator is 1, the integer part is the numerator and the remainder is 0.
         if ($this->denominator === 1) {
-            return [$this->numerator, new self(0)];
+            return [
+                $this->numerator,
+                new self(0),
+            ];
         }
 
         // For proper fractions, the integer part is 0 and the remainder is the original fraction.
@@ -341,7 +347,10 @@ final class Rational implements Stringable
         // the original fraction.
         $int = intdiv($this->numerator, $this->denominator);
         $rem = $this->numerator % $this->denominator;
-        return [$int, new self($rem, $this->denominator)];
+        return [
+            $int,
+            new self($rem, $this->denominator),
+        ];
     }
 
     /**

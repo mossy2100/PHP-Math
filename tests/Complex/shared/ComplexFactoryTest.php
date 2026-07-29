@@ -252,7 +252,16 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromPolarVariousAngles(): void
     {
-        $angles = [0, M_PI / 6, M_PI / 4, M_PI / 3, M_PI / 2, M_PI, -M_PI / 2, -M_PI];
+        $angles = [
+            0,
+            M_PI / 6,
+            M_PI / 4,
+            M_PI / 3,
+            M_PI / 2,
+            M_PI,
+            -M_PI / 2,
+            -M_PI,
+        ];
 
         foreach ($angles as $angle) {
             $z = Complex::fromPolar(1.0, $angle);
@@ -443,12 +452,27 @@ class ComplexFactoryTest extends TestCase
     {
         $testCases = [
             [0, 0],
-            [M_PI / 6, M_PI / 6],
-            [M_PI / 4, M_PI / 4],
-            [M_PI / 3, M_PI / 3],
-            [M_PI / 2, M_PI / 2],
+            [
+                M_PI / 6,
+                M_PI / 6,
+            ],
+            [
+                M_PI / 4,
+                M_PI / 4,
+            ],
+            [
+                M_PI / 3,
+                M_PI / 3,
+            ],
+            [
+                M_PI / 2,
+                M_PI / 2,
+            ],
             [M_PI, M_PI],
-            [-M_PI / 2, -M_PI / 2],
+            [
+                -M_PI / 2,
+                -M_PI / 2,
+            ],
             [-M_PI, M_PI],  // -π wraps to π (excluded lower bound)
         ];
 

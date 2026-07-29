@@ -90,8 +90,14 @@ class MatrixConversionTest extends TestCase
     public function testToStringSuppressesFloatingPointNoise(): void
     {
         $mat = Matrix::fromArray([
-            [0.1 + 0.2, 1],
-            [2, 0.1 + 0.2],
+            [
+                0.1 + 0.2,
+                1,
+            ],
+            [
+                2,
+                0.1 + 0.2,
+            ],
         ]);
         $str = (string) $mat;
 

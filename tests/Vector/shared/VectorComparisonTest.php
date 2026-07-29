@@ -109,7 +109,11 @@ class VectorComparisonTest extends TestCase
     public function testApproxEqualWithCloseValues(): void
     {
         $v1 = Vector::fromArray([1.0, 2.0, 3.0]);
-        $v2 = Vector::fromArray([1.0 + 1e-12, 2.0 - 1e-12, 3.0 + 1e-12]);
+        $v2 = Vector::fromArray([
+            1.0 + 1e-12,
+            2.0 - 1e-12,
+            3.0 + 1e-12,
+        ]);
         $this->assertTrue($v1->approxEqual($v2));
     }
 

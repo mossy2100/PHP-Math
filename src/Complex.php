@@ -125,20 +125,20 @@ final class Complex implements Stringable, ArrayAccess
         $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
         if (preg_match("/^([+-]?)($rxNum)$/", $str, $matches)) {
             // Pattern: ±a (real only)
-            [, $realSign, $realVal] = $matches;
+            [$entire, $realSign, $realVal] = $matches;
             $imagSign = '';
             $imagVal = 0;
         } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]$/", $str, $matches)) {
             // Pattern: ±bi (imaginary only)
-            [, $imagSign, $imagVal] = $matches;
+            [$entire, $imagSign, $imagVal] = $matches;
             $realSign = '';
             $realVal = 0;
         } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)[iI]\$/", $str, $matches)) {
             // Pattern: ±a ± bi (real + imag)
-            [, $realSign, $realVal, $imagSign, $imagVal] = $matches;
+            [$entire, $realSign, $realVal, $imagSign, $imagVal] = $matches;
         } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
             // Pattern: ±bi ± a (imag + real)
-            [, $imagSign, $imagVal, $realSign, $realVal] = $matches;
+            [$entire, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
             throw new FormatException('Cannot convert string to Complex. Invalid format.');
         }
@@ -562,7 +562,9 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle special case of 0.
         if ($this->equal(0)) {
-            return [new self()];
+            return [
+                new self(),
+            ];
         }
 
         // Calculate the magnitude of the roots.

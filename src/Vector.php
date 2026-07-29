@@ -137,7 +137,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function toRowMatrix(): Matrix
     {
-        return Matrix::fromArray([$this->data]);
+        return Matrix::fromArray([
+            $this->data,
+        ]);
     }
 
     /**
