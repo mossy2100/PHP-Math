@@ -13,12 +13,11 @@ use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
-
-use function OceanMoon\Core\ex;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.
@@ -215,7 +214,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
         // Check the value is finite.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot set element to non-finite value: ?.', $value));
         }
 
         $this->data[$index] = $value;

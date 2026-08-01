@@ -11,13 +11,12 @@ use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Integers;
 use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxComparable;
 use OverflowException;
 use Override;
 use RoundingMode;
 use Stringable;
-
-use function OceanMoon\Core\ex;
 
 /**
  * A rational number, represented as a ratio of two PHP integers, signifying the numerator and denominator.
@@ -136,7 +135,7 @@ final class Rational implements Stringable
     {
         // Check for non-finite values.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot create Rational from non-finite float: ' . ex($value) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot create Rational from non-finite float: ?.', $value));
         }
 
         // Check if the value equals a valid integer.
@@ -158,7 +157,7 @@ final class Rational implements Stringable
         // Check for values outside the valid range for Rational.
         if ($absValue < $min || $absValue > $max) {
             throw new DomainException(
-                'Cannot create Rational from float: ' . ex($value) . '. Outside valid range.'
+                Stringify::prepEx('Cannot create Rational from float: ?. Outside valid range.', $value)
             );
         }
 

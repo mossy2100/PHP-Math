@@ -13,12 +13,11 @@ use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use Stringable;
-
-use function OceanMoon\Core\ex;
 
 /**
  * Encapsulates a 2-dimensional matrix and provides a number of useful methods.
@@ -409,7 +408,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
         // Check the value is finite.
         if (!is_finite($value)) {
-            throw new DomainException('Cannot set element to non-finite value: ' . ex($value) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot set element to non-finite value: ?.', $value));
         }
 
         assert($row < count($this->data) && $col < $this->data[$row]->count);

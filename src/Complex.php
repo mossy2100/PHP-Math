@@ -12,13 +12,12 @@ use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Core\Numbers;
+use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use Override;
 use RoundingMode;
 use Stringable;
-
-use function OceanMoon\Core\ex;
 
 use const OceanMoon\Core\M_TAU;
 
@@ -71,10 +70,12 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for non-finite values.
         if (!is_finite($real)) {
-            throw new DomainException('Cannot create Complex with non-finite real part: ' . ex($real) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot create Complex with non-finite real part: ?.', $real));
         }
         if (!is_finite($imag)) {
-            throw new DomainException('Cannot create Complex with non-finite imaginary part: ' . ex($imag) . '.');
+            throw new DomainException(
+                Stringify::prepEx('Cannot create Complex with non-finite imaginary part: ?.', $imag)
+            );
         }
 
         // Set the properties.
@@ -166,15 +167,15 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for non-finite values.
         if (!is_finite($mag)) {
-            throw new DomainException('Cannot create Complex with non-finite magnitude: ' . ex($mag) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot create Complex with non-finite magnitude: ?.', $mag));
         }
         if (!is_finite($phase)) {
-            throw new DomainException('Cannot create Complex with non-finite phase: ' . ex($phase) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot create Complex with non-finite phase: ?.', $phase));
         }
 
         // Check for valid magnitude.
         if ($mag < 0) {
-            throw new DomainException('Cannot create Complex with negative magnitude: ' . ex($mag) . '.');
+            throw new DomainException(Stringify::prepEx('Cannot create Complex with negative magnitude: ?.', $mag));
         }
 
         // Construct the new Complex.
