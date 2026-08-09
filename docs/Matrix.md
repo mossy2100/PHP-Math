@@ -63,10 +63,10 @@ Create a new zero-filled matrix with the specified dimensions.
 **Examples:**
 
 ```php
-$matA = new Matrix(3, 3);     // 3x3 zero matrix
-$matB = new Matrix(2, 4);     // 2x4 zero matrix
-$matC = new Matrix(0, 0);     // 0x0 empty matrix
-$matD = new Matrix(0, 3);     // 0x3 empty matrix
+$m1 = new Matrix(3, 3);     // 3x3 zero matrix
+$m2 = new Matrix(2, 4);     // 2x4 zero matrix
+$m3 = new Matrix(0, 0);     // 0x0 empty matrix
+$m4 = new Matrix(0, 3);     // 0x3 empty matrix
 ```
 
 ---
@@ -97,13 +97,13 @@ every element must be numeric. Integer values are cast to float.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([
+$m = Matrix::fromArray([
     [1, 2, 3],
     [4, 5, 6],
 ]);
 // 2x3 matrix
 
-$matEmpty = Matrix::fromArray([]);
+$m0 = Matrix::fromArray([]);
 // 0x0 matrix
 ```
 
@@ -126,7 +126,7 @@ Create an identity matrix of the specified size. The identity matrix has 1s on t
 **Examples:**
 
 ```php
-$matI = Matrix::identity(3);
+$idMat = Matrix::identity(3);
 // ┌               ┐
 // │ 1.0  0.0  0.0 │
 // │ 0.0  1.0  0.0 │
@@ -151,8 +151,8 @@ Get a copy of the matrix data as a rectangular array.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-$arr = $mat->toArray();  // [[1, 2], [3, 4]]
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$arr = $m->toArray();  // [[1, 2], [3, 4]]
 ```
 
 ### \_\_toString()
@@ -166,16 +166,16 @@ Convert the matrix to a string representation using box-drawing characters. Valu
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $mat;
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m;
 // ┌          ┐
 // │ 1.0  2.0 │
 // │ 3.0  4.0 │
 // └          ┘
 
 // Empty matrices
-$matEmpty = new Matrix(0, 0);
-echo $matEmpty;
+$m0 = new Matrix(0, 0);
+echo $m0;
 // ┌ ┐
 // └ ┘
 ```
@@ -201,13 +201,13 @@ Check if the matrix is square, optionally of a specific size.
 **Examples:**
 
 ```php
-$matI = Matrix::identity(3);
-var_dump($matI->isSquare());     // true
-var_dump($matI->isSquare(3));    // true
-var_dump($matI->isSquare(2));    // false
+$idMat = Matrix::identity(3);
+var_dump($idMat->isSquare());     // true
+var_dump($idMat->isSquare(3));    // true
+var_dump($idMat->isSquare(2));    // false
 
-$matA = new Matrix(2, 3);
-var_dump($matA->isSquare());    // false
+$m1 = new Matrix(2, 3);
+var_dump($m1->isSquare());    // false
 ```
 
 ### get()
@@ -230,9 +230,9 @@ Get a matrix element by row and column index.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $mat->get(0, 0);  // 1
-echo $mat->get(1, 1);  // 4
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->get(0, 0);  // 1
+echo $m->get(1, 1);  // 4
 ```
 
 ### getRow()
@@ -244,7 +244,7 @@ public function getRow(int $row): Vector
 Get a row as a Vector.
 
 **Returns an independent copy** - mutating the returned Vector never affects this Matrix. For a live, mutable view of a
-row that stays linked to the Matrix, use [`$mat[$row]`](#arrayaccess-methods) instead.
+row that stays linked to the Matrix, use [`$m[$row]`](#arrayaccess-methods) instead.
 
 **Parameters:**
 
@@ -257,8 +257,8 @@ row that stays linked to the Matrix, use [`$mat[$row]`](#arrayaccess-methods) in
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$row = $mat->getRow(0);  // Vector(1, 2, 3)
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$row = $m->getRow(0);  // Vector(1, 2, 3)
 ```
 
 ### getColumn()
@@ -280,8 +280,8 @@ Get a column as a Vector.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
-$col = $mat->getColumn(0);  // Vector(1, 3, 5)
+$m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
+$col = $m->getColumn(0);  // Vector(1, 3, 5)
 ```
 
 ### copy()
@@ -308,12 +308,12 @@ bounds.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([
+$m = Matrix::fromArray([
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9],
 ]);
-$sub = $mat->copy(1, 1, 2, 2);
+$sub = $m->copy(1, 1, 2, 2);
 // [[5, 6],
 //  [8, 9]]
 ```
@@ -344,9 +344,9 @@ Set a matrix element by row and column index.
 **Examples:**
 
 ```php
-$mat = new Matrix(2, 2);
-$mat->set(0, 0, 5);
-$mat->set(1, 1, 10);
+$m = new Matrix(2, 2);
+$m->set(0, 0, 5);
+$m->set(1, 1, 10);
 ```
 
 ### setRow()
@@ -356,9 +356,8 @@ public function setRow(int $row, Vector $vec): void
 ```
 
 Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
-row's object identity is preserved, so a live reference obtained via [`$mat[$row]`](#arrayaccess-methods) stays valid
-and reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on this
-Matrix.
+row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
+reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on this Matrix.
 
 **Parameters:**
 
@@ -373,8 +372,8 @@ Matrix.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$mat->setRow(1, Vector::fromArray([10, 11, 12]));
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$m->setRow(1, Vector::fromArray([10, 11, 12]));
 ```
 
 ### setColumn()
@@ -398,8 +397,8 @@ Set a column from a Vector.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$mat->setColumn(1, Vector::fromArray([20, 50]));
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$m->setColumn(1, Vector::fromArray([20, 50]));
 // Matrix is now [[1, 20, 3], [4, 50, 6]]
 ```
 
@@ -424,8 +423,8 @@ offset.
 **Examples:**
 
 ```php
-$mat = new Matrix(3, 3);
-$mat->paste(Matrix::fromArray([[1, 2], [3, 4]]), 1, 1);
+$m = new Matrix(3, 3);
+$m->paste(Matrix::fromArray([[1, 2], [3, 4]]), 1, 1);
 // [[0, 0, 0],
 //  [0, 1, 2],
 //  [0, 3, 4]]
@@ -467,17 +466,17 @@ Two matrices are equal if they have the same dimensions and all corresponding el
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 2], [3, 4]]);
-$matB = Matrix::fromArray([[1, 2], [3, 4]]);
-$matC = Matrix::fromArray([[1.0000000001, 2], [3, 4]]);
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m3 = Matrix::fromArray([[1.0000000001, 2], [3, 4]]);
 
-var_dump($matA->equal($matB));  // true (exact match)
-var_dump($matA->equal($matC));  // false (not exact)
+var_dump($m1->equal($m2));  // true (exact match)
+var_dump($m1->equal($m3));  // false (not exact)
 
 // Anything else throws, rather than silently returning false
-$matA->equal([[1, 2], [3, 4]]);  // throws InvalidArgumentException
-$matA->equal('string');          // throws InvalidArgumentException
-$matA->equal(null);              // throws InvalidArgumentException
+$m1->equal([[1, 2], [3, 4]]);  // throws InvalidArgumentException
+$m1->equal('string');          // throws InvalidArgumentException
+$m1->equal(null);              // throws InvalidArgumentException
 ```
 
 ### approxEqual()
@@ -515,24 +514,23 @@ then relative tolerance.
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 2], [3, 4]]);
-$matB = Matrix::fromArray([[1.00000001, 2.00000001], [3.00000001, 4.00000001]]);
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[1.00000001, 2.00000001], [3.00000001, 4.00000001]]);
 
 // Within default tolerance
-var_dump($matA->approxEqual($matB));  // true
+var_dump($m1->approxEqual($m2));  // true
 
 // With tight tolerance
-var_dump($matA->approxEqual($matB, 1e-15, 1e-15));  // false
+var_dump($m1->approxEqual($m2, 1e-15, 1e-15));  // false
 
 // Anything else throws, rather than silently returning false
-$matA->approxEqual('string');  // throws InvalidArgumentException
+$m1->approxEqual('string');  // throws InvalidArgumentException
 ```
 
----
+### Comparison operators
 
-## Comparison Operators
-
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
+types in this package.
 
 ---
 
@@ -561,16 +559,16 @@ insert/remove a row or column at an arbitrary position, compose `copy()` and `pa
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
 
 // Grow: extra rows/columns are zero-filled
-$grown = $mat->resize(3, 3);
+$grown = $m->resize(3, 3);
 // [[1, 2, 0],
 //  [3, 4, 0],
 //  [0, 0, 0]]
 
 // Shrink: excess rows/columns are dropped
-$shrunk = $mat->resize(1, 1);
+$shrunk = $m->resize(1, 1);
 // [[1]]
 ```
 
@@ -591,8 +589,8 @@ Negate this matrix. Returns a new matrix with all elements negated.
 **Example:**
 
 ```php
-$mat = Matrix::fromArray([[1, -2], [3, -4]]);
-$result = $mat->neg();
+$m = Matrix::fromArray([[1, -2], [3, -4]]);
+$result = $m->neg();
 // [[-1, 2], [-3, 4]]
 ```
 
@@ -612,8 +610,8 @@ replaces each element with its own reciprocal, with no relationship to matrix mu
 **Example:**
 
 ```php
-$mat = Matrix::fromArray([[2, 4], [5, 10]]);
-$result = $mat->reciprocal();
+$m = Matrix::fromArray([[2, 4], [5, 10]]);
+$result = $m->reciprocal();
 // [[0.5, 0.25], [0.2, 0.1]]
 ```
 
@@ -639,11 +637,11 @@ will be extremely slow for larger ones.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-$inv = $mat->inv();
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$inv = $m->inv();
 
 // Verify: M × M⁻¹ = I
-$matI = $mat->mul($inv);
+$idMat = $m->mul($inv);
 ```
 
 ---
@@ -669,9 +667,9 @@ Add another matrix to this one. Both matrices must have the same dimensions.
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 2], [3, 4]]);
-$matB = Matrix::fromArray([[5, 6], [7, 8]]);
-$sum = $matA->add($matB);
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[5, 6], [7, 8]]);
+$sum = $m1->add($m2);
 // [[6, 8], [10, 12]]
 ```
 
@@ -694,9 +692,9 @@ Subtract another matrix from this one. Both matrices must have the same dimensio
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[5, 6], [7, 8]]);
-$matB = Matrix::fromArray([[1, 2], [3, 4]]);
-$diff = $matA->sub($matB);
+$m1 = Matrix::fromArray([[5, 6], [7, 8]]);
+$m2 = Matrix::fromArray([[1, 2], [3, 4]]);
+$diff = $m1->sub($m2);
 // [[4, 4], [4, 4]]
 ```
 
@@ -726,15 +724,15 @@ To go the other way (_xA_), call [`Vector::mul()`](Vector.md#mul).
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 2], [3, 4]]);
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
 
 // Scalar multiplication
-$scaled = $matA->mul(2);
+$scaled = $m1->mul(2);
 // [[2, 4], [6, 8]]
 
 // Matrix multiplication
-$matB = Matrix::fromArray([[5, 6], [7, 8]]);
-$product = $matA->mul($matB);
+$m2 = Matrix::fromArray([[5, 6], [7, 8]]);
+$product = $m1->mul($m2);
 // [[19, 22], [43, 50]]
 ```
 
@@ -757,8 +755,8 @@ Divide this matrix by a scalar.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[2, 4], [6, 8]]);
-$result = $mat->div(2);
+$m = Matrix::fromArray([[2, 4], [6, 8]]);
+$result = $m->div(2);
 // [[1, 2], [3, 4]]
 ```
 
@@ -782,9 +780,9 @@ dimensions.
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 2], [3, 4]]);
-$matB = Matrix::fromArray([[5, 6], [7, 8]]);
-$result = $matA->hadamardMul($matB);
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+$m2 = Matrix::fromArray([[5, 6], [7, 8]]);
+$result = $m1->hadamardMul($m2);
 // [[5, 12], [21, 32]]
 ```
 
@@ -811,9 +809,9 @@ dimensions.
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[5, 12], [21, 32]]);
-$matB = Matrix::fromArray([[5, 6], [7, 8]]);
-$result = $matA->hadamardDiv($matB);
+$m1 = Matrix::fromArray([[5, 12], [21, 32]]);
+$m2 = Matrix::fromArray([[5, 6], [7, 8]]);
+$result = $m1->hadamardDiv($m2);
 // [[1, 2], [3, 4]]
 ```
 
@@ -824,7 +822,7 @@ $result = $matA->hadamardDiv($matB);
 ### pow()
 
 ```php
-public function pow(int $exponent): self
+public function pow(int $exp): self
 ```
 
 Raise this matrix to an integer power. Uses binary exponentiation for efficiency. Negative powers use the matrix
@@ -835,7 +833,7 @@ never affect the original.
 
 **Parameters:**
 
-- `$exponent` (int) - Power to raise to
+- `$exp` (int) - Power to raise to
 
 **Returns:** `self` - New matrix representing the result.
 
@@ -847,12 +845,12 @@ never affect the original.
 **Examples:**
 
 ```php
-$matA = Matrix::fromArray([[1, 1], [0, 1]]);
+$m1 = Matrix::fromArray([[1, 1], [0, 1]]);
 
-$matB = $matA->pow(0);   // Identity matrix
-$matC = $matA->pow(2);   // [[1, 2], [0, 1]]
-$matD = $matA->pow(3);   // [[1, 3], [0, 1]]
-$matE = $matA->pow(-1);  // Inverse matrix
+$m2 = $m1->pow(0);   // Identity matrix
+$m3 = $m1->pow(2);   // [[1, 2], [0, 1]]
+$m4 = $m1->pow(3);   // [[1, 3], [0, 1]]
+$m5 = $m1->pow(-1);  // Inverse matrix
 ```
 
 ### sqr()
@@ -870,8 +868,8 @@ Square this matrix. Equivalent to `pow(2)`, but more efficient and readable. The
 **Example:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-$result = $mat->sqr();  // [[7, 10], [15, 22]]
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+$result = $m->sqr();  // [[7, 10], [15, 22]]
 ```
 
 ---
@@ -881,7 +879,7 @@ $result = $mat->sqr();  // [[7, 10], [15, 22]]
 ### mulVector()
 
 ```php
-public function mulVector(Vector $vector): Vector
+public function mulVector(Vector $vec): Vector
 ```
 
 Multiply this matrix by a vector (_Ax_). The vector is treated as a column vector; its count must equal this matrix's
@@ -891,7 +889,7 @@ To go the other way (_xA_), use `Vector::mul()` instead.
 
 **Parameters:**
 
-`$vector` (Vector) - The vector to multiply by.
+`$vec` (Vector) - The vector to multiply by.
 
 **Returns:** `Vector` - New vector representing the result.
 
@@ -900,9 +898,9 @@ To go the other way (_xA_), use `Vector::mul()` instead.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
 $v = Vector::fromArray([1, 2]);
-$result = $mat->mulVector($v);  // Vector(5, 11)
+$result = $m->mulVector($v);  // Vector(5, 11)
 ```
 
 ### t()
@@ -911,15 +909,15 @@ $result = $mat->mulVector($v);  // Vector(5, 11)
 public function t(): self
 ```
 
-Get the transpose of this matrix. Rows become columns and columns become rows.
+Get the transpose of this matrix (_Aᵀ_). Rows become columns and columns become rows.
 
 **Returns:** `self` - New matrix representing the transpose.
 
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
-$transpose = $mat->t();
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$transpose = $m->t();
 // [[1, 4], [2, 5], [3, 6]]
 ```
 
@@ -938,11 +936,11 @@ Calculate the determinant of this matrix using recursive cofactor expansion. The
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $mat->det();  // -2.0
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->det();  // -2.0
 
-$matI = Matrix::identity(3);
-echo $matI->det();  // 1.0
+$idMat = Matrix::identity(3);
+echo $idMat->det();  // 1.0
 ```
 
 ### trace()
@@ -960,11 +958,11 @@ Calculate the trace of this matrix (sum of diagonal elements). The matrix must b
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $mat->trace();  // 5.0
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->trace();  // 5.0
 
-$matI = Matrix::identity(3);
-echo $matI->trace();  // 3.0
+$idMat = Matrix::identity(3);
+echo $idMat->trace();  // 3.0
 ```
 
 ---
@@ -985,11 +983,11 @@ Euclidean norm for vectors.
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $mat->norm();  // 5.477... (sqrt(30))
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m->norm();  // 5.477... (sqrt(30))
 
-$matI = Matrix::identity(3);
-echo $matI->norm();  // 1.732... (sqrt(3))
+$idMat = Matrix::identity(3);
+echo $idMat->norm();  // 1.732... (sqrt(3))
 ```
 
 ### p1Norm()
@@ -1005,8 +1003,8 @@ Calculate the P1 norm (maximum absolute column sum).
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, -2], [3, 4]]);
-echo $mat->p1Norm();  // 6.0 (max of |1|+|3|=4, |-2|+|4|=6)
+$m = Matrix::fromArray([[1, -2], [3, 4]]);
+echo $m->p1Norm();  // 6.0 (max of |1|+|3|=4, |-2|+|4|=6)
 ```
 
 ### pInfNorm()
@@ -1022,8 +1020,8 @@ Calculate the P-infinity norm (maximum absolute row sum).
 **Examples:**
 
 ```php
-$mat = Matrix::fromArray([[1, -2], [3, 4]]);
-echo $mat->pInfNorm();  // 7.0 (max of |1|+|-2|=3, |3|+|4|=7)
+$m = Matrix::fromArray([[1, -2], [3, 4]]);
+echo $m->pInfNorm();  // 7.0 (max of |1|+|-2|=3, |3|+|4|=7)
 ```
 
 ---
@@ -1041,9 +1039,9 @@ Get the total number of elements in the matrix (`rowCount * columnCount`), via t
 **Examples:**
 
 ```php
-$mat = new Matrix(2, 3);
-echo $mat->count();  // 6
-echo count($mat);    // 6 (via the global count() function)
+$m = new Matrix(2, 3);
+echo $m->count();  // 6
+echo count($m);    // 6 (via the global count() function)
 ```
 
 ---
@@ -1053,29 +1051,29 @@ echo count($mat);    // 6 (via the global count() function)
 Matrices can be accessed using bracket syntax, including chained double-index access:
 
 ```php
-$mat = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+$m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
 // Read access
-echo $mat[0][0];  // 1
-echo $mat[1][2];  // 6
+echo $m[0][0];  // 1
+echo $m[1][2];  // 6
 
 // Write access
-$mat[0][1] = 20;
-echo $mat[0][1];  // 20
+$m[0][1] = 20;
+echo $m[0][1];  // 20
 
 // Set a whole row
-$mat[1] = Vector::fromArray([40, 50, 60]);
+$m[1] = Vector::fromArray([40, 50, 60]);
 
 // Check existence
-var_dump(isset($mat[0]));  // true
-var_dump(isset($mat[5]));  // false
+var_dump(isset($m[0]));  // true
+var_dump(isset($m[5]));  // false
 
 // Cannot unset rows
-unset($mat[0]);  // Throws LogicException
+unset($m[0]);  // Throws LogicException
 ```
 
-**`$mat[$row]` returns the Matrix's actual internal row `Vector`, not a copy.** Mutating it mutates the Matrix. This is
-what makes `$mat[$row][$col] = $x` work: PHP fetches the row via `offsetGet()`, then sets the element on that same
+**`$m[$row]` returns the Matrix's actual internal row `Vector`, not a copy.** Mutating it mutates the Matrix. This is
+what makes `$m[$row][$col] = $x` work: PHP fetches the row via `offsetGet()`, then sets the element on that same
 `Vector` object.
 
 This is different from [`getRow()`](#getrow), which returns an **independent copy** - mutating the result of `getRow()`
@@ -1158,29 +1156,29 @@ Unsetting rows is not supported.
 
 ```php
 // From constructor + set
-$mat = new Matrix(3, 3);
-$mat->set(0, 0, 1);
-$mat->set(1, 1, 1);
-$mat->set(2, 2, 1);
+$m = new Matrix(3, 3);
+$m->set(0, 0, 1);
+$m->set(1, 1, 1);
+$m->set(2, 2, 1);
 
 // From array
-$mat = Matrix::fromArray([
+$m = Matrix::fromArray([
     [1, 2, 3],
     [4, 5, 6],
     [7, 8, 9],
 ]);
 
 // Identity shorthand
-$matI = Matrix::identity(3);
+$idMat = Matrix::identity(3);
 ```
 
 ### Solving a Linear System
 
 ```php
 // Solve Ax = b using x = A⁻¹b
-$matA = Matrix::fromArray([[2, 1], [5, 3]]);
+$m1 = Matrix::fromArray([[2, 1], [5, 3]]);
 $b = Vector::fromArray([4, 7]);
-$x = $matA->inv()->mulVector($b);  // Vector(5, -6)
+$x = $m1->inv()->mulVector($b);  // Vector(5, -6)
 ```
 
 ### 3D Transformations

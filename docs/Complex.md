@@ -8,11 +8,11 @@ Immutable class representing complex numbers with comprehensive mathematical ope
 
 The `Complex` class provides a complete implementation of complex number arithmetic with support for:
 
-- Basic arithmetic (addition, subtraction, multiplication, division)
-- Transcendental functions (exponential, logarithm, power, roots)
-- Trigonometric and hyperbolic functions
-- Conversion between rectangular (a + bi) and polar (r∠θ) forms
-- Epsilon-based equality comparison for floating-point precision
+- Basic arithmetic (addition, subtraction, multiplication, division).
+- Transcendental functions (exponential, logarithm, power, roots).
+- Trigonometric and hyperbolic functions.
+- Conversion between rectangular (a + bi) and polar (r∠θ) forms.
+- Epsilon-based equality comparison for floating-point precision.
 
 All operations return new instances, maintaining immutability.
 
@@ -42,7 +42,7 @@ The imaginary part of the complex number. Read-only from outside the class.
 private(set) ?float $magnitude
 ```
 
-The magnitude (absolute value or modulus) of the complex number. Automatically computed and cached on first access.
+The magnitude (absolute value or modulus) of the complex number. Automatically computed during object creation.
 
 For z = a + bi: |z| = √(a² + b²)
 
@@ -56,7 +56,7 @@ The phase (argument or angle) of the complex number in radians, normalized to th
 [principal value](<https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value>), which is in the range
 **(-π, π]**. (This means the range excludes -π but includes π.)
 
-Automatically computed and cached on first access.
+Automatically computed during object creation.
 
 For z = a + bi: arg(z) = atan2(b, a), then wrapped to (-π, π]
 
@@ -112,11 +112,10 @@ Create a Complex from a string. Supports various formats.
 - Complex (real first): `"3+4i"`, `"5-2i"`, `"-1+i"`
 - Complex (imaginary first): `"4i+3"`, `"-2i+5"`, `"i-1"`
 - Whitespace tolerant: `" 3 + 4i "`, `"5 - 2i"`
-- Case insensitive: `"I"`, `"5I"`, `"3 + 4I"`
 
 There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space
 between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself
-(meaning `1i`), but generally there cannot be a space between the number and the `i` it relates to; for example, `5.67i`
+(meaning `1i`), but there cannot be a space between the number and the `i` it relates to; for example, `5.67i`
 is ok, `5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
 
 **Examples:**
@@ -163,7 +162,7 @@ public function __toString(): string
 ```
 
 Convert to string representation. This will format the real and imaginary parts using the PHP default style for `float`
-values, which may or may not include a decimal point (`.`) or exponent (`e`, `+`, and/or `-`). You may wish to call
+values, which may or may not include a decimal point (`.`) or exponent (`E`). You may wish to call
 `round(3)` (for example) before echoing.
 
 **Format:**
@@ -333,7 +332,8 @@ $z1->approxEqual('3.0000000001+4.0000000001i');  // throws InvalidArgumentExcept
 
 ## Comparison Operators
 
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
+types in this package.
 
 ---
 
@@ -478,7 +478,7 @@ $quotient = $z2->div($z3);
 ### pow()
 
 ```php
-public function pow(self|float $other): self
+public function pow(self|float $exp): self
 ```
 
 Raise this complex number to a power.
@@ -499,7 +499,7 @@ $result = M_I->pow(2);  // -1 + 0i
 
 **Throws:**
 
-- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `DomainException` if `$exp` is a non-finite float (±INF or NAN).
 - `ArithmeticException` if attempting 0 raised to a negative or complex power.
 
 ### sqr()
@@ -730,11 +730,11 @@ Round the real and imaginary parts to the given number of decimal places, using 
 **Parameters:**
 
 - `$precision` (int) - The number of decimal places to round to. Must not be negative.
-- `$mode` (RoundingMode) - The rounding mode to use.
+- `$mode` ([RoundingMode](https://www.php.net/manual/en/enum.roundingmode.php)) - The rounding mode to use.
 
 **Returns:**
 
-- `self` - A new complex number with both parts rounded.
+- `self` - A new `Complex` with both parts rounded.
 
 **Throws:**
 

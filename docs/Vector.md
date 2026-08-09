@@ -468,7 +468,7 @@ Multiply this vector by a scalar or a matrix.
 
 Multiplying by a matrix (_v \* A_) treats this vector as a row vector; its count must equal the matrix's row count. To
 multiply a Matrix by a Vector in order to get a new Vector, there's no Matrix method for this. Instead, use this method,
-but transpose the Matrix first, e.g. `$v->mul($matA->t())`.
+but transpose the Matrix first, e.g. `$v->mul($m1->t())`.
 
 See [`Matrix::mul()`](Matrix.md#mul) for more information.
 
@@ -490,12 +490,12 @@ See [`Matrix::mul()`](Matrix.md#mul) for more information.
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
 
-$matA = Matrix::fromArray([
+$m1 = Matrix::fromArray([
     [1, 4],
     [2, 5],
     [3, 6],
 ]);
-$result = $v->mul($matA);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
+$result = $v->mul($m1);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()

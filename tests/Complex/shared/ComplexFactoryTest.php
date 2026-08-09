@@ -37,17 +37,15 @@ class ComplexFactoryTest extends TestCase
     {
         // Basic imaginary units
         $this->assertEquals(new Complex(0, 1), Complex::fromString('i'));
-        $this->assertEquals(new Complex(0, 1), Complex::fromString('I'));
 
         // Negative imaginary units
         $this->assertEquals(new Complex(0, -1), Complex::fromString('-i'));
-        $this->assertEquals(new Complex(0, -1), Complex::fromString('-I'));
 
         // Imaginary with coefficients
         $this->assertEquals(new Complex(0, 3), Complex::fromString('3i'));
         $this->assertEquals(new Complex(0, -2.5), Complex::fromString('-2.5i'));
-        $this->assertEquals(new Complex(0, 0.75), Complex::fromString('0.75I'));
-        $this->assertEquals(new Complex(0, 1.5e2), Complex::fromString('1.5e2I'));
+        $this->assertEquals(new Complex(0, 0.75), Complex::fromString('0.75i'));
+        $this->assertEquals(new Complex(0, 1.5e2), Complex::fromString('1.5e2i'));
     }
 
     /**
@@ -59,12 +57,12 @@ class ComplexFactoryTest extends TestCase
         $this->assertEquals(new Complex(3, 4), Complex::fromString('3+4i'));
         $this->assertEquals(new Complex(5, -2), Complex::fromString('5-2i'));
         $this->assertEquals(new Complex(-1, 1), Complex::fromString('-1+i'));
-        $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('2.5-3.7I'));
+        $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('2.5-3.7i'));
 
         // With decimals and scientific notation
         $this->assertEquals(new Complex(1.23, 4.56), Complex::fromString('1.23+4.56i'));
         $this->assertEquals(new Complex(-0.5, 2.5e-1), Complex::fromString('-0.5+2.5e-1i'));
-        $this->assertEquals(new Complex(123.0, -1), Complex::fromString('123.-I'));
+        $this->assertEquals(new Complex(123.0, -1), Complex::fromString('123.-i'));
     }
 
     /**
@@ -76,7 +74,7 @@ class ComplexFactoryTest extends TestCase
         $this->assertEquals(new Complex(3, 4), Complex::fromString('4i+3'));
         $this->assertEquals(new Complex(5, -2), Complex::fromString('-2i+5'));
         $this->assertEquals(new Complex(-1, 1), Complex::fromString('i-1'));
-        $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('-3.7I+2.5'));
+        $this->assertEquals(new Complex(2.5, -3.7), Complex::fromString('-3.7i+2.5'));
 
         // With decimals and scientific notation
         $this->assertEquals(new Complex(1.23, 4.56), Complex::fromString('4.56i+1.23'));
@@ -128,6 +126,7 @@ class ComplexFactoryTest extends TestCase
             'incomplete imaginary'                => ['i+'],
             'wrong imaginary unit'                => ['3+4k'],
             'j is not a supported imaginary unit' => ['3+4j'],
+            'I (uppercase) is not a supported imaginary unit' => ['3+4I'],
             'multiple decimal points'             => ['3.4.5'],
             'incomplete scientific notation'      => ['3e'],
             'double e'                            => ['3ee4'],

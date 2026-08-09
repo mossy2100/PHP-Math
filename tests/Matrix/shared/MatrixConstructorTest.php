@@ -19,9 +19,9 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorWithValidDimensions(): void
     {
-        $mat = new Matrix(2, 3);
-        $this->assertSame(2, $mat->rowCount);
-        $this->assertSame(3, $mat->columnCount);
+        $m = new Matrix(2, 3);
+        $this->assertSame(2, $m->rowCount);
+        $this->assertSame(3, $m->columnCount);
     }
 
     /**
@@ -29,9 +29,9 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorOneByOne(): void
     {
-        $mat = new Matrix(1, 1);
-        $this->assertSame(1, $mat->rowCount);
-        $this->assertSame(1, $mat->columnCount);
+        $m = new Matrix(1, 1);
+        $this->assertSame(1, $m->rowCount);
+        $this->assertSame(1, $m->columnCount);
     }
 
     /**
@@ -39,9 +39,9 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorZeroByZero(): void
     {
-        $mat = new Matrix(0, 0);
-        $this->assertSame(0, $mat->rowCount);
-        $this->assertSame(0, $mat->columnCount);
+        $m = new Matrix(0, 0);
+        $this->assertSame(0, $m->rowCount);
+        $this->assertSame(0, $m->columnCount);
     }
 
     /**
@@ -49,9 +49,9 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorThreeByZero(): void
     {
-        $mat = new Matrix(3, 0);
-        $this->assertSame(3, $mat->rowCount);
-        $this->assertSame(0, $mat->columnCount);
+        $m = new Matrix(3, 0);
+        $this->assertSame(3, $m->rowCount);
+        $this->assertSame(0, $m->columnCount);
     }
 
     /**
@@ -59,9 +59,9 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorZeroByThree(): void
     {
-        $mat = new Matrix(0, 3);
-        $this->assertSame(0, $mat->rowCount);
-        $this->assertSame(3, $mat->columnCount);
+        $m = new Matrix(0, 3);
+        $this->assertSame(0, $m->rowCount);
+        $this->assertSame(3, $m->columnCount);
     }
 
     /**
@@ -96,10 +96,10 @@ class MatrixConstructorTest extends TestCase
      */
     public function testConstructorInitialisesElementsToZero(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         for ($i = 0; $i < 2; $i++) {
             for ($j = 0; $j < 3; $j++) {
-                $this->assertSame(0.0, $mat->get($i, $j));
+                $this->assertSame(0.0, $m->get($i, $j));
             }
         }
     }

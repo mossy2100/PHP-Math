@@ -644,7 +644,7 @@ $quotient2 = $r3->div(2);   // 3/8
 ### pow()
 
 ```php
-public function pow(int $exponent): self
+public function pow(int $exp): self
 ```
 
 Raise this rational number to an integer power.

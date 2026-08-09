@@ -189,7 +189,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      */
     public function __clone(): void
     {
-        $this->data = array_map(static fn (Vector $vec): Vector => clone $vec, $this->data);
+        $this->data = array_map(static fn (Vector $v): Vector => clone $v, $this->data);
     }
 
     #endregion
@@ -203,7 +203,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      */
     public function toArray(): array
     {
-        return array_map(static fn (Vector $vec): array => $vec->toArray(), $this->data);
+        return array_map(static fn (Vector $v): array => $v->toArray(), $this->data);
     }
 
     /**
@@ -418,10 +418,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Set a Matrix row from a row Vector.
      *
-     * Copies $vec's elements into the row's existing Vector rather than replacing it, so the row's object identity
+     * Copies $v's elements into the row's existing Vector rather than replacing it, so the row's object identity
      * is preserved -- a live reference obtained via `$m[$row]` (ArrayAccess) stays valid and reflects the new
-     * values, rather than going stale. $vec itself is never stored by reference: later mutating the caller's own
-     * $vec has no effect on this Matrix.
+     * values, rather than going stale. $v itself is never stored by reference: later mutating the caller's own
+     * $v has no effect on this Matrix.
      *
      * @param int $row Row index (0-based).
      * @param Vector $vec The row Vector.
@@ -902,12 +902,12 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Raise this matrix to a power.
      *
-     * @param int $exponent Power to raise to.
+     * @param int $exp Power to raise to.
      * @return self New matrix representing the result.
      * @throws DomainException If matrix is not square.
      * @throws ArithmeticException If not invertible (zero determinant) for negative powers.
      */
-    public function pow(int $exponent): self
+    public function pow(int $exp): self
     {
         // Check if matrix is square.
         if (!$this->isSquare()) {
@@ -915,35 +915,35 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         }
 
         // Handle power of 0.
-        if ($exponent === 0) {
+        if ($exp === 0) {
             return self::identity($this->rowCount);
         }
 
         // Handle power of 1.
-        if ($exponent === 1) {
+        if ($exp === 1) {
             return clone $this;
         }
 
         // Handle exponent = PHP_INT_MIN.
-        if ($exponent === PHP_INT_MIN) {
+        if ($exp === PHP_INT_MIN) {
             return $this->pow(PHP_INT_MAX)->mul($this)->inv();
         }
 
         // Handle negative powers.
-        if ($exponent < 0) {
-            return $this->inv()->pow(-$exponent);
+        if ($exp < 0) {
+            return $this->inv()->pow(-$exp);
         }
 
         // Handle positive powers greater than 1.
         $result = self::identity($this->rowCount);
         $base = clone $this;
 
-        while ($exponent > 0) {
-            if ($exponent % 2 === 1) {
+        while ($exp > 0) {
+            if ($exp % 2 === 1) {
                 $result = $result->mul($base);
             }
             $base = $base->mul($base);
-            $exponent = (int) ($exponent / 2);
+            $exp = (int) ($exp / 2);
         }
 
         return $result;
@@ -980,13 +980,13 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * Although we could set up mul() to return Matrix|Vector, this causes problems for static analysis and breaks the
      * fluent API.
      *
-     * @param Vector $vector The vector to multiply by.
+     * @param Vector $vec The vector to multiply by.
      * @return Vector New vector representing the result.
      * @throws LengthException If the vector's count doesn't equal this matrix's column count.
      */
-    public function mulVector(Vector $vector): Vector
+    public function mulVector(Vector $vec): Vector
     {
-        return $this->mul($vector->toColumnMatrix())->getColumn(0);
+        return $this->mul($vec->toColumnMatrix())->getColumn(0);
     }
 
     /**
@@ -1214,28 +1214,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Recursive helper method to calculate determinant using cofactor expansion.
      *
-     * Warning: This algorithm has O(n!) time complexity. It is suitable for small matrices (up to ~10x10) but will be
-     * extremely slow for larger ones. For high-performance determinant calculation, consider LU decomposition (O(n³)).
-     *
-     * LU decomposition hasn't been implemented here because it's a bigger undertaking than the complexity numbers
-     * alone suggest, for a case that's unlikely to be needed in practice:
-     * - It requires partial pivoting (PA = LU, not plain LU) to avoid dividing by a zero pivot, which even a
-     *   perfectly well-conditioned matrix can produce depending on element ordering.
-     * - Pivoting means tracking row-swap parity to get the determinant's sign right (det = (-1)^swaps × product of
-     *   U's diagonal), which is easy to get subtly wrong in a way that only shows up for specific pivot orderings.
-     * - Distinguishing a genuinely singular matrix from a merely ill-conditioned one becomes an epsilon-tuning
-     *   problem rather than an exact zero check.
-     * - It only speeds up det() itself. inv() calls calcDet() once per minor via the adjugate method, so a faster
-     *   calcDet() alone would still leave inv() at O(n² × n³); making inv() fast for large matrices needs its own
-     *   separate rewrite (e.g. Gauss-Jordan elimination on an augmented matrix).
-     * - Elimination requires division at every step, trading the current approach's exactness on integer-valued
-     *   matrices for speed.
+     * Warning: This algorithm is suitable for small matrices (up to ~10x10) but will be slow for larger ones. For
+     * high-performance determinant calculation, consider LU decomposition (O(n³)). LU decomposition hasn't been
+     * implemented here because it's a bigger undertaking than the complexity numbers alone suggest, for a case that's
+     * unlikely to be needed in practice.
      *
      * The 1x1, 2x2, and 3x3 cases are handled directly via closed-form formulas rather than recursing, both because
      * they're common (e.g. 3x3 minors arise from cofactor-expanding a 4x4 matrix, a common size for 3D transforms)
      * and to skip the overhead of building submatrix arrays for cases that are cheap to compute directly. The 3x3
-     * formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices; it does not generalize to 4x4 and up, which is
-     * why cofactor expansion is still needed there.
+     * formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices.
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
@@ -1262,7 +1249,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 - $matrix[0][1] * $matrix[1][0] * $matrix[2][2];
         }
 
-        // Cofactor expansion for larger matrices.
+        // Cofactor expansion for matrix sizes 4x4 and greater.
+        // This can be a little slow for large matrices - computational complexity is O(n!).
         $det = 0.0;
         for ($j = 0; $j < $n; $j++) {
             $submatrix = [];

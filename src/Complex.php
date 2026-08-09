@@ -104,8 +104,8 @@ final class Complex implements Stringable, ArrayAccess
      *
      * Supports various formats:
      * - Real numbers: "5", "-3.14", "0"
-     * - Pure imaginary: "i", "-i", "3i", "-2.5i", "I"
-     * - Complex: "3+4i", "5-2i", "-1+i", "2.5-3.7I"
+     * - Pure imaginary: "i", "-i", "3i", "-2.5i", "i"
+     * - Complex: "3+4i", "5-2i", "-1+i", "2.5-3.7i"
      * - Spaces allowed: "3 + 4i", "5 - 2i"
      * - Either order: "4i+3", "-2i+5"
      *
@@ -129,15 +129,15 @@ final class Complex implements Stringable, ArrayAccess
             [$entire, $realSign, $realVal] = $matches;
             $imagSign = '';
             $imagVal = 0;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i$/", $str, $matches)) {
             // Pattern: ±bi (imaginary only)
             [$entire, $imagSign, $imagVal] = $matches;
             $realSign = '';
             $realVal = 0;
-        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)[iI]\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)i\$/", $str, $matches)) {
             // Pattern: ±a ± bi (real + imag)
             [$entire, $realSign, $realVal, $imagSign, $imagVal] = $matches;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)[iI]\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
             // Pattern: ±bi ± a (imag + real)
             [$entire, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
@@ -471,35 +471,35 @@ final class Complex implements Stringable, ArrayAccess
      * - Negative real base with fractional exponent: (-2)^(1/3)
      * - Any base with complex exponent: z^(a+bi) where b ≠ 0
      *
-     * @param self|float $other The real or complex number to raise this complex number to.
+     * @param self|float $exp The real or complex number to raise this complex number to.
      * @return self A new complex number representing the result.
-     * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws DomainException If $exp is a non-finite float (±INF or NAN).
      * @throws ArithmeticException If attempting to raise 0 to a negative or complex power.
      */
-    public function pow(self|float $other): self
+    public function pow(self|float $exp): self
     {
         // Convert float to Complex.
-        if (is_float($other)) {
-            $other = new self($other);
+        if (is_float($exp)) {
+            $exp = new self($exp);
         }
 
         // Handle exponent = 0. Any number to power 0 is 1.
         // Although mathematically 0^0 is undefined, we return 1 for consistency with pow(0, 0).
         // This is a common result in many programming languages and hence follows the Principle of Least Astonishment.
         // @see https://en.wikipedia.org/wiki/Zero_to_the_power_of_zero
-        if ($other->equal(0)) {
+        if ($exp->equal(0)) {
             return new self(1);
         }
 
         // Handle base = 0.
         if ($this->equal(0)) {
             // Check for complex exponent.
-            if (!$other->isReal()) {
+            if (!$exp->isReal()) {
                 throw new ArithmeticException('Cannot raise zero to a complex power.');
             }
 
             // Check for negative real exponent.
-            if ($other->real < 0) {
+            if ($exp->real < 0) {
                 throw new ArithmeticException('Cannot raise zero to a negative power.');
             }
 
@@ -508,27 +508,27 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Handle exponent = 1. Any number to power 1 is itself.
-        if ($other->equal(1)) {
+        if ($exp->equal(1)) {
             return clone $this;
         }
 
         // Handle exponent = 2. Delegate to sqr().
-        if ($other->equal(2)) {
+        if ($exp->equal(2)) {
             return $this->sqr();
         }
 
         // Handle exponent = -1. Delegate to inv().
-        if ($other->equal(-1)) {
+        if ($exp->equal(-1)) {
             return $this->inv();
         }
 
         // Handle base = e. This saves unnecessary calls to ln() and mul().
         if ($this->equal(M_E)) {
-            return $other->exp();
+            return $exp->exp();
         }
 
         // General solution. Calculate z^w = e^(w * ln(z)).
-        return $other->mul($this->ln())->exp();
+        return $exp->mul($this->ln())->exp();
     }
 
     /**

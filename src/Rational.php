@@ -653,24 +653,24 @@ final class Rational implements Stringable
     /**
      * Raise this Rational to an integer power.
      *
-     * @param int $exponent The exponent.
+     * @param int $exp The exponent.
      * @return self A new Rational representing the result of the exponentiation.
      * @throws ArithmeticException If raising zero to a negative power.
      * @throws OverflowException If integer overflow occurs.
      * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function pow(int $exponent): self
+    public function pow(int $exp): self
     {
         // Any number to the power of 0 is 1, including 0.
         // 0^0 can be considered undefined, but many programming languages (including PHP) return 1.
-        if ($exponent === 0) {
+        if ($exp === 0) {
             return new self(1);
         }
 
         // Handle 0 base.
         if ($this->numerator === 0) {
             // 0 to the power of a negative exponent is invalid (effectively division by zero).
-            if ($exponent < 0) {
+            if ($exp < 0) {
                 throw new ArithmeticException('Cannot raise zero to negative power.');
             }
 
@@ -679,34 +679,34 @@ final class Rational implements Stringable
         }
 
         // Handle exponent = 1. Any number to power 1 is itself.
-        if ($exponent === 1) {
+        if ($exp === 1) {
             return clone $this;
         }
 
         // Handle exponent = 2. Delegate to sqr().
-        if ($exponent === 2) {
+        if ($exp === 2) {
             return $this->sqr();
         }
 
         // Handle exponent = -1. Delegate to inv().
-        if ($exponent === -1) {
+        if ($exp === -1) {
             return $this->inv();
         }
 
         // Handle exponent = PHP_INT_MIN.
-        if ($exponent === PHP_INT_MIN) {
+        if ($exp === PHP_INT_MIN) {
             return $this->pow(PHP_INT_MAX)->mul($this)->inv();
         }
 
         // Handle negative exponents by taking reciprocal.
-        if ($exponent < 0) {
-            return $this->inv()->pow(-$exponent);
+        if ($exp < 0) {
+            return $this->inv()->pow(-$exp);
         }
 
         // General solution. Calculate the new numerator and denominator with overflow checks.
         return new self(
-            Integers::pow($this->numerator, $exponent),
-            Integers::pow($this->denominator, $exponent)
+            Integers::pow($this->numerator, $exp),
+            Integers::pow($this->denominator, $exp)
         );
     }
 

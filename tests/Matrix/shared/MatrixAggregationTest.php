@@ -18,8 +18,8 @@ class MatrixAggregationTest extends TestCase
      */
     public function testCount(): void
     {
-        $mat = new Matrix(2, 3);
-        $this->assertSame(6, $mat->count());
+        $m = new Matrix(2, 3);
+        $this->assertSame(6, $m->count());
     }
 
     /**
@@ -27,8 +27,8 @@ class MatrixAggregationTest extends TestCase
      */
     public function testCountSquare(): void
     {
-        $mat = new Matrix(4, 4);
-        $this->assertSame(16, $mat->count());
+        $m = new Matrix(4, 4);
+        $this->assertSame(16, $m->count());
     }
 
     /**
@@ -46,9 +46,9 @@ class MatrixAggregationTest extends TestCase
      */
     public function testGlobalCountFunction(): void
     {
-        $mat = new Matrix(2, 5);
-        $this->assertCount(10, $mat);
-        $this->assertSame(10, count($mat));
+        $m = new Matrix(2, 5);
+        $this->assertCount(10, $m);
+        $this->assertSame(10, count($m));
     }
 
     #endregion

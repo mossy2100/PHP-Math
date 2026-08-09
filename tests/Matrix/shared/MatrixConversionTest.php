@@ -18,14 +18,14 @@ class MatrixConversionTest extends TestCase
      */
     public function testToArray(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
         $this->assertSame([
             [1.0, 2.0, 3.0],
             [4.0, 5.0, 6.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     #endregion
@@ -37,11 +37,11 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringUsesBoxDrawingCharacters(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]);
-        $str = (string) $mat;
+        $str = (string) $m;
         $this->assertStringContainsString("\u{250C}", $str); // top-left corner
         $this->assertStringContainsString("\u{2510}", $str); // top-right corner
         $this->assertStringContainsString("\u{2514}", $str); // bottom-left corner
@@ -54,8 +54,8 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringWithEmptyMatrix(): void
     {
-        $mat = new Matrix(0, 0);
-        $str = (string) $mat;
+        $m = new Matrix(0, 0);
+        $str = (string) $m;
         $this->assertStringContainsString("\u{250C}", $str);
         $this->assertStringContainsString("\u{2518}", $str);
     }
@@ -65,11 +65,11 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringAlignmentWithMixedWidthNumbers(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 200],
             [30, 4],
         ]);
-        $str = (string) $mat;
+        $str = (string) $m;
         // The wider number (200) should pad narrower numbers.
         $this->assertStringContainsString('200', $str);
         $this->assertStringContainsString('1', $str);
@@ -89,7 +89,7 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringSuppressesFloatingPointNoise(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [
                 0.1 + 0.2,
                 1,
@@ -99,7 +99,7 @@ class MatrixConversionTest extends TestCase
                 0.1 + 0.2,
             ],
         ]);
-        $str = (string) $mat;
+        $str = (string) $m;
 
         // Cells should render as '0.3', not '0.30000000000000004'.
         $this->assertStringContainsString('0.3', $str);

@@ -20,11 +20,11 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testNeg(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, -2],
             [3, -4],
         ]);
-        $result = $mat->neg();
+        $result = $m->neg();
         $this->assertSame([
             [-1.0, 2.0],
             [-3.0, 4.0],
@@ -36,8 +36,8 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testNegZeroMatrix(): void
     {
-        $mat = new Matrix(2, 2);
-        $result = $mat->neg();
+        $m = new Matrix(2, 2);
+        $result = $m->neg();
         $this->assertSame([
             [0.0, 0.0],
             [0.0, 0.0],
@@ -53,11 +53,11 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testReciprocal(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [2, 4],
             [5, 10],
         ]);
-        $result = $mat->reciprocal();
+        $result = $m->reciprocal();
         $this->assertEqualsWithDelta(0.5, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.25, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.2, $result->get(1, 0), EPSILON);
@@ -69,12 +69,12 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testReciprocalOfZeroElementThrows(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 0],
             [2, 3],
         ]);
         $this->expectException(ArithmeticException::class);
-        $mat->reciprocal();
+        $m->reciprocal();
     }
 
     #endregion
@@ -86,14 +86,14 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvTwoByTwo(): void
     {
-        $matA = Matrix::fromArray([
+        $m1 = Matrix::fromArray([
             [4, 7],
             [2, 6],
         ]);
-        $inv = $matA->inv();
+        $inv = $m1->inv();
 
         // Verify A * A^-1 = I.
-        $product = $matA->mul($inv);
+        $product = $m1->mul($inv);
         $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
@@ -105,9 +105,9 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvNonSquareThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         $this->expectException(DomainException::class);
-        $mat->inv();
+        $m->inv();
     }
 
     /**
@@ -115,12 +115,12 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvSingularMatrixThrows(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2],
             [2, 4],
         ]);
         $this->expectException(DomainException::class);
-        $mat->inv();
+        $m->inv();
     }
 
     #endregion

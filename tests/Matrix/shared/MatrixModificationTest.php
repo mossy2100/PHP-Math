@@ -22,9 +22,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetValidElement(): void
     {
-        $mat = new Matrix(2, 2);
-        $mat->set(0, 1, 42);
-        $this->assertSame(42.0, $mat->get(0, 1));
+        $m = new Matrix(2, 2);
+        $m->set(0, 1, 42);
+        $this->assertSame(42.0, $m->get(0, 1));
     }
 
     /**
@@ -32,9 +32,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetFloatElement(): void
     {
-        $mat = new Matrix(2, 2);
-        $mat->set(1, 0, 3.14);
-        $this->assertSame(3.14, $mat->get(1, 0));
+        $m = new Matrix(2, 2);
+        $m->set(1, 0, 3.14);
+        $this->assertSame(3.14, $m->get(1, 0));
     }
 
     /**
@@ -42,9 +42,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetOutOfRangeThrows(): void
     {
-        $mat = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
-        $mat->set(2, 0, 1);
+        $m->set(2, 0, 1);
     }
 
     /**
@@ -52,9 +52,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetNegativeIndexThrows(): void
     {
-        $mat = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
-        $mat->set(0, -1, 1);
+        $m->set(0, -1, 1);
     }
 
     /**
@@ -62,10 +62,10 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetNonFiniteValueThrows(): void
     {
-        $mat = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
 
         $this->expectException(DomainException::class);
-        $mat->set(0, 0, INF);
+        $m->set(0, 0, INF);
     }
 
     /**
@@ -73,10 +73,10 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetNanValueThrows(): void
     {
-        $mat = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
 
         $this->expectException(DomainException::class);
-        $mat->set(0, 0, NAN);
+        $m->set(0, 0, NAN);
     }
 
     /**
@@ -84,10 +84,10 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetNegativeInfinityValueThrows(): void
     {
-        $mat = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
 
         $this->expectException(DomainException::class);
-        $mat->set(0, 0, -INF);
+        $m->set(0, 0, -INF);
     }
 
     #endregion
@@ -99,14 +99,14 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetRowWithVector(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $mat->setRow(1, Vector::fromArray([10, 11, 12]));
+        $m->setRow(1, Vector::fromArray([10, 11, 12]));
 
-        $this->assertSame([1.0, 2.0, 3.0], $mat->getRow(0)->toArray());
-        $this->assertSame([10.0, 11.0, 12.0], $mat->getRow(1)->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
+        $this->assertSame([10.0, 11.0, 12.0], $m->getRow(1)->toArray());
     }
 
     /**
@@ -114,9 +114,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetRowOutOfRangeThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->setRow(2, Vector::fromArray([1, 2, 3]));
+        $m->setRow(2, Vector::fromArray([1, 2, 3]));
     }
 
     /**
@@ -124,9 +124,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetRowWrongLengthThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         $this->expectException(LengthException::class);
-        $mat->setRow(0, Vector::fromArray([1, 2]));
+        $m->setRow(0, Vector::fromArray([1, 2]));
     }
 
     /**
@@ -134,13 +134,13 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetRowDoesNotAliasCallerVector(): void
     {
-        $mat = new Matrix(2, 3);
-        $vec = Vector::fromArray([1, 2, 3]);
-        $mat->setRow(0, $vec);
+        $m = new Matrix(2, 3);
+        $v = Vector::fromArray([1, 2, 3]);
+        $m->setRow(0, $v);
 
-        $vec->set(0, 999);
+        $v->set(0, 999);
 
-        $this->assertSame([1.0, 2.0, 3.0], $mat->getRow(0)->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
     }
 
     #endregion
@@ -152,14 +152,14 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetColumnWithVector(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $mat->setColumn(2, Vector::fromArray([30, 60]));
+        $m->setColumn(2, Vector::fromArray([30, 60]));
 
-        $this->assertSame([1.0, 2.0, 30.0], $mat->getRow(0)->toArray());
-        $this->assertSame([4.0, 5.0, 60.0], $mat->getRow(1)->toArray());
+        $this->assertSame([1.0, 2.0, 30.0], $m->getRow(0)->toArray());
+        $this->assertSame([4.0, 5.0, 60.0], $m->getRow(1)->toArray());
     }
 
     /**
@@ -167,9 +167,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetColumnOutOfRangeThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->setColumn(3, Vector::fromArray([1, 2]));
+        $m->setColumn(3, Vector::fromArray([1, 2]));
     }
 
     /**
@@ -177,9 +177,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetColumnWrongLengthThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
         $this->expectException(LengthException::class);
-        $mat->setColumn(0, Vector::fromArray([1, 2, 3]));
+        $m->setColumn(0, Vector::fromArray([1, 2, 3]));
     }
 
     #endregion
@@ -191,8 +191,8 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteAtDefaultOffset(): void
     {
-        $mat = new Matrix(3, 3);
-        $mat->paste(Matrix::fromArray([
+        $m = new Matrix(3, 3);
+        $m->paste(Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]));
@@ -201,7 +201,7 @@ class MatrixModificationTest extends TestCase
             [1.0, 2.0, 0.0],
             [3.0, 4.0, 0.0],
             [0.0, 0.0, 0.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     /**
@@ -209,8 +209,8 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteAtOffset(): void
     {
-        $mat = new Matrix(3, 3);
-        $mat->paste(Matrix::fromArray([
+        $m = new Matrix(3, 3);
+        $m->paste(Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]), 1, 1);
@@ -219,7 +219,7 @@ class MatrixModificationTest extends TestCase
             [0.0, 0.0, 0.0],
             [0.0, 1.0, 2.0],
             [0.0, 3.0, 4.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     /**
@@ -227,8 +227,8 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteOverwritesExistingElements(): void
     {
-        $mat = Matrix::identity(2);
-        $mat->paste(Matrix::fromArray([
+        $m = Matrix::identity(2);
+        $m->paste(Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]));
@@ -236,7 +236,7 @@ class MatrixModificationTest extends TestCase
         $this->assertSame([
             [5.0, 6.0],
             [7.0, 8.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     /**
@@ -244,8 +244,8 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteMutatesInPlace(): void
     {
-        $mat = new Matrix(2, 2);
-        $mat->paste(Matrix::fromArray([
+        $m = new Matrix(2, 2);
+        $m->paste(Matrix::fromArray([
             [1, 2],
             [3, 4],
         ]));
@@ -253,7 +253,7 @@ class MatrixModificationTest extends TestCase
         $this->assertSame([
             [1.0, 2.0],
             [3.0, 4.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     /**
@@ -261,13 +261,13 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteWithZeroDimensionMatrix(): void
     {
-        $mat = Matrix::identity(2);
-        $mat->paste(new Matrix(0, 0));
+        $m = Matrix::identity(2);
+        $m->paste(new Matrix(0, 0));
 
         $this->assertSame([
             [1.0, 0.0],
             [0.0, 1.0],
-        ], $mat->toArray());
+        ], $m->toArray());
     }
 
     /**
@@ -275,9 +275,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteWithNegativeRowOffsetThrows(): void
     {
-        $mat = new Matrix(3, 3);
+        $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->paste(new Matrix(1, 1), -1, 0);
+        $m->paste(new Matrix(1, 1), -1, 0);
     }
 
     /**
@@ -285,9 +285,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteRowOutOfBoundsThrows(): void
     {
-        $mat = new Matrix(3, 3);
+        $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->paste(Matrix::fromArray([
+        $m->paste(Matrix::fromArray([
             [1],
             [2],
         ]), 2, 0);
@@ -298,9 +298,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteWithNegativeColumnOffsetThrows(): void
     {
-        $mat = new Matrix(3, 3);
+        $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->paste(new Matrix(1, 1), 0, -1);
+        $m->paste(new Matrix(1, 1), 0, -1);
     }
 
     /**
@@ -308,9 +308,9 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteColumnOutOfBoundsThrows(): void
     {
-        $mat = new Matrix(3, 3);
+        $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $mat->paste(Matrix::fromArray([
+        $m->paste(Matrix::fromArray([
             [1, 2],
         ]), 0, 2);
     }

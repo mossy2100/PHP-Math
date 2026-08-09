@@ -23,10 +23,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetExistsWithValidIndex(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
-        $this->assertTrue(isset($mat[0]));
-        $this->assertTrue(isset($mat[1]));
+        $this->assertTrue(isset($m[0]));
+        $this->assertTrue(isset($m[1]));
     }
 
     /**
@@ -34,9 +34,9 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetExistsWithOutOfRangeIndex(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
-        $this->assertFalse(isset($mat[2]));
+        $this->assertFalse(isset($m[2]));
     }
 
     /**
@@ -44,9 +44,9 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetExistsWithNegativeIndex(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
-        $this->assertFalse(isset($mat[-1]));
+        $this->assertFalse(isset($m[-1]));
     }
 
     #endregion
@@ -58,14 +58,14 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetReturnsVector(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
 
-        $this->assertInstanceOf(Vector::class, $mat[0]);
-        $this->assertSame([1.0, 2.0, 3.0], $mat[0]->toArray());
-        $this->assertSame([4.0, 5.0, 6.0], $mat[1]->toArray());
+        $this->assertInstanceOf(Vector::class, $m[0]);
+        $this->assertSame([1.0, 2.0, 3.0], $m[0]->toArray());
+        $this->assertSame([4.0, 5.0, 6.0], $m[1]->toArray());
     }
 
     /**
@@ -73,13 +73,13 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetDoubleIndex(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
 
-        $this->assertSame(1.0, $mat[0][0]);
-        $this->assertSame(6.0, $mat[1][2]);
+        $this->assertSame(1.0, $m[0][0]);
+        $this->assertSame(6.0, $m[1][2]);
     }
 
     /**
@@ -87,10 +87,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetNonIntegerOffsetThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(InvalidArgumentException::class);
-        $row = $mat['row'];
+        $row = $m['row'];
     }
 
     /**
@@ -98,10 +98,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetOutOfRangeThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(OutOfRangeException::class);
-        $row = $mat[2];
+        $row = $m[2];
     }
 
     #endregion
@@ -113,14 +113,14 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetSingleIndex(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $mat[1] = Vector::fromArray([10, 11, 12]);
+        $m[1] = Vector::fromArray([10, 11, 12]);
 
-        $this->assertSame([1.0, 2.0, 3.0], $mat->getRow(0)->toArray());
-        $this->assertSame([10.0, 11.0, 12.0], $mat->getRow(1)->toArray());
+        $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
+        $this->assertSame([10.0, 11.0, 12.0], $m->getRow(1)->toArray());
     }
 
     /**
@@ -128,10 +128,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetDoubleIndex(): void
     {
-        $mat = new Matrix(2, 3);
-        $mat[0][1] = 42;
+        $m = new Matrix(2, 3);
+        $m[0][1] = 42;
 
-        $this->assertSame(42.0, $mat->get(0, 1));
+        $this->assertSame(42.0, $m->get(0, 1));
     }
 
     /**
@@ -139,10 +139,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetNonIntegerOffsetThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(InvalidArgumentException::class);
-        $mat['row'] = Vector::fromArray([1, 2, 3]);
+        $m['row'] = Vector::fromArray([1, 2, 3]);
     }
 
     /**
@@ -150,10 +150,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetNonVectorValueThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(InvalidArgumentException::class);
-        $mat[0] = [1, 2, 3];
+        $m[0] = [1, 2, 3];
     }
 
     /**
@@ -161,10 +161,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetWrongLengthVectorThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(LengthException::class);
-        $mat[0] = Vector::fromArray([1, 2]);
+        $m[0] = Vector::fromArray([1, 2]);
     }
 
     #endregion
@@ -176,10 +176,10 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetUnsetThrows(): void
     {
-        $mat = new Matrix(2, 3);
+        $m = new Matrix(2, 3);
 
         $this->expectException(LogicException::class);
-        unset($mat[0]);
+        unset($m[0]);
     }
 
     #endregion
@@ -187,40 +187,40 @@ class MatrixArrayAccessTest extends TestCase
     #region Live reference vs. independent copy tests.
 
     /**
-     * Test $mat[$row] returns a live reference: mutating it mutates the Matrix, unlike getRow(), which returns an
+     * Test $m[$row] returns a live reference: mutating it mutates the Matrix, unlike getRow(), which returns an
      * independent copy.
      */
     public function testOffsetGetReturnsLiveReference(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
 
-        // $mat[$row] is live: mutating it mutates the Matrix.
-        $liveRow = $mat[0];
+        // $m[$row] is live: mutating it mutates the Matrix.
+        $liveRow = $m[0];
         $liveRow->set(0, 999);
-        $this->assertSame(999.0, $mat->get(0, 0));
+        $this->assertSame(999.0, $m->get(0, 0));
 
         // getRow() is a copy: mutating it does not mutate the Matrix.
-        $copiedRow = $mat->getRow(1);
+        $copiedRow = $m->getRow(1);
         $copiedRow->set(0, 999);
-        $this->assertSame(4.0, $mat->get(1, 0));
+        $this->assertSame(4.0, $m->get(1, 0));
     }
 
     /**
-     * Test a live reference obtained via $mat[$row] stays valid and up to date after setRow(): setRow() mutates the
+     * Test a live reference obtained via $m[$row] stays valid and up to date after setRow(): setRow() mutates the
      * row's existing Vector in place rather than replacing it.
      */
     public function testLiveReferenceStaysValidAfterSetRow(): void
     {
-        $mat = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1, 2, 3],
             [4, 5, 6],
         ]);
-        $liveRow = $mat[0];
+        $liveRow = $m[0];
 
-        $mat->setRow(0, Vector::fromArray([7, 8, 9]));
+        $m->setRow(0, Vector::fromArray([7, 8, 9]));
 
         $this->assertSame([7.0, 8.0, 9.0], $liveRow->toArray());
     }
