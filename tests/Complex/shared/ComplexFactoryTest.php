@@ -118,18 +118,18 @@ class ComplexFactoryTest extends TestCase
     public static function invalidInputProvider(): array
     {
         return [
-            'empty string'                        => [''],
-            'random text'                         => ['abc'],
-            'incomplete expression'               => ['3+'],
-            'double signs'                        => ['++i'],
-            'missing imaginary unit'              => ['3+4'],
-            'incomplete imaginary'                => ['i+'],
-            'wrong imaginary unit'                => ['3+4k'],
-            'j is not a supported imaginary unit' => ['3+4j'],
+            'empty string'                                    => [''],
+            'random text'                                     => ['abc'],
+            'incomplete expression'                           => ['3+'],
+            'double signs'                                    => ['++i'],
+            'missing imaginary unit'                          => ['3+4'],
+            'incomplete imaginary'                            => ['i+'],
+            'wrong imaginary unit'                            => ['3+4k'],
+            'j is not a supported imaginary unit'             => ['3+4j'],
             'I (uppercase) is not a supported imaginary unit' => ['3+4I'],
-            'multiple decimal points'             => ['3.4.5'],
-            'incomplete scientific notation'      => ['3e'],
-            'double e'                            => ['3ee4'],
+            'multiple decimal points'                         => ['3.4.5'],
+            'incomplete scientific notation'                  => ['3e'],
+            'double e'                                        => ['3ee4'],
         ];
     }
 
