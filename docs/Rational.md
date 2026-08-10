@@ -16,8 +16,12 @@ denominator. Key features include:
 - Comparison operations with support for mixed types
 - Overflow detection for safe integer arithmetic
 
-**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Neither the numerator nor denominator
-can be PHP_INT_MIN.
+**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1; or, to put it another way, the
+numerator (signed) can range from -PHP_INT_MAX to PHP_INT_MAX, and the denominator (unsigned) can range from 1 to
+PHP_INT_MAX.
+
+Because of the way several operations work, neither the numerator nor denominator can be PHP_INT_MIN (equal to
+-PHP_INT_MAX - 1).
 
 ---
 
@@ -47,8 +51,8 @@ The denominator. Always positive in canonical form. Read-only from outside the c
 public function __construct(int $num = 0, int $den = 1)
 ```
 
-Create a new rational number from exact integers. This constructor is deliberately narrow — for converting a float, use
-[`fromFloat()`](#fromfloat) instead, which handles approximation via continued fractions.
+Create a new rational number from integers. For converting a `float` to a `Rational`, use [`fromFloat()`](#fromfloat)
+instead, which handles approximation via continued fractions.
 
 **Parameters:**
 
@@ -80,10 +84,8 @@ new Rational(1, 0);               // ArithmeticException (zero denominator)
 **Throws:**
 
 - `ArithmeticException` if the denominator is zero.
-- `DomainException` if the ratio can't be exactly represented (PHP_INT_MIN paired with an odd or otherwise incompatible
-  counterpart, e.g. `new Rational(PHP_INT_MIN, 3)`). This is not a magnitude problem — the resulting value may well be
-  within the representable range — it's specifically that exact integer ratio that can't be reduced, since PHP_INT_MIN
-  can't be safely negated. Use `fromFloat()` if an approximation is acceptable instead.
+- `DomainException` if the ratio can't be represented by the type, which occurs when one parameter is PHP_INT_MIN and
+  the other is odd. Use `fromFloat()` if an approximation is acceptable (e.g. `Rational::fromFloat(PHP_INT_MIN / 3)`).
 
 ---
 
@@ -114,7 +116,10 @@ echo $r;                          // "245850922/78256779"
 echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_PI)
 ```
 
-**Valid range:** The absolute value can range from 1/PHP_INT_MAX to PHP_INT_MAX/1. Values outside this range throw:
+**Throws:** `DomainException` if the value is not finite (±INF or NAN), or is outside the representable range (too large
+or too small, but non-zero).
+
+**Examples:**
 
 ```php
 Rational::fromFloat(1e19);              // DomainException — too large
@@ -122,9 +127,6 @@ Rational::fromFloat(1e-20);             // DomainException — too small
 Rational::fromFloat(INF);               // DomainException — non-finite
 Rational::fromFloat(NAN);               // DomainException — non-finite
 ```
-
-**Throws:** `DomainException` if the value is not finite (±INF or NAN), or is outside the representable range (too large
-or too small, but non-zero).
 
 ### fromString()
 
@@ -153,7 +155,7 @@ $r4 = Rational::fromString(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 
 - `FormatException` if the string is empty or does not match a supported format.
 - `ArithmeticException` if the string is a fraction with a zero denominator (e.g. `"1/0"`).
-- `DomainException` if the string represents a value outside the representable range (see `fromFloat()` above).
+- `DomainException` if the string represents a unrepresentable value.
 
 ---
 
@@ -258,7 +260,7 @@ need to compare against a string.
 public function equal(mixed $other): bool
 ```
 
-Check if this rational number exactly equals another value.
+Check if the rational number exactly equals another value.
 
 Uses exact comparison based on `compare()` returning 0.
 
@@ -302,7 +304,7 @@ public function approxEqual(
 ): bool
 ```
 
-Check if this rational number approximately equals another value within specified tolerances.
+Check if the rational number approximately equals another value within specified tolerances.
 
 Converts both values to floats and uses combined relative and absolute tolerance approach. `NAN` throws, since it has no
 meaningful equality result; `±INF` returns `false` instead — a `Rational` (always finite) is never approximately equal
@@ -345,14 +347,14 @@ var_dump($r1->approxEqual($r2, 1e-9, 1e-9));  // false
 $r3 = new Rational(1, 2);
 var_dump($r3->approxEqual(0.5000001, 1e-5));  // true
 
-// With zero tolerances (exact match required)
+// With zero tolerances (exact match required).
 var_dump($r1->approxEqual($r1, 0.0, 0.0));  // true
 
-// A Rational is never approximately equal to infinity, but this isn't a type error, so it returns false
+// A Rational is never approximately equal to infinity, but this isn't a type error, so it returns false.
 var_dump($r1->approxEqual(INF));   // false
 var_dump($r1->approxEqual(-INF));  // false
 
-// Anything else throws, rather than silently returning false
+// Anything else throws, rather than silently returning false.
 $r1->approxEqual(NAN);              // throws DomainException (no meaningful equality result)
 $r1->approxEqual('not a number');  // throws InvalidArgumentException
 ```
@@ -363,7 +365,7 @@ $r1->approxEqual('not a number');  // throws InvalidArgumentException
 public function compare(mixed $other): int
 ```
 
-Compare this rational number with another value using exact comparison.
+Compare the rational number with another value using exact comparison.
 
 **Parameters:**
 
@@ -411,7 +413,7 @@ public function approxCompare(
 ): int
 ```
 
-Compare this rational number with another value using approximate equality.
+Compare the rational number with another value using approximate equality.
 
 Returns 0 if values are approximately equal within tolerances, otherwise performs exact less/greater than comparison.
 
@@ -450,10 +452,10 @@ echo $r3->approxCompare($r1);  // -1 (1/4 < 1/3)
 ### lessThan(), greaterThan(), etc.
 
 ```php
-public function lessThan(mixed $other): bool
-public function lessThanOrEqual(mixed $other): bool
-public function greaterThan(mixed $other): bool
-public function greaterThanOrEqual(mixed $other): bool
+public function lessThan(mixed $other): bool {...}
+public function lessThanOrEqual(mixed $other): bool {...}
+public function greaterThan(mixed $other): bool {...}
+public function greaterThanOrEqual(mixed $other): bool {...}
 ```
 
 Ordering comparison methods provided by the `ApproxComparable` trait (via `Comparable`). These use exact comparison via
@@ -475,11 +477,10 @@ var_dump($r1->lessThan(0.5));           // true (1/3 < 0.5)
 var_dump($r2->greaterThan(0));          // true
 ```
 
----
+### Comparison Operators
 
-## Comparison Operators
-
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
+types in this package.
 
 ---
 
@@ -506,7 +507,7 @@ $result = $r->abs();  // 3/4
 public function neg(): self
 ```
 
-Calculate the negative of this rational number.
+Calculate the negative of the rational number.
 
 **Example:**
 
@@ -545,17 +546,17 @@ $result2 = $r2->inv();  // -5/2
 public function add(self|int $other): self
 ```
 
-Add another value to this rational number.
+Add another value to the rational number.
 
 **Example:**
 
 ```php
-$r1 = new Rational(1, 2);
-$r2 = new Rational(1, 3);
-$sum = $r1->add($r2);  // 5/6
+$r1 = new Rational(1, 2);  // 1/2
+$r2 = new Rational(1, 3);  // 1/3
+$sum = $r1->add($r2);      // 5/6
 
-$r3 = new Rational(3, 4);
-$sum2 = $r3->add(2);   // 11/4
+$r3 = new Rational(3, 4);  // 3/4
+$sum2 = $r3->add(2);       // 11/4
 ```
 
 **Throws:**
@@ -569,14 +570,14 @@ $sum2 = $r3->add(2);   // 11/4
 public function sub(self|int $other): self
 ```
 
-Subtract another value from this rational number.
+Subtract another value from the rational number.
 
 **Example:**
 
 ```php
-$r1 = new Rational(3, 4);
-$r2 = new Rational(1, 4);
-$diff = $r1->sub($r2);  // 1/2
+$r1 = new Rational(3, 4);  // 3/4
+$r2 = new Rational(1, 4);  // 1/4
+$diff = $r1->sub($r2);     // 1/2
 ```
 
 **Throws:**
@@ -590,18 +591,18 @@ $diff = $r1->sub($r2);  // 1/2
 public function mul(self|int $other): self
 ```
 
-Multiply this rational number by another value.
+Multiply the rational number by another value.
 
 **Uses cross-cancellation** to prevent overflow when possible.
 
 **Example:**
 
 ```php
-$r1 = new Rational(2, 3);
-$r2 = new Rational(3, 4);
+$r1 = new Rational(2, 3);  // 2/3
+$r2 = new Rational(3, 4);  // 3/4
 $product = $r1->mul($r2);  // 1/2
 
-$r3 = new Rational(3, 5);
+$r3 = new Rational(3, 5);  // 3/5
 $product2 = $r3->mul(6);   // 18/5
 ```
 
@@ -616,18 +617,18 @@ $product2 = $r3->mul(6);   // 18/5
 public function div(self|int $other): self
 ```
 
-Divide this rational number by another value.
+Divide the rational number by another value.
 
 **Uses cross-cancellation** to prevent overflow when possible, same as `mul()`.
 
 **Example:**
 
 ```php
-$r1 = new Rational(2, 3);
-$r2 = new Rational(3, 4);
+$r1 = new Rational(2, 3);   // 2/3
+$r2 = new Rational(3, 4);   // 3/4
 $quotient = $r1->div($r2);  // 8/9
 
-$r3 = new Rational(3, 4);
+$r3 = new Rational(3, 4);   // 3/4
 $quotient2 = $r3->div(2);   // 3/8
 ```
 
@@ -647,28 +648,28 @@ $quotient2 = $r3->div(2);   // 3/8
 public function pow(int $exp): self
 ```
 
-Raise this rational number to an integer power.
+Raise the rational number to an integer power.
 
 **Examples:**
 
 ```php
-$r1 = new Rational(2, 3);
-$result = $r1->pow(2);   // 4/9
+$r1 = new Rational(2, 3);  // 2/3
+$result = $r1->pow(2);     // 4/9
 
-$r2 = new Rational(1, 2);
-$result2 = $r2->pow(3);  // 1/8
+$r2 = new Rational(1, 2);  // 1/2
+$result2 = $r2->pow(3);    // 1/8
 
-$r3 = new Rational(2, 3);
-$result3 = $r3->pow(-2); // 9/4 (negative exponent = reciprocal)
+$r3 = new Rational(2, 3);  // 2/3
+$result3 = $r3->pow(-2);   // 9/4 (negative exponent = reciprocal)
 
-$r4 = new Rational(5, 7);
-$result4 = $r4->pow(0);  // 1/1 (any number^0 = 1)
+$r4 = new Rational(5, 7);  // 5/7
+$result4 = $r4->pow(0);    // 1/1 (any number^0 = 1)
 ```
 
 **Special cases:**
 
 - n^0 = 1 (including 0^0 by convention)
-- n^1 = n (returns a new, distinct object that's equal to but not the same instance as `$this`)
+- n^1 = n (equivalent to `clone`; returns a new, distinct object that's equal to but not the same instance as `$this`)
 - 0^(positive) = 0
 - 0^(negative) throws `ArithmeticException`
 
@@ -684,7 +685,7 @@ $result4 = $r4->pow(0);  // 1/1 (any number^0 = 1)
 public function sqr(): self
 ```
 
-Square this rational number. Equivalent to `pow(2)`, but more efficient and readable.
+Square the rational number. Equivalent to `pow(2)`, but more efficient and readable.
 
 **Example:**
 
@@ -751,7 +752,7 @@ $r->round(RoundingMode::HalfOdd);          // 3 (ties go to the nearest odd inte
 public function floor(): int
 ```
 
-Find the largest integer less than or equal to this rational number.
+Find the largest integer less than or equal to the rational number.
 
 **Examples:**
 
@@ -769,7 +770,7 @@ echo $r2->floor();  // -3
 public function ceil(): int
 ```
 
-Find the smallest integer greater than or equal to this rational number.
+Find the smallest integer greater than or equal to the rational number.
 
 **Examples:**
 

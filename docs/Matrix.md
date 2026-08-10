@@ -243,7 +243,7 @@ public function getRow(int $row): Vector
 
 Get a row as a Vector.
 
-**Returns an independent copy** - mutating the returned Vector never affects this Matrix. For a live, mutable view of a
+**Returns an independent copy** - mutating the returned Vector never affects the Matrix. For a live, mutable view of a
 row that stays linked to the Matrix, use [`$m[$row]`](#arrayaccess-methods) instead.
 
 **Parameters:**
@@ -290,7 +290,7 @@ $col = $m->getColumn(0);  // Vector(1, 3, 5)
 public function copy(int $row, int $col, int $rowCount, int $columnCount): self
 ```
 
-Extract a rectangular sub-matrix: a copy of a subset of this matrix's elements. Purely functional — does not modify this
+Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. Purely functional — does not modify the
 matrix.
 
 **Parameters:**
@@ -302,7 +302,7 @@ matrix.
 
 **Returns:** `self` - A new matrix containing the copied elements.
 
-**Throws:** `OutOfRangeException` if either count is negative, or the selected region extends beyond this matrix's
+**Throws:** `OutOfRangeException` if either count is negative, or the selected region extends beyond the matrix's
 bounds.
 
 **Examples:**
@@ -357,7 +357,7 @@ public function setRow(int $row, Vector $vec): void
 
 Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
 row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
-reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on this Matrix.
+reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
 
 **Parameters:**
 
@@ -408,16 +408,16 @@ $m->setColumn(1, Vector::fromArray([20, 50]));
 public function paste(self $other, int $row = 0, int $col = 0): void
 ```
 
-Copy the elements of another matrix into this one, starting at the given position. Unlike most methods in this class,
-this one mutates the matrix in place, matching `set()`, `setRow()`, and `setColumn()`.
+Copy the elements of another matrix into the matrix, starting at the given position. Unlike most methods in this class,
+`paste()` mutates in place, matching `set()`, `setRow()`, and `setColumn()`.
 
 **Parameters:**
 
-- `$other` (self) - The matrix to paste. Must fit within this matrix at the given offset.
+- `$other` (self) - The matrix to paste. Must fit within the matrix at the given offset.
 - `$row` (int) - Row at which to place the top-left corner of `$other` (0-based). Defaults to 0.
 - `$col` (int) - Column at which to place the top-left corner of `$other` (0-based). Defaults to 0.
 
-**Throws:** `OutOfRangeException` if either offset is negative, or `$other` doesn't fit within this matrix at that
+**Throws:** `OutOfRangeException` if either offset is negative, or `$other` doesn't fit within the matrix at that
 offset.
 
 **Examples:**
@@ -449,7 +449,7 @@ catch bugs from comparing values that can't meaningfully be compared.
 public function equal(mixed $other): bool
 ```
 
-Check if this matrix exactly equals another value.
+Check if the matrix exactly equals another value.
 
 Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal.
 
@@ -489,7 +489,7 @@ public function approxEqual(
 ): bool
 ```
 
-Check if this matrix approximately equals another value within specified tolerances.
+Check if the matrix approximately equals another value within specified tolerances.
 
 Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first,
 then relative tolerance.
@@ -542,8 +542,8 @@ types in this package.
 public function resize(int $rowCount, int $columnCount): self
 ```
 
-Create a new matrix with the given dimensions, containing as much of this matrix's data as fits. The result is anchored
-at (0, 0): if the new dimensions are larger than this matrix's, the extra rows and/or columns are zero-filled; if
+Create a new matrix with the given dimensions, containing as much of the matrix's data as fits. The result is anchored
+at (0, 0): if the new dimensions are larger than the matrix's, the extra rows and/or columns are zero-filled; if
 smaller, the excess rows/columns (from the bottom and/or right) are dropped. To resize from a different corner, or to
 insert/remove a row or column at an arbitrary position, compose `copy()` and `paste()` directly instead.
 
@@ -582,7 +582,7 @@ $shrunk = $m->resize(1, 1);
 public function neg(): self
 ```
 
-Negate this matrix. Returns a new matrix with all elements negated.
+Negate the matrix. Returns a new matrix with all elements negated.
 
 **Returns:** `self` - A new matrix with all elements negated.
 
@@ -600,8 +600,8 @@ $result = $m->neg();
 public function reciprocal(): self
 ```
 
-Calculate the element-wise reciprocal of this matrix. Not to be confused with `inv()`, the matrix inverse - this simply
-replaces each element with its own reciprocal, with no relationship to matrix multiplication.
+Calculate the element-wise reciprocal of the matrix. Not to be confused with `inv()`, the matrix inverse - `reciprocal()`
+simply replaces each element with its own reciprocal, with no relationship to matrix multiplication.
 
 **Returns:** `self` - A new matrix with each element replaced by its reciprocal.
 
@@ -621,7 +621,7 @@ $result = $m->reciprocal();
 public function inv(): self
 ```
 
-Calculate the inverse of this matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and
+Calculate the inverse of the matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and
 invertible (non-zero determinant).
 
 **Note:** The underlying algorithm has O(n! × n²) time complexity. It is suitable for small matrices (up to ~10×10) but
@@ -654,7 +654,7 @@ $idMat = $m->mul($inv);
 public function add(self $other): self
 ```
 
-Add another matrix to this one. Both matrices must have the same dimensions.
+Add one matrix to another. Both matrices must have the same dimensions.
 
 **Parameters:**
 
@@ -679,7 +679,7 @@ $sum = $m1->add($m2);
 public function sub(self $other): self
 ```
 
-Subtract another matrix from this one. Both matrices must have the same dimensions.
+Subtract one matrix from another. Both matrices must have the same dimensions.
 
 **Parameters:**
 
@@ -704,10 +704,10 @@ $diff = $m1->sub($m2);
 public function mul(float|self $other): self
 ```
 
-Multiply this matrix by a scalar or another matrix.
+Multiply the matrix by a scalar or another matrix.
 
 When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is
-performed (the number of columns in this matrix must equal the number of rows in the other).
+performed (the number of columns in the matrix must equal the number of rows in the other).
 
 To multiply by a `Vector` (_Ax_), call [`mulVector()`](#mulvector) instead.
 
@@ -742,7 +742,7 @@ $product = $m1->mul($m2);
 public function div(float $scalar): self
 ```
 
-Divide this matrix by a scalar.
+Divide the matrix by a scalar.
 
 **Parameters:**
 
@@ -766,7 +766,7 @@ $result = $m->div(2);
 public function hadamardMul(self $other): self
 ```
 
-Calculate the Hadamard product (element-wise product) of this matrix with another. Both matrices must have the same
+Calculate the Hadamard product (element-wise product) of one matrix with another. Both matrices must have the same
 dimensions.
 
 **Parameters:**
@@ -792,7 +792,7 @@ $result = $m1->hadamardMul($m2);
 public function hadamardDiv(self $other): self
 ```
 
-Calculate the Hadamard division (element-wise quotient) of this matrix by another. Both matrices must have the same
+Calculate the Hadamard division (element-wise quotient) of one matrix by another. Both matrices must have the same
 dimensions.
 
 **Parameters:**
@@ -825,11 +825,13 @@ $result = $m1->hadamardDiv($m2);
 public function pow(int $exp): self
 ```
 
-Raise this matrix to an integer power. Uses binary exponentiation for efficiency. Negative powers use the matrix
-inverse. The matrix must be square.
+Raise the matrix to an integer power. Uses binary exponentiation for efficiency. The matrix must be square.
 
-**Note:** `pow(1)` returns a new instance (a clone), not `$this` — since `Matrix` is mutable, mutating the result must
-never affect the original.
+**Special cases:**
+
+- A^0 = identity matrix (for any square A)
+- A^1 = A (equivalent to `clone`; returns a new, distinct object that's equal to but not the same instance as `$this`)
+- A^(negative) = inverse of A raised to the corresponding positive power
 
 **Parameters:**
 
@@ -859,7 +861,7 @@ $m5 = $m1->pow(-1);  // Inverse matrix
 public function sqr(): self
 ```
 
-Square this matrix. Equivalent to `pow(2)`, but more efficient and readable. The matrix must be square.
+Square the matrix. Equivalent to `pow(2)`, but more efficient and readable. The matrix must be square.
 
 **Returns:** `self` - New matrix representing the square.
 
@@ -882,7 +884,7 @@ $result = $m->sqr();  // [[7, 10], [15, 22]]
 public function mulVector(Vector $vec): Vector
 ```
 
-Multiply this matrix by a vector (_Ax_). The vector is treated as a column vector; its count must equal this matrix's
+Multiply the matrix by a vector (_Ax_). The vector is treated as a column vector; its count must equal the matrix's
 column count.
 
 To go the other way (_xA_), use `Vector::mul()` instead.
@@ -893,7 +895,7 @@ To go the other way (_xA_), use `Vector::mul()` instead.
 
 **Returns:** `Vector` - New vector representing the result.
 
-**Throws:** `LengthException` if the vector's count doesn't equal this matrix's column count.
+**Throws:** `LengthException` if the vector's count doesn't equal the matrix's column count.
 
 **Examples:**
 
@@ -909,7 +911,7 @@ $result = $m->mulVector($v);  // Vector(5, 11)
 public function t(): self
 ```
 
-Get the transpose of this matrix (_Aᵀ_). Rows become columns and columns become rows.
+Get the transpose of the matrix (_Aᵀ_). Rows become columns and columns become rows.
 
 **Returns:** `self` - New matrix representing the transpose.
 
@@ -927,7 +929,7 @@ $transpose = $m->t();
 public function det(): float
 ```
 
-Calculate the determinant of this matrix using recursive cofactor expansion. The matrix must be square.
+Calculate the determinant of a matrix, which must be square.
 
 **Returns:** `float` - The determinant.
 
@@ -949,7 +951,7 @@ echo $idMat->det();  // 1.0
 public function trace(): float
 ```
 
-Calculate the trace of this matrix (sum of diagonal elements). The matrix must be square.
+Calculate the trace of the matrix (sum of diagonal elements). The matrix must be square.
 
 **Returns:** `float` - The trace.
 
@@ -1176,9 +1178,9 @@ $idMat = Matrix::identity(3);
 
 ```php
 // Solve Ax = b using x = A⁻¹b
-$m1 = Matrix::fromArray([[2, 1], [5, 3]]);
+$m = Matrix::fromArray([[2, 1], [5, 3]]);
 $b = Vector::fromArray([4, 7]);
-$x = $m1->inv()->mulVector($b);  // Vector(5, -6)
+$x = $m->inv()->mulVector($b);  // Vector(5, -6)
 ```
 
 ### 3D Transformations

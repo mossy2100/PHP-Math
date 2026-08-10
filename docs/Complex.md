@@ -218,7 +218,7 @@ since the trait's parameter is typed `mixed` (see the trait's docs for why).
 public function equal(mixed $other): bool
 ```
 
-Check if this complex number exactly equals another value.
+Check if the complex number exactly equals another value.
 
 Compares both real and imaginary parts using exact equality (`===`). `$other` must be a `Complex`, `int`, or `float` —
 an `int`/`float` is treated as a real number for the comparison. A type that can't meaningfully be compared throws,
@@ -250,16 +250,16 @@ var_dump($z1->equal($z2));  // true (exact match)
 var_dump($z1->equal($z3));  // false (not exact)
 var_dump($z1->equal(5));    // false (z1 is not real)
 
-// Real Complex numbers can equal int/float
+// Real Complex numbers can equal int/float.
 $z4 = new Complex(5, 0);
 var_dump($z4->equal(5));    // true
 var_dump($z4->equal(5.0));  // true
 
-// A Complex is never equal to infinity, but this isn't a type error, so it returns false rather than throwing
+// A Complex is never equal to infinity, but this isn't a type error, so it returns false rather than throwing.
 var_dump($z1->equal(INF));  // false
 var_dump($z1->equal(-INF)); // false
 
-// Anything else throws, rather than silently returning false
+// Anything else throws, rather than silently returning false.
 $z1->equal(NAN);      // throws DomainException (no meaningful equality result)
 $z1->equal('3+4i');   // throws InvalidArgumentException
 $z1->equal([3, 4]);   // throws InvalidArgumentException
@@ -276,7 +276,7 @@ public function approxEqual(
 ): bool
 ```
 
-Check if this complex number approximately equals another value within specified tolerances.
+Check if the complex number approximately equals another value within specified tolerances.
 
 Uses combined relative and absolute tolerance approach, comparing both real and imaginary components separately.
 `$other` must be a `Complex`, `int`, or `float`, same as `equal()`. `NAN` throws for the same reason as `equal()` (no
@@ -328,9 +328,7 @@ var_dump($z3->approxEqual(5.0000001, 1e-6));  // true
 $z1->approxEqual('3.0000000001+4.0000000001i');  // throws InvalidArgumentException
 ```
 
----
-
-## Comparison Operators
+### Comparison Operators
 
 See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
 types in this package.
@@ -345,7 +343,7 @@ types in this package.
 public function neg(): self
 ```
 
-Get the negative of this complex number.
+Get the negative of the complex number.
 
 **Example:**
 
@@ -396,7 +394,7 @@ $result = $z->conj();  // 3 - 4i
 public function add(self|float $other): self
 ```
 
-Add another value to this complex number.
+Add another value to the complex number.
 
 **Example:**
 
@@ -414,7 +412,7 @@ $sum = $z1->add($z2);  // 4 + 6i
 public function sub(self|float $other): self
 ```
 
-Subtract another value from this complex number.
+Subtract another value from the complex number.
 
 **Example:**
 
@@ -432,7 +430,7 @@ $diff = $z1->sub($z2);  // 3 + 4i
 public function mul(self|float $other): self
 ```
 
-Multiply this complex number by another value.
+Multiply the complex number by another value.
 
 **Example:**
 
@@ -453,7 +451,7 @@ $product = $z2->mul($z3);  // -5 + 10i
 public function div(self|float $other): self
 ```
 
-Divide this complex number by another value.
+Divide the complex number by another value.
 
 **Example:**
 
@@ -481,7 +479,7 @@ $quotient = $z2->div($z3);
 public function pow(self|float $exp): self
 ```
 
-Raise this complex number to a power.
+Raise the complex number to a power.
 
 **Examples:**
 
@@ -495,6 +493,7 @@ $result = M_I->pow(2);  // -1 + 0i
 **Special cases:**
 
 - z^0 = 1 for any z (including 0 by convention)
+- z^1 = z (equivalent to `clone`; returns a new, distinct object that's equal to but not the same instance as `$this`)
 - 0^(positive real number) = 0
 
 **Throws:**
@@ -508,7 +507,7 @@ $result = M_I->pow(2);  // -1 + 0i
 public function sqr(): self
 ```
 
-Calculate the square of this complex number.
+Calculate the square of the complex number.
 
 **Example:**
 
@@ -527,7 +526,7 @@ $result = $z->sqr();  // -7 + 24i
 public function roots(int $degree): array
 ```
 
-Calculate all nth roots of this complex number.
+Calculate all nth roots of the complex number.
 
 **Parameters:**
 
@@ -576,7 +575,7 @@ $result = $z->sqrt();  // 0 + 1i
 public function exp(): self
 ```
 
-Calculate e raised to the power of this complex number.
+Calculate e raised to the power of the complex number.
 
 **Example:**
 
@@ -620,7 +619,7 @@ $result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
 **Throws:**
 
 - `DomainException` if `$base` is a non-finite float (±INF or NAN).
-- `ArithmeticException` if the base is 0 or 1, or if this number is zero.
+- `ArithmeticException` if the base is 0 or 1, or if the number is zero.
 
 ---
 

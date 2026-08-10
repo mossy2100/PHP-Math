@@ -100,7 +100,7 @@ $v1 = Vector::fromArray([1, 2, 3]);
 $v2 = Vector::fromArray([3.14, -1, 0]);
 $v3 = Vector::fromArray([]);  // Count-0 vector
 
-// Non-sequential arrays are rejected, not re-indexed
+// Non-list arrays are rejected, not re-indexed.
 Vector::fromArray([5 => 10, 10 => 20]);  // throws DomainException
 ```
 
@@ -133,7 +133,7 @@ $array = $v->toArray();  // [1.0, 2.0, 3.0]
 public function toRowMatrix(): Matrix
 ```
 
-Convert this vector to a single-row (1×n) Matrix.
+Convert the vector to a single-row (1×n) Matrix.
 
 **Examples:**
 
@@ -149,7 +149,7 @@ $row = $v->toRowMatrix();
 public function toColumnMatrix(): Matrix
 ```
 
-Convert this vector to a single-column (n×1) Matrix.
+Convert the vector to a single-column (n×1) Matrix.
 
 **Examples:**
 
@@ -242,8 +242,8 @@ echo $v->get(1);  // 99.0
 public function normalize(): void
 ```
 
-Normalize this vector to a unit vector (magnitude 1), in place. Mutates this vector rather than returning a new one —
-use [`normalized()`](#normalized) instead if you want an unmodified copy.
+Normalize the vector to a unit vector (magnitude 1), in place. Mutates it rather than returning a new one — use
+[`normalized()`](#normalized) instead if you want an unmodified copy.
 
 **Throws:** `ArithmeticException` if the vector has zero magnitude. If it throws, the vector is left unmodified.
 
@@ -274,7 +274,7 @@ plausibly represent the same values. Anything else throws `InvalidArgumentExcept
 public function equal(mixed $other): bool
 ```
 
-Check if this vector exactly equals another value.
+Check if the vector exactly equals another value.
 
 Two vectors are equal if they have the same count and all corresponding elements are exactly equal.
 
@@ -314,7 +314,7 @@ public function approxEqual(
 ): bool
 ```
 
-Check if this vector approximately equals another value within specified tolerances.
+Check if the vector approximately equals another value within specified tolerances.
 
 Each pair of corresponding elements is compared using `Floats::approxEqual()`, which checks absolute tolerance first,
 then relative tolerance.
@@ -350,11 +350,10 @@ var_dump($v1->approxEqual($v2, 1e-15, 1e-15));  // false
 $v1->approxEqual('string');  // throws InvalidArgumentException
 ```
 
----
+### Comparison Operators
 
-## Comparison Operators
-
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
+types in this package.
 
 ---
 
@@ -366,7 +365,7 @@ See: [Comparison Operators](Comparison_Operators.md) to read more about how the 
 public function neg(): self
 ```
 
-Negate this vector. Returns a new vector with all elements negated.
+Negate the vector. Returns a new vector with all elements negated.
 
 **Example:**
 
@@ -381,7 +380,7 @@ $result = $v->neg();  // [-1, 2, -3]
 public function reciprocal(): self
 ```
 
-Calculate the element-wise reciprocal of this vector.
+Calculate the element-wise reciprocal of the vector.
 
 **Returns:**
 
@@ -408,7 +407,7 @@ $result = $v->reciprocal();  // [0.5, 0.25, 0.2]
 public function add(self $other): self
 ```
 
-Add another vector to this one, element by element.
+Add one vector to another, element by element.
 
 **Parameters:**
 
@@ -436,7 +435,7 @@ $sum = $v1->add($v2);  // [5, 7, 9]
 public function sub(self $other): self
 ```
 
-Subtract another vector from this one, element by element.
+Subtract one vector from another, element by element.
 
 **Parameters:**
 
@@ -464,13 +463,11 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 public function mul(float|Matrix $other): self
 ```
 
-Multiply this vector by a scalar or a matrix.
+Multiply the vector by a scalar or a matrix.
 
-Multiplying by a matrix (_v \* A_) treats this vector as a row vector; its count must equal the matrix's row count. To
-multiply a Matrix by a Vector in order to get a new Vector, there's no Matrix method for this. Instead, use this method,
-but transpose the Matrix first, e.g. `$v->mul($m1->t())`.
+Multiplying by a matrix (_xA_) treats the vector as a row vector; its count must equal the matrix's row count.
 
-See [`Matrix::mul()`](Matrix.md#mul) for more information.
+To multiply a matrix by a vector in order to get a new vector, call [Matrix::mulVector()](Matrix.md#mulvector).
 
 **Parameters:**
 
@@ -482,7 +479,7 @@ See [`Matrix::mul()`](Matrix.md#mul) for more information.
 
 **Throws:**
 
-- `LengthException` if multiplying by a matrix whose row count doesn't equal this vector's count.
+- `LengthException` if multiplying by a matrix whose row count doesn't equal the vector's count.
 
 **Examples:**
 
@@ -504,7 +501,7 @@ $result = $v->mul($m1);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 public function div(float $scalar): self
 ```
 
-Divide this vector by a scalar.
+Divide the vector by a scalar.
 
 **Parameters:**
 
@@ -531,7 +528,7 @@ $result = $v->div(3);  // [2, 3, 4]
 public function hadamardMul(self $other): self
 ```
 
-Calculate the Hadamard product (element-wise product) of this vector with another.
+Calculate the Hadamard product (element-wise product) of one vector with another.
 
 **Parameters:**
 
@@ -559,7 +556,7 @@ $result = $v1->hadamardMul($v2);  // [4, 10, 18]
 public function hadamardDiv(self $other): self
 ```
 
-Calculate the Hadamard division (element-wise quotient) of this vector by another.
+Calculate the Hadamard division (element-wise quotient) of one vector by another.
 
 **Parameters:**
 
@@ -592,7 +589,7 @@ $result = $v1->hadamardDiv($v2);  // [1, 2, 3]
 public function dot(self $other): float
 ```
 
-Calculate the dot product of this vector with another vector.
+Calculate the dot product of one vector with another vector.
 
 **Parameters:**
 
@@ -620,7 +617,7 @@ $result = $v1->dot($v2);  // 32.0 (1*4 + 2*5 + 3*6)
 public function cross(self $other): self
 ```
 
-Calculate the cross product of this vector with another vector. Both vectors must have a count of 3.
+Calculate the cross product of one vector with another. Both vectors must have a count of 3.
 
 **Parameters:**
 
@@ -648,8 +645,9 @@ $result = $v1->cross($v2);  // [0, 0, 1]
 public function outer(self $other): Matrix
 ```
 
-Calculate the outer product of this vector with another vector. Unlike `dot()` and `cross()`, the vectors don't need to
-have the same count - the result is always an m×n `Matrix`, where m is this vector's count and n is `$other`'s count.
+Calculate the outer product of one vector with another vector. Unlike `dot()`, the vectors don't need to have the same
+count. The result is always an _m×n_ `Matrix`, where _m_ is the first vector's count and _n_ is the second vector's
+count.
 
 **Parameters:**
 
@@ -673,8 +671,8 @@ $result = $v1->outer($v2);  // [[3, 4], [6, 8]]
 public function normalized(): self
 ```
 
-Get this vector normalized to a unit vector (magnitude 1). Returns a new vector with the same direction as the original
-— use [`normalize()`](#normalize) instead if you want to mutate this vector in place.
+Get the vector normalized to a unit vector (magnitude 1). Returns a new vector with the same direction as the original.
+Use [`normalize()`](#normalize) instead if you want to mutate a vector in place.
 
 **Returns:**
 
