@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use DomainException;
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -149,9 +150,19 @@ class RationalPowerTest extends TestCase
      */
     public function testPowZeroNegativeThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(ArithmeticException::class);
         $r = new Rational(0);
         $r->pow(-1);
+    }
+
+    /**
+     * Test power throws when the result overflows an int.
+     */
+    public function testPowOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $r = new Rational(3);
+        $r->pow(50);
     }
 
     /**

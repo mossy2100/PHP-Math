@@ -109,8 +109,8 @@ class VectorBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test multiplying a vector by a Matrix. The vector is treated as a single-row matrix, multiplied
-     * by the given Matrix, and the resulting single row is converted back to a Vector.
+     * Test multiplying a vector by a Matrix. The vector is treated as a row vector (xA); each element of the
+     * result is the dot product of the vector with the corresponding column of the matrix.
      */
     public function testMulByMatrix(): void
     {
@@ -137,6 +137,33 @@ class VectorBinaryArithmeticTest extends TestCase
 
         $this->expectException(LengthException::class);
         $v->mul($m);
+    }
+
+    /**
+     * Test multiplying a vector by a zero-row matrix with an incompatible count throws LengthException. The
+     * dimension check must fire even though a zero-row matrix's multiplication loop body never executes, so this
+     * case wouldn't otherwise be caught.
+     */
+    public function testMulByZeroRowMatrixIncompatibleDimensionsThrows(): void
+    {
+        $v = Vector::fromArray([1, 2]);
+        $m = new Matrix(0, 3);
+
+        $this->expectException(LengthException::class);
+        $v->mul($m);
+    }
+
+    /**
+     * Test multiplying a vector by a zero-column matrix with a matching row count returns a count-0 vector.
+     */
+    public function testMulByZeroColumnMatrix(): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $m = new Matrix(3, 0);
+
+        $result = $v->mul($m);
+
+        $this->assertSame(0, $result->count);
     }
 
     #endregion

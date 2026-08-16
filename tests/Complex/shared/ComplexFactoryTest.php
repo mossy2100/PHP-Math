@@ -247,26 +247,43 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
+     * Data provider for various angles for fromPolar()'s real/imaginary conversion.
+     *
+     * @return array<string, list<float>>
+     */
+    public static function polarAngleProvider(): array
+    {
+        return [
+            'zero' => [0],
+            'π/6'  => [
+                M_PI / 6,
+            ],
+            'π/4'  => [
+                M_PI / 4,
+            ],
+            'π/3'  => [
+                M_PI / 3,
+            ],
+            'π/2'  => [
+                M_PI / 2,
+            ],
+            'π'    => [M_PI],
+            '-π/2' => [
+                -M_PI / 2,
+            ],
+            '-π'   => [-M_PI],
+        ];
+    }
+
+    /**
      * Test fromPolar with various angles produces the correct real/imaginary parts.
      */
-    public function testFromPolarVariousAngles(): void
+    #[DataProvider('polarAngleProvider')]
+    public function testFromPolarVariousAngles(float $angle): void
     {
-        $angles = [
-            0,
-            M_PI / 6,
-            M_PI / 4,
-            M_PI / 3,
-            M_PI / 2,
-            M_PI,
-            -M_PI / 2,
-            -M_PI,
-        ];
-
-        foreach ($angles as $angle) {
-            $z = Complex::fromPolar(1.0, $angle);
-            $this->assertEqualsWithDelta(cos($angle), $z->real, EPSILON);
-            $this->assertEqualsWithDelta(sin($angle), $z->imaginary, EPSILON);
-        }
+        $z = Complex::fromPolar(1.0, $angle);
+        $this->assertEqualsWithDelta(cos($angle), $z->real, EPSILON);
+        $this->assertEqualsWithDelta(sin($angle), $z->imaginary, EPSILON);
     }
 
     /**
@@ -444,46 +461,53 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
+     * Data provider for angles already within, or wrapping into, the principal phase range (-π, π].
+     *
+     * @return array<string, list<float>>
+     */
+    public static function polarPhaseProvider(): array
+    {
+        return [
+            'zero'                                 => [0, 0],
+            'π/6'                                  => [
+                M_PI / 6,
+                M_PI / 6,
+            ],
+            'π/4'                                  => [
+                M_PI / 4,
+                M_PI / 4,
+            ],
+            'π/3'                                  => [
+                M_PI / 3,
+                M_PI / 3,
+            ],
+            'π/2'                                  => [
+                M_PI / 2,
+                M_PI / 2,
+            ],
+            'π'                                    => [M_PI, M_PI],
+            '-π/2'                                 => [
+                -M_PI / 2,
+                -M_PI / 2,
+            ],
+            '-π wraps to π (excluded lower bound)' => [-M_PI, M_PI],
+        ];
+    }
+
+    /**
      * Test that fromPolar preserves phase correctly for angles already in the principal range
      * (-π, π], including the -π wrap-to-π boundary case.
      */
-    public function testFromPolarWithVariousAnglesPhase(): void
+    #[DataProvider('polarPhaseProvider')]
+    public function testFromPolarWithVariousAnglesPhase(float $inputAngle, float $expectedPhase): void
     {
-        $testCases = [
-            [0, 0],
-            [
-                M_PI / 6,
-                M_PI / 6,
-            ],
-            [
-                M_PI / 4,
-                M_PI / 4,
-            ],
-            [
-                M_PI / 3,
-                M_PI / 3,
-            ],
-            [
-                M_PI / 2,
-                M_PI / 2,
-            ],
-            [M_PI, M_PI],
-            [
-                -M_PI / 2,
-                -M_PI / 2,
-            ],
-            [-M_PI, M_PI],  // -π wraps to π (excluded lower bound)
-        ];
-
-        foreach ($testCases as [$inputAngle, $expectedPhase]) {
-            $z = Complex::fromPolar(1.0, $inputAngle);
-            $this->assertEqualsWithDelta(
-                $expectedPhase,
-                $z->phase,
-                EPSILON,
-                "Phase should be $expectedPhase for input angle $inputAngle"
-            );
-        }
+        $z = Complex::fromPolar(1.0, $inputAngle);
+        $this->assertEqualsWithDelta(
+            $expectedPhase,
+            $z->phase,
+            EPSILON,
+            "Phase should be $expectedPhase for input angle $inputAngle"
+        );
     }
 
     #endregion

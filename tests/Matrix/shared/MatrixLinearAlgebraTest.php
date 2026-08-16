@@ -45,12 +45,11 @@ class MatrixLinearAlgebraTest extends TestCase
     }
 
     /**
-     * Test multiplying a 0-column matrix by an empty vector returns a zero vector matching the
-     * matrix's row count. This exercises Vector::toColumnMatrix()'s handling of an empty vector,
-     * which must produce a genuine n×1 (here 0×1) matrix rather than a 0×0 one, or the inner matrix
-     * multiplication silently produces the wrong shape.
+     * Test multiplying a 0-column matrix by an empty vector returns a zero vector matching the matrix's row
+     * count. Each row of a 0-column matrix is itself a count-0 Vector, so this exercises Vector::dot() between
+     * two count-0 vectors, which must return 0.0 rather than erroring, so the result has the right shape and
+     * values rather than being empty or malformed.
      */
-
     public function testMulVectorWithEmptyVectorAndZeroColumnMatrix(): void
     {
         $m = new Matrix(3, 0);

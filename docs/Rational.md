@@ -189,9 +189,7 @@ Convert to a mixed number representation: an integer part and a fractional part.
 part truncates toward zero, and the fractional part carries the same sign as the original. In this way, the two can be
 added to reconstruct the original value.
 
-**Returns:**
-
-- `array{int, self}` - A tuple of [integer part, fractional remainder].
+**Returns:** `array{int, self}` - A tuple of [integer part, fractional remainder].
 
 **Examples:**
 
@@ -242,6 +240,63 @@ echo new Rational(6, 8);   // "3/4" (auto-reduced)
 
 ---
 
+## Inspection Methods
+
+### isInt()
+
+```php
+public function isInt(): bool
+```
+
+Check if the Rational represents an integer value (denominator is 1).
+
+**Example:**
+
+```php
+$r1 = new Rational(5);
+var_dump($r1->isInt());  // true
+
+$r2 = new Rational(1, 2);
+var_dump($r2->isInt());  // false
+```
+
+---
+
+### sign()
+
+```php
+public function sign(bool $zeroForZero = true): int
+```
+
+Get the sign of the Rational: `-1` if negative, `0` if zero, or `1` if positive.
+
+The numerator is always a plain int, never a signed zero, so `$zeroForZero` only matters for a zero value: with
+the default `true`, zero returns `0`; with `false`, zero returns `1` (there's no `-0` equivalent for a `Rational`,
+unlike `Numbers::sign()`'s float case).
+
+**Parameters:**
+
+- `$zeroForZero` (bool) - If `true` (default), return `0` when this Rational is zero; if `false`, return `1`.
+
+**Returns:** `int` - `-1` if negative, `0` if zero (or `1` if zero and `$zeroForZero` is `false`), or `1` if
+positive.
+
+**Example:**
+
+```php
+$r1 = new Rational(3, 4);
+echo $r1->sign();   // 1
+
+$r2 = new Rational(-3, 4);
+echo $r2->sign();   // -1
+
+$r3 = new Rational(0);
+echo $r3->sign();          // 0
+echo $r3->sign(false);     // 1
+```
+
+---
+
 ## Comparison Methods
 
 The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the
@@ -268,9 +323,7 @@ Uses exact comparison based on `compare()` returning 0.
 
 - `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
 
-**Returns:**
-
-- `bool` - True if exactly equal, false otherwise.
+**Returns:** `bool` - True if exactly equal, false otherwise.
 
 **Throws:**
 
@@ -316,9 +369,7 @@ to infinity.
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16).
 
-**Returns:**
-
-- `bool` - True if approximately equal within tolerances, false otherwise.
+**Returns:** `bool` - True if approximately equal within tolerances, false otherwise.
 
 **Throws:**
 
@@ -371,9 +422,7 @@ Compare the rational number with another value using exact comparison.
 
 - `$other` (mixed) - The value to compare with (`Rational`, `int`, or `float`).
 
-**Returns:**
-
-- `int` - Exactly -1, 0, or 1.
+**Returns:** `int` - Exactly -1, 0, or 1.
 
 **Behavior:**
 
@@ -423,9 +472,7 @@ Returns 0 if values are approximately equal within tolerances, otherwise perform
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16).
 
-**Returns:**
-
-- `int` - Exactly -1, 0, or 1.
+**Returns:** `int` - Exactly -1, 0, or 1.
 
 **Examples:**
 
@@ -685,7 +732,7 @@ $result4 = $r4->pow(0);    // 1/1 (any number^0 = 1)
 public function sqr(): self
 ```
 
-Square the rational number. Equivalent to `pow(2)`, but more efficient and readable.
+Square the rational number. Equivalent to `pow(2)`, but more readable as a standalone call.
 
 **Example:**
 

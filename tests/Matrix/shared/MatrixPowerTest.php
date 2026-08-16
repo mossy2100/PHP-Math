@@ -79,6 +79,24 @@ class MatrixPowerTest extends TestCase
     }
 
     /**
+     * Test power with an exponent of 2, which has a special-case shortcut delegating to sqr().
+     */
+    public function testPowTwo(): void
+    {
+        // [[1, 2], [3, 4]]^2 = [[7, 10], [15, 22]]
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $result = $m->pow(2);
+
+        $this->assertEqualsWithDelta(7.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(10.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(15.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(22.0, $result->get(1, 1), EPSILON);
+    }
+
+    /**
      * Test power with a negative exponent.
      */
     public function testPowNegative(): void
@@ -98,21 +116,47 @@ class MatrixPowerTest extends TestCase
     }
 
     /**
-     * Test power with exponent PHP_INT_MIN doesn't overflow when negating the exponent.
+     * Test power with exponent PHP_INT_MIN doesn't overflow.
      *
-     * Negative exponents are normally handled via inv()->pow(-$exponent), but negating PHP_INT_MIN overflows to a
-     * float in PHP, which would previously cause a TypeError when passed to the int-typed recursive pow() call. The
-     * identity matrix is used as the base because pow() operates on float elements via repeated matrix
-     * multiplication (no OverflowException is possible), so any other base raised to this exponent would produce a
-     * numerically meaningless result (float overflow to INF, or a value with no useful precision) rather than
-     * something this test could assert against exactly.
+     * Negative exponents are handled by inverting the base before squaring, rather than squaring the base and
+     * inverting the result at the end. At this magnitude of exponent, computing the positive power first would
+     * force intermediate values far beyond float range, hitting ±INF (which Matrix::set() rejects) long before an
+     * invert-at-the-end approach could ever divide them back down to the true, tiny-but-finite answer. Inverting
+     * first means the intermediate values shrink toward that answer instead, so they never overflow.
      */
     public function testPowIntMinExponent(): void
     {
-        $idMat = Matrix::identity(2);
-        $result = $idMat->pow(PHP_INT_MIN);
+        $m = Matrix::fromArray([
+            [2, 0],
+            [0, 3],
+        ]);
+        $result = $m->pow(PHP_INT_MIN);
 
-        $this->assertTrue($idMat->equal($result));
+        // Both diagonal entries underflow to 0.0 at this magnitude of exponent.
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->get(1, 1), EPSILON);
+    }
+
+    /**
+     * Test power with a negative exponent whose magnitude is greater than 1, exercising the squaring loop's
+     * negative-exponent branch (not just the dedicated pow(-1) case).
+     */
+    public function testPowNegativeMagnitudeGreaterThanOne(): void
+    {
+        $m = Matrix::fromArray([
+            [2, 1],
+            [0, 3],
+        ]);
+        $result = $m->pow(-3);
+
+        // Verify M^3 * M^-3 = I.
+        $product = $m->pow(3)->mul($result);
+        $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
+        $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);
+        $this->assertEqualsWithDelta(1.0, $product->get(1, 1), EPSILON);
     }
 
     /**

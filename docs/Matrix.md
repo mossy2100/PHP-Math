@@ -287,7 +287,7 @@ $col = $m->getColumn(0);  // Vector(1, 3, 5)
 ### copy()
 
 ```php
-public function copy(int $row, int $col, int $rowCount, int $columnCount): self
+public function copy(int $row, int $col, int $rowCount, int $colCount): self
 ```
 
 Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. Purely functional — does not modify the
@@ -298,7 +298,7 @@ matrix.
 - `$row` (int) - Row of the top-left corner of the region to copy (0-based).
 - `$col` (int) - Column of the top-left corner of the region to copy (0-based).
 - `$rowCount` (int) - Number of rows to copy.
-- `$columnCount` (int) - Number of columns to copy.
+- `$colCount` (int) - Number of columns to copy.
 
 **Returns:** `self` - A new matrix containing the copied elements.
 
@@ -457,9 +457,7 @@ Two matrices are equal if they have the same dimensions and all corresponding el
 
 - `$other` (mixed) - The value to compare with (must be a `Matrix`).
 
-**Returns:**
-
-- `bool` - True if the matrices have the same dimensions and all elements are exactly equal.
+**Returns:** `bool` - True if the matrices have the same dimensions and all elements are exactly equal.
 
 **Throws:** `InvalidArgumentException` if `$other` is not a `Matrix`.
 
@@ -500,9 +498,7 @@ then relative tolerance.
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
 
-**Returns:**
-
-- `bool` - True if the matrices have the same dimensions and all elements are approximately equal.
+**Returns:** `bool` - True if the matrices have the same dimensions and all elements are approximately equal.
 
 **Throws:**
 
@@ -825,7 +821,12 @@ $result = $m1->hadamardDiv($m2);
 public function pow(int $exp): self
 ```
 
-Raise the matrix to an integer power. Uses binary exponentiation for efficiency. The matrix must be square.
+Raise the matrix to an integer power. Uses exponentiation by squaring for efficiency. The matrix must be square.
+
+For a negative exponent, the base is inverted before squaring rather than squaring the base and inverting the result
+at the end, so intermediate values shrink toward the (typically small) final answer instead of risking an unnecessary
+overflow to `INF` on the way there. This also avoids any overflow hazard at `PHP_INT_MIN`, the most extreme negative
+exponent.
 
 **Special cases:**
 
@@ -861,7 +862,7 @@ $m5 = $m1->pow(-1);  // Inverse matrix
 public function sqr(): self
 ```
 
-Square the matrix. Equivalent to `pow(2)`, but more efficient and readable. The matrix must be square.
+Square the matrix. Equivalent to `pow(2)`, but more readable as a standalone call. The matrix must be square.
 
 **Returns:** `self` - New matrix representing the square.
 
@@ -1093,9 +1094,7 @@ Check if a row offset exists. Returns true if the offset is an integer within th
 
 - `$offset` (mixed) - Row index to check.
 
-**Returns:**
-
-- `bool` - True if the offset is valid.
+**Returns:** `bool` - True if the offset is valid.
 
 ### offsetGet()
 
@@ -1109,9 +1108,7 @@ Get the row `Vector` at an offset. This is the Matrix's live internal row - see 
 
 - `$offset` (mixed) - Row index to get.
 
-**Returns:**
-
-- `Vector` - The live row Vector.
+**Returns:** `Vector` - The live row Vector.
 
 **Throws:**
 

@@ -327,7 +327,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
      */
     public function neg(): self
     {
-        return $this->mul(-1);
+        $result = new self($this->count);
+        for ($i = 0; $i < $this->count; $i++) {
+            $result->set($i, -$this->data[$i]);
+        }
+
+        return $result;
     }
 
     /**
@@ -407,8 +412,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * Multiply this vector by a scalar or a matrix.
      *
      * Multiplying by a matrix (_xA_) treats this vector as a row vector; its count must equal the matrix's row count.
-     * To go the other way (_Ax_), there's no dedicated method - see `Matrix::mul()`'s docblock for the two
-     * composable alternatives, and why a dedicated method for it isn't provided.
+     * To go the other way (_Ax_), call {@see Matrix::mulVector()}.
      *
      * @param float|Matrix $other Number or matrix to multiply by.
      * @return self New vector representing the product.
@@ -427,12 +431,24 @@ final class Vector implements Stringable, Countable, ArrayAccess
             return $result;
         }
 
-        // Multiply vector by a matrix. Convert the vector to a single-row matrix and multiply by the given matrix.
-        // The call to Matrix::mul() will fail if the vector count does not equal the number of rows in the matrix.
-        $result = $this->toRowMatrix()->mul($other);
+        // Multiply vector by a matrix: xA, treating this vector as a row vector.
+        if ($this->count !== $other->rowCount) {
+            throw new LengthException(
+                "Invalid Matrix row count: {$other->rowCount}. Must equal this Vector's count: {$this->count}."
+            );
+        }
 
-        // Convert the first and only row of the resulting matrix into a vector.
-        return $result->getRow(0);
+        // Calculate each element of the result as the dot product of this vector with a column of the matrix.
+        $result = new self($other->columnCount);
+        for ($j = 0; $j < $other->columnCount; $j++) {
+            $sum = 0.0;
+            for ($i = 0; $i < $this->count; $i++) {
+                $sum += $this->data[$i] * $other->get($i, $j);
+            }
+            $result->set($j, $sum);
+        }
+
+        return $result;
     }
 
     /**

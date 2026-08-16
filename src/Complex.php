@@ -466,6 +466,9 @@ final class Complex implements Stringable, ArrayAccess
      * - Any base raised to an integer exponent.
      * - Real positive base with real exponent.
      *
+     * A real integer exponent is computed exactly via exponentiation by squaring, rather than the general
+     * e^(w * ln z) formula, for better precision and performance.
+     *
      * Multivalued cases:
      * - Complex base with fractional exponent: z^(1/n)
      * - Negative real base with fractional exponent: (-2)^(1/3)
@@ -512,9 +515,9 @@ final class Complex implements Stringable, ArrayAccess
             return clone $this;
         }
 
-        // Handle exponent = 2. Delegate to sqr().
+        // Handle exponent = 2.
         if ($exp->equal(2)) {
-            return $this->sqr();
+            return $this->mul($this);
         }
 
         // Handle exponent = -1. Delegate to inv().
@@ -527,6 +530,30 @@ final class Complex implements Stringable, ArrayAccess
             return $exp->exp();
         }
 
+        // For integer exponents, do exponentiation by squaring.
+        if ($exp->isReal() && Floats::isInt($exp->real)) {
+            $result = new self(1);
+            $x = clone $this;
+            // For negative exponents, invert the base. This works better than inverting the result at the end, because
+            // it avoids a possible overflow for large negative exponents.
+            if ($exp->real < 0) {
+                $x = $x->inv();
+            }
+            $y = abs($exp->real);
+            while ($y > 0) {
+                if (fmod($y, 2) === 1.0) {
+                    $result = $result->mul($x);
+                }
+                // Halve the exponent.
+                $y = floor($y / 2);
+                if ($y > 0) {
+                    // Square the base.
+                    $x = $x->mul($x);
+                }
+            }
+            return $result;
+        }
+
         // General solution. Calculate z^w = e^(w * ln(z)).
         return $exp->mul($this->ln())->exp();
     }
@@ -534,7 +561,7 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Square this complex number.
      *
-     * Equivalent to pow(2), but more efficient and readable.
+     * Equivalent to pow(2), but more readable as a standalone call.
      *
      * @return self A new complex number representing the square of this number.
      */
@@ -796,7 +823,7 @@ final class Complex implements Stringable, ArrayAccess
         // iz = -y + ix (multiply by i directly)
         $iz = new self(-$this->imaginary, $this->real);
         // 1 - z²
-        $oneMinusZ2 = new self(1)->sub($this->sqr());
+        $oneMinusZ2 = new self(1)->sub($this->mul($this));
         // -i·ln(iz + √(1-z²))
         return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
     }
@@ -811,7 +838,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // acos(z) = -i·ln(z + i·√(1-z²))
         // 1 - z²
-        $oneMinusZ2 = new self(1)->sub($this->sqr());
+        $oneMinusZ2 = new self(1)->sub($this->mul($this));
         // i·√(1-z²) - multiply √(1-z²) by i directly
         $sqrt = $oneMinusZ2->sqrt();
         $iSqrt = new self(-$sqrt->imaginary, $sqrt->real);
@@ -895,7 +922,7 @@ final class Complex implements Stringable, ArrayAccess
     public function asinh(): self
     {
         // asinh(z) = ln(z + √(z² + 1))
-        $z2Plus1 = $this->sqr()->add(new self(1));
+        $z2Plus1 = $this->mul($this)->add(new self(1));
         return $this->add($z2Plus1->sqrt())->ln();
     }
 
@@ -908,7 +935,7 @@ final class Complex implements Stringable, ArrayAccess
     public function acosh(): self
     {
         // acosh(z) = ln(z + √(z² - 1))
-        $z2Minus1 = $this->sqr()->sub(new self(1));
+        $z2Minus1 = $this->mul($this)->sub(new self(1));
         return $this->add($z2Minus1->sqrt())->ln();
     }
 

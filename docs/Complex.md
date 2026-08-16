@@ -39,7 +39,7 @@ The imaginary part of the complex number. Read-only from outside the class.
 ### $magnitude
 
 ```php
-private(set) ?float $magnitude
+private(set) float $magnitude
 ```
 
 The magnitude (absolute value or modulus) of the complex number. Automatically computed during object creation.
@@ -49,7 +49,7 @@ For z = a + bi: |z| = √(a² + b²)
 ### $phase
 
 ```php
-private(set) ?float $phase
+private(set) float $phase
 ```
 
 The phase (argument or angle) of the complex number in radians, normalized to the
@@ -230,9 +230,7 @@ infinity.
 
 - `$other` (mixed) - The value to compare with (`Complex`, `int`, or `float`).
 
-**Returns:**
-
-- `bool` - True if exactly equal, false otherwise.
+**Returns:** `bool` - True if exactly equal, false otherwise.
 
 **Throws:**
 
@@ -288,9 +286,7 @@ meaningful result); `±INF` returns `false` rather than throwing.
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON ≈ 2.22e-16).
 
-**Returns:**
-
-- `bool` - True if approximately equal within tolerances, false otherwise.
+**Returns:** `bool` - True if approximately equal within tolerances, false otherwise.
 
 **Throws:**
 
@@ -481,13 +477,16 @@ public function pow(self|float $exp): self
 
 Raise the complex number to a power.
 
+A real integer exponent is computed exactly via exponentiation by squaring, rather than the general `e^(w * ln z)`
+formula, for better precision and performance.
+
 **Examples:**
 
 ```php
 $z = new Complex(3, 4);
 $result = $z->pow(2);  // -7 + 24i
 
-$result = M_I->pow(2);  // -1 + 0i
+$result = M_I->pow(2);  // -1 + 0i, using the imaginary unit constant - see Globals.md
 ```
 
 **Special cases:**
@@ -532,9 +531,7 @@ Calculate all nth roots of the complex number.
 
 - `$degree` (int) - The degree of the root, e.g. 2 for square root, 3 for cube root, etc. Must be positive.
 
-**Returns:**
-
-- `list<self>` - Array of `$degree` complex roots.
+**Returns:** `list<self>` - Array of `$degree` complex roots.
 
 **Examples:**
 
@@ -726,18 +723,16 @@ public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwa
 Round the real and imaginary parts to the given number of decimal places, using the specified rounding mode. Defaults to
 "half away from zero", matching the default mode used by PHP's own `round()` function.
 
+If `$precision` is positive, both parts are rounded to that many digits *after* the decimal point. If negative, they're
+rounded to that many digits *before* the decimal point, i.e. to the nearest multiple of `10 ** -$precision` (e.g. a
+precision of -1 rounds to the nearest ten, -2 to the nearest hundred).
+
 **Parameters:**
 
-- `$precision` (int) - The number of decimal places to round to. Must not be negative.
+- `$precision` (int) - The number of decimal places to round to.
 - `$mode` ([RoundingMode](https://www.php.net/manual/en/enum.roundingmode.php)) - The rounding mode to use.
 
-**Returns:**
-
-- `self` - A new `Complex` with both parts rounded.
-
-**Throws:**
-
-- `DomainException` if `$precision` is negative.
+**Returns:** `self` - A new `Complex` with both parts rounded.
 
 **Examples:**
 
@@ -868,4 +863,6 @@ $sum = $sin2->add($cos2);  // 1 + 0i
 - **[Vector](Vector.md)** - Vector operations
 - **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate
   comparison
-- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`
+- **[Globals](Globals.md)** - `M_I`, the imaginary unit constant, used throughout this class's examples
+- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`. See
+  [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).

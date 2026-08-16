@@ -41,6 +41,53 @@ class ComplexPowerTest extends TestCase
     }
 
     /**
+     * Test pow() with an odd integer exponent, exercising the exponentiation-by-squaring path rather than one of
+     * the dedicated 0/1/2/-1 shortcuts.
+     */
+    public function testPowOddIntegerExponent(): void
+    {
+        // (1 + i)^3 = -2 + 2i
+        $z = new Complex(1, 1);
+        $result = $z->pow(3);
+
+        $this->assertEqualsWithDelta(-2.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(2.0, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test pow() with an even integer exponent, exercising the exponentiation-by-squaring path rather than one of
+     * the dedicated 0/1/2/-1 shortcuts.
+     */
+    public function testPowEvenIntegerExponent(): void
+    {
+        // (1 + i)^4 = ((1 + i)^2)^2 = (2i)^2 = -4
+        $z = new Complex(1, 1);
+        $result = $z->pow(4);
+
+        $this->assertEqualsWithDelta(-4.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test pow() with a larger integer exponent, driving the exponentiation-by-squaring loop through several
+     * iterations rather than just one or two.
+     */
+    public function testPowLargeIntegerExponent(): void
+    {
+        $z = new Complex(1, 1);
+
+        // (1 + i)^16 = (((1 + i)^2)^2)^2)^2 = ((2i)^2)^2)^2 = ((-4)^2)^2 = 16^2 = 256
+        $result = $z->pow(16);
+        $this->assertEqualsWithDelta(256.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
+
+        // (1 + i)^17 = (1 + i)^16 * (1 + i) = 256 * (1 + i) = 256 + 256i
+        $result2 = $z->pow(17);
+        $this->assertEqualsWithDelta(256.0, $result2->real, EPSILON);
+        $this->assertEqualsWithDelta(256.0, $result2->imaginary, EPSILON);
+    }
+
+    /**
      * Test pow(1) returns a new instance, not $this.
      */
     public function testPowOneReturnsNewInstance(): void
@@ -80,6 +127,26 @@ class ComplexPowerTest extends TestCase
         // Verify actual values: 3/25 - 4i/25
         $this->assertEqualsWithDelta(0.12, $result->real, EPSILON);
         $this->assertEqualsWithDelta(-0.16, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test pow() with a negative integer exponent whose magnitude is greater than 1, exercising the
+     * invert-the-base-first branch of the exponentiation-by-squaring path (rather than the dedicated pow(-1)
+     * shortcut).
+     */
+    public function testPowNegativeIntegerExponent(): void
+    {
+        // (1 + i)^(-3) = 1 / (-2 + 2i) = -0.25 - 0.25i
+        $z = new Complex(1, 1);
+        $result = $z->pow(-3);
+
+        $this->assertEqualsWithDelta(-0.25, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-0.25, $result->imaginary, EPSILON);
+
+        // Also verify it equals the reciprocal of the corresponding positive-exponent result.
+        $expected = $z->pow(3)->inv();
+        $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
     }
 
     /**

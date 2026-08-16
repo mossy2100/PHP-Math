@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Rational;
 
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -65,6 +66,16 @@ class RationalBinaryArithmeticTest extends TestCase
         $this->assertSame(1, $r2->denominator);
     }
 
+    /**
+     * Test add() throws when cross-multiplication overflows an int.
+     */
+    public function testAddOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $r = new Rational(PHP_INT_MAX, 2);
+        $r->add(new Rational(1, 3));
+    }
+
     #endregion
 
     #region Method sub() tests.
@@ -115,6 +126,16 @@ class RationalBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3, $r->numerator);
         $this->assertSame(4, $r->denominator);
+    }
+
+    /**
+     * Test sub() throws when cross-multiplication overflows an int.
+     */
+    public function testSubOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $r = new Rational(PHP_INT_MAX, 2);
+        $r->sub(new Rational(1, 3));
     }
 
     #endregion
@@ -179,6 +200,17 @@ class RationalBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3, $r->numerator);
         $this->assertSame(4, $r->denominator);
+    }
+
+    /**
+     * Test mul() throws when the product overflows an int, even after cross-cancellation. The operands share no
+     * common factors, so cross-cancellation cannot avert the overflow.
+     */
+    public function testMulOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $r = new Rational(PHP_INT_MAX);
+        $r->mul(2);
     }
 
     #endregion
@@ -279,6 +311,17 @@ class RationalBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3, $r->numerator);
         $this->assertSame(4, $r->denominator);
+    }
+
+    /**
+     * Test div() throws when the product overflows an int, even after cross-cancellation. The operands share no
+     * common factors, so cross-cancellation cannot avert the overflow.
+     */
+    public function testDivOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $r = new Rational(PHP_INT_MAX);
+        $r->div(new Rational(1, 2));
     }
 
     #endregion

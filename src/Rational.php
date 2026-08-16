@@ -365,6 +365,35 @@ final class Rational implements Stringable
 
     #endregion
 
+    #region Inspection methods
+
+    /**
+     * Check if this Rational represents an integer value.
+     *
+     * @return bool True if the denominator is 1, otherwise false.
+     */
+    public function isInt(): bool
+    {
+        return $this->denominator === 1;
+    }
+
+    /**
+     * Get the sign of this Rational.
+     *
+     * The numerator is always a plain int, never a signed zero, so $zeroForZero only matters for a zero value:
+     * with the default true, zero returns 0; with false, zero returns 1 (there's no -0 equivalent for a
+     * Rational, unlike Numbers::sign()'s float case).
+     *
+     * @param bool $zeroForZero If true (default), return 0 when this Rational is zero. If false, return 1.
+     * @return int -1 if negative, 0 if zero (or 1 if zero and $zeroForZero is false), or 1 if positive.
+     */
+    public function sign(bool $zeroForZero = true): int
+    {
+        return Numbers::sign($this->numerator, $zeroForZero);
+    }
+
+    #endregion
+
     #region Comparison methods
 
     /**
@@ -683,9 +712,9 @@ final class Rational implements Stringable
             return clone $this;
         }
 
-        // Handle exponent = 2. Delegate to sqr().
+        // Handle exponent = 2.
         if ($exp === 2) {
-            return $this->sqr();
+            return $this->mul($this);
         }
 
         // Handle exponent = -1. Delegate to inv().
@@ -713,7 +742,7 @@ final class Rational implements Stringable
     /**
      * Square this Rational.
      *
-     * Equivalent to pow(2), but more efficient and readable.
+     * Equivalent to pow(2), but more readable as a standalone call.
      *
      * @return self A new Rational representing the square of this number.
      */

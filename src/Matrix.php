@@ -452,7 +452,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Set a column from a Vector or array.
+     * Set a column from a Vector.
      *
      * @param int $col Column index (0-based).
      * @param Vector $vec The column values.
@@ -638,7 +638,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      */
     public function neg(): self
     {
-        return $this->mul(-1);
+        $result = new self($this->rowCount, $this->columnCount);
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            for ($j = 0; $j < $this->columnCount; $j++) {
+                $result->set($i, $j, -$this->data[$i]->get($j));
+            }
+        }
+
+        return $result;
     }
 
     /**
@@ -902,6 +909,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Raise this matrix to a power.
      *
+     * Uses exponentiation by squaring. For a negative exponent, the base is inverted before squaring rather than
+     * squaring the base and inverting the result at the end, so intermediate values shrink toward the (typically
+     * small) final answer instead of risking an unnecessary overflow to INF on the way there.
+     *
      * @param int $exp Power to raise to.
      * @return self New matrix representing the result.
      * @throws DomainException If matrix is not square.
@@ -914,36 +925,51 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot raise non-square Matrix to a power.');
         }
 
-        // Handle power of 0.
+        // Handle exponent = 0.
         if ($exp === 0) {
             return self::identity($this->rowCount);
         }
 
-        // Handle power of 1.
+        // Handle exponent = 1. Any number to power 1 is itself.
         if ($exp === 1) {
             return clone $this;
         }
 
+        // Handle exponent = 2. Multiply directly rather than delegating to sqr(), whose isSquare() guard would be
+        // redundant here (already checked above).
+        if ($exp === 2) {
+            return $this->mul($this);
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($exp === -1) {
+            return $this->inv();
+        }
+
         // Handle exponent = PHP_INT_MIN.
         if ($exp === PHP_INT_MIN) {
-            return $this->pow(PHP_INT_MAX)->mul($this)->inv();
+            $inv = $this->inv();
+            return $inv->pow(PHP_INT_MAX)->mul($inv);
         }
 
-        // Handle negative powers.
-        if ($exp < 0) {
-            return $this->inv()->pow(-$exp);
-        }
-
-        // Handle positive powers greater than 1.
+        // For other exponents, do exponentiation by squaring.
         $result = self::identity($this->rowCount);
-        $base = clone $this;
-
-        while ($exp > 0) {
-            if ($exp % 2 === 1) {
-                $result = $result->mul($base);
+        $x = clone $this;
+        // For negative exponents, invert the base.
+        if ($exp < 0) {
+            $x = $x->inv();
+        }
+        $y = abs($exp);
+        while ($y > 0) {
+            if ($y % 2 === 1) {
+                $result = $result->mul($x);
             }
-            $base = $base->mul($base);
-            $exp = (int) ($exp / 2);
+            // Halve the exponent.
+            $y = (int) ($y / 2);
+            if ($y > 0) {
+                // Square the base.
+                $x = $x->mul($x);
+            }
         }
 
         return $result;
@@ -952,7 +978,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Square this matrix.
      *
-     * Equivalent to pow(2), but more efficient and readable.
+     * Equivalent to pow(2), but more readable as a standalone call.
      *
      * @return self A new matrix representing the square of this matrix.
      * @throws DomainException If the matrix is not square.
@@ -986,7 +1012,20 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      */
     public function mulVector(Vector $vec): Vector
     {
-        return $this->mul($vec->toColumnMatrix())->getColumn(0);
+        // Check if dimensions are compatible for multiplication.
+        if ($this->columnCount !== $vec->count) {
+            throw new LengthException(
+                "Invalid Vector count: {$vec->count}. Must equal this Matrix's column count: {$this->columnCount}."
+            );
+        }
+
+        // Calculate each element of the result as the dot product of a row with the vector.
+        $result = new Vector($this->rowCount);
+        for ($i = 0; $i < $this->rowCount; $i++) {
+            $result->set($i, $this->data[$i]->dot($vec));
+        }
+
+        return $result;
     }
 
     /**

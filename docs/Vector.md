@@ -87,9 +87,7 @@ non-sequential array is rejected rather than silently re-indexed. Integer values
 
 - `$arr` (array<array-key, mixed>) - List of numbers.
 
-**Returns:**
-
-- `self` - A new vector containing the array values.
+**Returns:** `self` - A new vector containing the array values.
 
 **Throws:** `DomainException` if the array is not a list, or any element is not a number.
 
@@ -116,9 +114,7 @@ public function toArray(): array
 
 Get a copy of the vector data as an array.
 
-**Returns:**
-
-- `list<float>` - Array of vector elements.
+**Returns:** `list<float>` - Array of vector elements.
 
 **Examples:**
 
@@ -192,9 +188,7 @@ Get a vector element by index.
 
 - `$index` (int) - Element index (0-based).
 
-**Returns:**
-
-- `float` - Value of the vector element.
+**Returns:** `float` - Value of the vector element.
 
 **Throws:** `OutOfRangeException` if the index is outside the valid range.
 
@@ -282,9 +276,7 @@ Two vectors are equal if they have the same count and all corresponding elements
 
 - `$other` (mixed) - The value to compare with (must be a `Vector`).
 
-**Returns:**
-
-- `bool` - True if the vectors are the same count and all elements are exactly equal.
+**Returns:** `bool` - True if the vectors are the same count and all elements are exactly equal.
 
 **Throws:** `InvalidArgumentException` if `$other` is not a `Vector`.
 
@@ -325,9 +317,7 @@ then relative tolerance.
 - `$relTol` (float) - Relative tolerance (default: 1e-9).
 - `$absTol` (float) - Absolute tolerance (default: PHP_FLOAT_EPSILON).
 
-**Returns:**
-
-- `bool` - True if the vectors are the same count and all elements are approximately equal.
+**Returns:** `bool` - True if the vectors are the same count and all elements are approximately equal.
 
 **Throws:**
 
@@ -382,9 +372,7 @@ public function reciprocal(): self
 
 Calculate the element-wise reciprocal of the vector.
 
-**Returns:**
-
-- `self` - New vector with each element replaced by its reciprocal.
+**Returns:** `self` - New vector with each element replaced by its reciprocal.
 
 **Throws:**
 
@@ -413,9 +401,7 @@ Add one vector to another, element by element.
 
 - `$other` (Vector) - Vector to add.
 
-**Returns:**
-
-- `self` - New vector representing the sum.
+**Returns:** `self` - New vector representing the sum.
 
 **Throws:**
 
@@ -441,9 +427,7 @@ Subtract one vector from another, element by element.
 
 - `$other` (Vector) - Vector to subtract.
 
-**Returns:**
-
-- `self` - New vector representing the difference.
+**Returns:** `self` - New vector representing the difference.
 
 **Throws:**
 
@@ -473,9 +457,7 @@ To multiply a matrix by a vector in order to get a new vector, call [Matrix::mul
 
 - `$other` (float|Matrix) - Number or matrix to multiply by.
 
-**Returns:**
-
-- `self` - New vector representing the product.
+**Returns:** `self` - New vector representing the product.
 
 **Throws:**
 
@@ -507,9 +489,7 @@ Divide the vector by a scalar.
 
 - `$scalar` (float) - Number to divide by.
 
-**Returns:**
-
-- `self` - New vector representing the quotient.
+**Returns:** `self` - New vector representing the quotient.
 
 **Throws:**
 
@@ -534,9 +514,7 @@ Calculate the Hadamard product (element-wise product) of one vector with another
 
 - `$other` (Vector) - Vector to multiply element-wise with.
 
-**Returns:**
-
-- `self` - New vector representing the Hadamard product.
+**Returns:** `self` - New vector representing the Hadamard product.
 
 **Throws:**
 
@@ -562,9 +540,7 @@ Calculate the Hadamard division (element-wise quotient) of one vector by another
 
 - `$other` (Vector) - Vector to divide element-wise by.
 
-**Returns:**
-
-- `self` - New vector representing the Hadamard quotient.
+**Returns:** `self` - New vector representing the Hadamard quotient.
 
 **Throws:**
 
@@ -595,9 +571,7 @@ Calculate the dot product of one vector with another vector.
 
 - `$other` (Vector) - Vector to calculate dot product with.
 
-**Returns:**
-
-- `float` - The dot product.
+**Returns:** `float` - The dot product.
 
 **Throws:**
 
@@ -623,9 +597,7 @@ Calculate the cross product of one vector with another. Both vectors must have a
 
 - `$other` (Vector) - Vector to calculate cross product with.
 
-**Returns:**
-
-- `self` - New vector representing the cross product.
+**Returns:** `self` - New vector representing the cross product.
 
 **Throws:**
 
@@ -653,9 +625,7 @@ count.
 
 - `$other` (Vector) - Vector to calculate outer product with.
 
-**Returns:**
-
-- `Matrix` - New matrix representing the outer product.
+**Returns:** `Matrix` - New matrix representing the outer product.
 
 **Examples:**
 
@@ -674,9 +644,7 @@ public function normalized(): self
 Get the vector normalized to a unit vector (magnitude 1). Returns a new vector with the same direction as the original.
 Use [`normalize()`](#normalize) instead if you want to mutate a vector in place.
 
-**Returns:**
-
-- `self` - A new vector with magnitude 1.
+**Returns:** `self` - A new vector with magnitude 1.
 
 **Throws:**
 
@@ -704,9 +672,7 @@ public function sum(): float
 
 Calculate the sum of all elements in the vector.
 
-**Returns:**
-
-- `float` - The sum. `0.0` for an empty vector (the additive identity).
+**Returns:** `float` - The sum. `0.0` for an empty vector (the additive identity).
 
 **Examples:**
 
@@ -723,9 +689,7 @@ public function prod(): float
 
 Calculate the product of all elements in the vector.
 
-**Returns:**
-
-- `float` - The product. `1.0` for an empty vector (the multiplicative identity).
+**Returns:** `float` - The product. `1.0` for an empty vector (the multiplicative identity).
 
 **Examples:**
 
@@ -788,9 +752,7 @@ Check if an offset exists. Returns true if the offset is an integer within the v
 
 - `$offset` (mixed) - Index to check.
 
-**Returns:**
-
-- `bool` - True if the offset is valid.
+**Returns:** `bool` - True if the offset is valid.
 
 ### offsetGet()
 
@@ -804,9 +766,7 @@ Get value at an offset.
 
 - `$offset` (mixed) - Index to get.
 
-**Returns:**
-
-- `float` - The value at the given index.
+**Returns:** `float` - The value at the given index.
 
 **Throws:**
 
