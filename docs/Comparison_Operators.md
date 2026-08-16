@@ -2,7 +2,7 @@
 
 ## Summary
 
-**NB: It is generally not recommended to use comparison operators with these types.**
+**TL;DR: It is generally not recommended to use comparison operators with these types.**
 
 Comparison operators for the types provided by this package work according to the default way that PHP implements
 comparison operators for objects. There's no way to override operator behaviour in a package.
@@ -10,8 +10,7 @@ comparison operators for objects. There's no way to override operator behaviour 
 Several [methods](#comparison-methods) are provided to support comparisons, which should be preferred.
 
 This document exists to explain which comparison operations will work correctly, and when. It also exists in part as a
-justification for the [Math extension](https://github.com/mossy2100/PHP-Math-extension), which overloads operators for
-these types.
+justification for the [Math extension](https://github.com/mossy2100/PHP-Math-extension), which overloads comparison operators for `Complex` and `Rational`.
 
 ---
 
