@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9abbd7789aa7a635c18ff2a382be3ad9",
+    "content-hash": "884aa10ea3adf6b6efcbea5297968875",
     "packages": [
         {
             "name": "oceanmoon/core",
@@ -12,14 +12,14 @@
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "556f6d5359a6eb7a65107b64e3f3a7537f2af397"
+                "reference": "6f96547fbd0e10d408515fc167324450fb7aa677"
             },
             "require": {
                 "php": "^8.4"
             },
             "require-dev": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "oceanmoon/coding-standard": "dev-main as 2.99.0",
+                "oceanmoon/coding-standard": "^2.1",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
                 "squizlabs/php_codesniffer": "^4.0"
@@ -322,11 +322,17 @@
         },
         {
             "name": "oceanmoon/coding-standard",
-            "version": "dev-main",
+            "version": "v2.1.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/mossy2100/PHP-Coding-Standard.git",
+                "reference": "d9df7ec6185ae890d668ced40fc8defabd2abad4"
+            },
             "dist": {
-                "type": "path",
-                "url": "../CodingStandard",
-                "reference": "2e943c7acdd5293ca94263f38714d01d488f0ae6"
+                "type": "zip",
+                "url": "https://api.github.com/repos/mossy2100/PHP-Coding-Standard/zipball/d9df7ec6185ae890d668ced40fc8defabd2abad4",
+                "reference": "d9df7ec6185ae890d668ced40fc8defabd2abad4",
+                "shasum": ""
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
@@ -342,29 +348,7 @@
             "extra": {
                 "phpcodesniffer-search-depth": 3
             },
-            "scripts": {
-                "fix": [
-                    "vendor/bin/phpcbf -vp"
-                ],
-                "check": [
-                    "vendor/bin/phpcs -s"
-                ],
-                "report": [
-                    "vendor/bin/phpcs -q --report=summary"
-                ],
-                "analyze": [
-                    "scripts/analyze"
-                ],
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "quality": [
-                    "@fix",
-                    "@check",
-                    "@analyze",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -389,9 +373,7 @@
                 "issues": "https://github.com/mossy2100/PHP-Coding-Standard/issues",
                 "source": "https://github.com/mossy2100/PHP-Coding-Standard"
             },
-            "transport-options": {
-                "relative": true
-            }
+            "time": "2026-08-16T02:00:43+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -2033,19 +2015,20 @@
         },
         {
             "name": "squizlabs/php_codesniffer",
-            "version": "4.0.1",
+            "version": "4.0.4",
             "source": {
                 "type": "git",
                 "url": "https://github.com/PHPCSStandards/PHP_CodeSniffer.git",
-                "reference": "0525c73950de35ded110cffafb9892946d7771b5"
+                "reference": "bbdc3d0532623e21838b7041a4364383a8126f96"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/0525c73950de35ded110cffafb9892946d7771b5",
-                "reference": "0525c73950de35ded110cffafb9892946d7771b5",
+                "url": "https://api.github.com/repos/PHPCSStandards/PHP_CodeSniffer/zipball/bbdc3d0532623e21838b7041a4364383a8126f96",
+                "reference": "bbdc3d0532623e21838b7041a4364383a8126f96",
                 "shasum": ""
             },
             "require": {
+                "ext-libxml": "*",
                 "ext-simplexml": "*",
                 "ext-tokenizer": "*",
                 "ext-xmlwriter": "*",
@@ -2053,6 +2036,10 @@
             },
             "require-dev": {
                 "phpunit/phpunit": "^8.4.0 || ^9.3.4 || ^10.5.32 || 11.3.3 - 11.5.28 || ^11.5.31"
+            },
+            "suggest": {
+                "ext-iconv": "For accurate character length calculation when the checked files contain multi-byte characters.",
+                "ext-pcntl": "For parallel processing support via the --parallel CLI option."
             },
             "bin": [
                 "bin/phpcbf",
@@ -2108,7 +2095,7 @@
                     "type": "thanks_dev"
                 }
             ],
-            "time": "2025-11-10T16:43:36+00:00"
+            "time": "2026-08-06T02:45:27+00:00"
         },
         {
             "name": "staabm/side-effects-detector",
@@ -2213,17 +2200,9 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [
-        {
-            "package": "oceanmoon/coding-standard",
-            "version": "dev-main",
-            "alias": "2.99.0",
-            "alias_normalized": "2.99.0.0"
-        }
-    ],
+    "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "oceanmoon/coding-standard": 20,
         "oceanmoon/core": 20
     },
     "prefer-stable": true,

@@ -34,13 +34,9 @@
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "oceanmoon/coding-standard": "dev-main as 2.99.0"
+        "oceanmoon/coding-standard": "^2.1"
     },
     "repositories": [
-        {
-            "type": "path",
-            "url": "../CodingStandard"
-        },
         {
             "type": "path",
             "url": "../Core"
