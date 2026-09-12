@@ -171,6 +171,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `int` one check earlier) instead of `$value`, so it always read "Invalid element type: int. Must be int or float."
   no matter what was actually passed — pointing the reader at the wrong thing. Now reports `$value`'s type, matching
   `Matrix::offsetSet()`.
+- **`Matrix::det()`** — the determinant of the 0×0 matrix was `0.0`: none of the closed-form cases in `calcDet()`
+  matched, and the cofactor loop never ran. It now returns `1.0`, the empty product, so the identity and
+  multiplicativity properties hold for empty matrices.
 
 ### Removed
 

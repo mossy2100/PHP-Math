@@ -1260,10 +1260,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * implemented here because it's a bigger undertaking than the complexity numbers alone suggest, for a case that's
      * unlikely to be needed in practice.
      *
-     * The 1x1, 2x2, and 3x3 cases are handled directly via closed-form formulas rather than recursing, both because
-     * they're common (e.g. 3x3 minors arise from cofactor-expanding a 4x4 matrix, a common size for 3D transforms)
-     * and to skip the overhead of building submatrix arrays for cases that are cheap to compute directly. The 3x3
-     * formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices.
+     * The 0x0, 1x1, 2x2, and 3x3 cases are handled directly via closed-form formulas rather than recursing, both
+     * because they're common (e.g. 3x3 minors arise from cofactor-expanding a 4x4 matrix, a common size for 3D
+     * transforms) and to skip the overhead of building submatrix arrays for cases that are cheap to compute directly.
+     * The 3x3 formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices.
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
@@ -1272,11 +1272,19 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     {
         $n = count($matrix);
 
+        if ($n === 0) {
+            // Determinant of the 0x0 matrix is the empty product, 1, so the identity and multiplicativity
+            // properties hold for empty matrices.
+            return 1.0;
+        }
+
         if ($n === 1) {
+            // Determinant of a 1x1 matrix is its single element.
             return $matrix[0][0];
         }
 
         if ($n === 2) {
+            // Product of primary diagonal minus product of secondary diagonal.
             return $matrix[0][0] * $matrix[1][1] - $matrix[0][1] * $matrix[1][0];
         }
 

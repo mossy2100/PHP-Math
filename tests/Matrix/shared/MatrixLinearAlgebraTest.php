@@ -99,6 +99,15 @@ class MatrixLinearAlgebraTest extends TestCase
     #region Method det() tests.
 
     /**
+     * Test determinant of a 0x0 matrix.
+     */
+    public function testDetZeroByZero(): void
+    {
+        $m = new Matrix(0, 0);
+        $this->assertEquals(1.0, $m->det());
+    }
+
+    /**
      * Test determinant of a 1x1 matrix.
      */
     public function testDetOneByOne(): void
