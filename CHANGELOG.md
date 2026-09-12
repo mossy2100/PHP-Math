@@ -167,6 +167,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `$base` (e.g. `Complex(8)->log(-2)`) leaked a raw engine `ValueError` that escaped the documented contract
   entirely. The shortcut is now taken only when both parts are positive reals, so every other case falls through to
   the general change-of-base solution and returns the correct principal complex value.
+- **`Vector::offsetSet()`** — the "invalid element" error message interpolated `$offset` (already validated as an
+  `int` one check earlier) instead of `$value`, so it always read "Invalid element type: int. Must be int or float."
+  no matter what was actually passed — pointing the reader at the wrong thing. Now reports `$value`'s type, matching
+  `Matrix::offsetSet()`.
 
 ### Removed
 

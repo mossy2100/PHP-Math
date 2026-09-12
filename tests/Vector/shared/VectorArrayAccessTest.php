@@ -9,6 +9,7 @@ use LogicException;
 use OceanMoon\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Vector::class)]
@@ -114,6 +115,42 @@ class VectorArrayAccessTest extends TestCase
         $v = Vector::fromArray([1, 2, 3]);
         $this->expectException(InvalidArgumentException::class);
         $v[0] = 'hello';
+    }
+
+    /**
+     * Data provider for non-number values and the type name the error message should report.
+     *
+     * @return array<string, array{mixed, string}>
+     */
+    public static function nonNumberValueProvider(): array
+    {
+        return [
+            'string' => ['hello', 'string'],
+            'array'  => [
+                [1, 2],
+                'array',
+            ],
+            'null'   => [null, 'null'],
+            'bool'   => [true, 'bool'],
+        ];
+    }
+
+    /**
+     * Test offsetSet names the offending value's type in its message.
+     *
+     * Regression test: the message interpolated $offset (already validated as an int one check earlier) instead of
+     * $value, so it always read "Invalid element type: int." no matter what was actually passed.
+     *
+     * @param mixed $value The non-number value.
+     * @param string $type The type name the message should name.
+     */
+    #[DataProvider('nonNumberValueProvider')]
+    public function testOffsetSetWithNonNumberNamesValueType(mixed $value, string $type): void
+    {
+        $v = Vector::fromArray([1, 2, 3]);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Invalid element type: $type. Must be int or float.");
+        $v[0] = $value;
     }
 
     #endregion

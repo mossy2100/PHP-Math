@@ -703,7 +703,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
         // Check element type.
         if (!Numbers::isNumber($value)) {
             throw new InvalidArgumentException(
-                'Invalid element type: ' . get_debug_type($offset) . '. Must be int or float.'
+                'Invalid element type: ' . get_debug_type($value) . '. Must be int or float.'
             );
         }
 
