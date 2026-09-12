@@ -74,6 +74,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   place, so it needed the `-d` suffix to make room for a genuine in-place `normalize()` (see Added) without the two
   being confusable.
 - **`Matrix::transpose()` renamed to `t()`** — a well-established short form (NumPy's `.T`, R's `t()`).
+- **`Rational::parse()` renamed to `fromString()`** — matching `Complex::fromString()`, so both value classes name their
+  string-parsing factory the same way. A rename only; the accepted input formats are unchanged.
 - **Comparison methods narrowed to a small, fixed set of accepted types**, matching Core's finalized comparison-trait
   policy (strict `instanceof self` checks, throw `InvalidArgumentException` for anything else — no silent conversion):
   `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` now only accept an instance of the same class
@@ -82,7 +84,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   to same-type-only comparison in this package, since a bare number is genuinely part of the same numeric domain as a
   `Complex`.
 - **`OceanMoon\Math\I`** is now **`OceanMoon\Math\M_I`**, matching Core's `M_TAU` naming convention. Code using
-  `Floats::TAU` should use the new `OceanMoon\Core\Globals\M_TAU` constant directly instead (moved out of `Floats`).
+  `Floats::TAU` should use the new `OceanMoon\Core\M_TAU` constant directly instead (moved out of `Floats`).
 - **`Vector::fromArray()`** and **`Matrix::fromArray()`** now reject arrays with non-sequential keys (`DomainException`)
   instead of silently re-indexing them. If you were relying on the re-indexing behavior, call `array_values()`
   explicitly before passing the array in. Both methods' shape-validation failures (wrong list-ness, non-numeric
@@ -90,8 +92,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   a malformed array is a domain/value problem, not a type-conversion one. `Matrix::fromArray()`'s ragged-row check (rows
   with differing column counts) is `LengthException` instead, matching the convention used elsewhere in this package for
   a length mismatch between two collections (e.g. `Vector::add()`, `Matrix::setRow()`).
-- **`Rational::compare()`** (and therefore `equal()`, `lessThan()`, etc.) now accepts Rational-format strings (e.g.
-  `'1/2'`) via the (now-private) `toRational()` helper, not just plain numeric strings — a capability expansion.
 - **`Rational::add()`/`sub()`/`mul()`/`div()` no longer accept `float`** — narrowed from `self|int|float` to `self|int`.
   Passing a `float` now throws `TypeError`; convert it with `fromFloat()` first if you need to combine it with a
   `Rational`. Narrowing this (rather than keeping the `self|float` return it would otherwise need) avoids a PHPStan
@@ -130,7 +130,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::toColumnMatrix()`** — an empty vector previously converted to a degenerate 0×0 matrix instead of the
   correct 0×1, because it routed through `Matrix::fromArray()`, whose empty-array shortcut can't distinguish the two
   shapes. Now constructs the matrix directly, always producing a proper n×1 shape. This also fixes a downstream bug in
-  **`Matrix::mul(Vector)`**: multiplying a 0-column matrix by an empty vector previously threw a spurious
+  **`Matrix::mulVector()`**: multiplying a 0-column matrix by an empty vector previously threw a spurious
   `OutOfRangeException` instead of returning the correct zero-length-result `Vector`.
 - **`Vector::offsetSet()`** — the `ArrayAccess` implementation had an unconditional `throw new OutOfRangeException(...)`
   placed before the actual offset-validity check, making every assignment via `$vector[$i] = $value` fail regardless of
@@ -182,6 +182,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `toVector()`, `toMatrix()` are all gone — see below); what remains are narrow, explicitly-typed constructors/factories
   and the strict-type comparison methods above, so there's no longer a "value of unknown type being converted" scenario
   for this exception to describe.
+- **`Rational::toRational()`** — the general-purpose `mixed`-accepting static conversion factory (public in `3.0.0`),
+  removed as part of the conversion-factory cleanup above. It was only ever called internally, to coerce the arguments
+  of `add()`/`sub()`/`mul()`/`div()`; the comparison methods never used it, so comparison behavior is unchanged. Use
+  the narrow, explicitly-typed factories instead: the constructor or `fromFloat()` for numbers, `fromString()` for
+  strings.
 - **`Complex::fromArray()`**, **`Complex::fromObject()`**, **`Complex::toComplex()`** — removed entirely, not just
   changed. Construct via the constructor, `fromString()`, or `fromPolar()` instead.
 - **`Vector::toVector()`**, **`Matrix::toMatrix()`** — the general-purpose `mixed`-accepting conversion factories
