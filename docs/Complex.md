@@ -611,6 +611,10 @@ Calculate logarithm with specified base using change of base formula: log_b(z) =
 ```php
 $z = new Complex(8);
 $result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
+
+// Negative real arguments return the principal complex value.
+$negThis = (new Complex(-8))->log(2);  // 3 + iπ/ln 2
+$negBase = (new Complex(8))->log(-2);  // ln 8 / (ln 2 + iπ)
 ```
 
 **Throws:**

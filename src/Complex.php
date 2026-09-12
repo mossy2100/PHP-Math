@@ -711,6 +711,8 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the logarithm of a complex number with the given base.
      * Uses the change of base formula: log_b(z) = ln(z) / ln(b)
      *
+     * Negative real arguments are supported: they return the principal complex value (e.g. log_2(-8) = 3 + iπ/ln 2).
+     *
      * @param self|float $base The base for the logarithm.
      * @return self A new complex number representing log_b(z).
      * @throws DomainException If the base is a non-finite float (±INF or NAN).
@@ -752,8 +754,11 @@ final class Complex implements Stringable, ArrayAccess
             }
         }
 
-        // Use built-in log() function when arguments are real.
-        if ($this->isReal() && $base->isReal()) {
+        // Use PHP's built-in real log() only when both arguments are positive reals, the only case where it returns
+        // the principal value. A negative real $this (e.g. log_2(-8) = 3 + iπ/ln 2) or a negative real $base has a
+        // valid complex result, so those fall through to the general solution below; PHP's real log() would
+        // otherwise return NAN for the former, or throw a raw ValueError for the latter.
+        if ($this->isReal() && $base->isReal() && $this->real > 0 && $base->real > 0) {
             return new self(log($this->real, $base->real));
         }
 

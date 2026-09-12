@@ -161,6 +161,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   producing vectors/matrices that violated the finite-value guarantee the package enforces (and that `set()` already
   applied), with the failure only surfacing later — and far from its cause — inside an unrelated operation. Both
   factories now reject non-finite elements with a `DomainException`, matching `set()`.
+- **`Complex::log()`** — the "both arguments are real" shortcut called PHP's real `log($this->real, $base->real)`
+  whenever both parts were real, but that's only valid for positive arguments. A negative real `$this` (e.g.
+  `Complex(-8)->log(2)`) produced `NAN`, so the constructor threw a confusing `DomainException`; a negative real
+  `$base` (e.g. `Complex(8)->log(-2)`) leaked a raw engine `ValueError` that escaped the documented contract
+  entirely. The shortcut is now taken only when both parts are positive reals, so every other case falls through to
+  the general change-of-base solution and returns the correct principal complex value.
 
 ### Removed
 

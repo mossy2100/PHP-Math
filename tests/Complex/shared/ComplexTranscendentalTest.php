@@ -163,6 +163,46 @@ class ComplexTranscendentalTest extends TestCase
     }
 
     /**
+     * Test log of a negative real with a positive real base.
+     *
+     * log_2(-8) = ln(-8)/ln(2) = (ln 8 + iπ)/ln 2 = 3 + iπ/ln 2. The "arguments are real" shortcut used to call
+     * PHP's real log(-8.0, 2.0), which is NAN, and the constructor then threw a confusing DomainException.
+     */
+    public function testLogNegativeRealThis(): void
+    {
+        $result = new Complex(-8)->log(2);
+        $this->assertEqualsWithDelta(3.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(M_PI / M_LN2, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test log with a negative real base.
+     *
+     * log_-2(8) = ln(8)/ln(-2) = ln(8)/(ln 2 + iπ), i.e. (ln 8 · ln 2 - i · ln 8 · π)/(ln²2 + π²). The shortcut
+     * used to call PHP's real log(8.0, -2.0), which throws a raw engine ValueError in PHP 8.
+     */
+    public function testLogNegativeRealBase(): void
+    {
+        $denominator = M_LN2 ** 2 + M_PI ** 2;
+
+        $result = new Complex(8)->log(-2);
+        $this->assertEqualsWithDelta(log(8) * M_LN2 / $denominator, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-log(8) * M_PI / $denominator, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test log with base -1, whose logarithm is iπ, giving a purely imaginary result.
+     *
+     * log_-1(8) = ln(8)/ln(-1) = ln(8)/(iπ) = -i·ln(8)/π.
+     */
+    public function testLogBaseMinusOne(): void
+    {
+        $result = new Complex(8)->log(-1);
+        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-log(8) / M_PI, $result->imaginary, EPSILON);
+    }
+
+    /**
      * Test log with complex numbers.
      */
     public function testLogComplex(): void
