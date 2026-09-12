@@ -81,7 +81,7 @@ public static function fromArray(array $arr): self
 
 Create a matrix from a 2D array. The outer array and every row must be a list (sequential integer keys starting at 0); a
 non-sequential array is rejected rather than silently re-indexed. All rows must have the same number of elements, and
-every element must be numeric. Integer values are cast to float.
+every element must be a finite number, so `INF`, `-INF`, and `NAN` are rejected. Integer values are cast to float.
 
 **Parameters:**
 
@@ -91,7 +91,7 @@ every element must be numeric. Integer values are cast to float.
 
 **Throws:**
 
-- `DomainException` if the outer array or any row is not a list, or any element is not a number.
+- `DomainException` if the outer array or any row is not a list, or any element is not a finite number.
 - `LengthException` if the rows don't all have the same number of columns.
 
 **Examples:**
@@ -105,6 +105,9 @@ $m = Matrix::fromArray([
 
 $m0 = Matrix::fromArray([]);
 // 0x0 matrix
+
+// Non-finite elements are rejected.
+Matrix::fromArray([[1, INF]]);  // throws DomainException
 ```
 
 ### identity()

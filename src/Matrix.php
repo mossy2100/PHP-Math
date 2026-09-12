@@ -103,7 +103,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @param array<array-key, mixed> $arr Rectangular array of numbers.
      * @return self
-     * @throws DomainException If the array or a row isn't a list, or an element isn't a number.
+     * @throws DomainException If the array or a row isn't a list, or an element isn't a finite number.
      * @throws LengthException If the rows don't all have the same number of columns.
      */
     public static function fromArray(array $arr): self
@@ -141,12 +141,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
             $dataRow = [];
 
-            // Check each row contains only numbers.
+            // Check each row contains only finite numbers.
             foreach ($row as $j => $value) {
-                // Check if each value is a number.
-                if (!Numbers::isNumber($value)) {
-                    throw new DomainException("Invalid element type at row $i, column $j: " . get_debug_type($value) .
-                        '. Must be int or float.');
+                // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
+                if (!Numbers::isFiniteNumber($value)) {
+                    throw new DomainException(Stringify::prepEx(
+                        "Invalid element at row $i, column $j: ?. Must be a finite int or float.",
+                        $value
+                    ));
                 }
 
                 // Convert the value to a float and store it in the matrix.

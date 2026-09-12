@@ -79,7 +79,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param array<array-key, mixed> $arr Array of numbers.
      * @return self
-     * @throws DomainException If the array has the wrong shape to be converted to a Vector.
+     * @throws DomainException If the array is not a list, or an element is not a finite number.
      */
     public static function fromArray(array $arr): self
     {
@@ -95,13 +95,14 @@ final class Vector implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot create Vector from array. Must be a list.');
         }
 
-        // Check all elements are numbers.
+        // Check all elements are finite numbers.
         foreach ($arr as $index => $value) {
-            // Check if the value is a number.
-            if (!Numbers::isNumber($value)) {
-                throw new DomainException(
-                    "Invalid element type at index $index: " . get_debug_type($value) . '. Must be int or float.'
-                );
+            // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
+            if (!Numbers::isFiniteNumber($value)) {
+                throw new DomainException(Stringify::prepEx(
+                    "Invalid element at index $index: ?. Must be a finite int or float.",
+                    $value
+                ));
             }
 
             // Set the vector element.

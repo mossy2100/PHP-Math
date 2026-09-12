@@ -81,7 +81,8 @@ public static function fromArray(array $arr): self
 ```
 
 Create a vector from an array of numbers. The array must be a list (sequential integer keys starting at 0); a
-non-sequential array is rejected rather than silently re-indexed. Integer values are cast to float.
+non-sequential array is rejected rather than silently re-indexed. Every element must be a finite number, so `INF`,
+`-INF`, and `NAN` are rejected. Integer values are cast to float.
 
 **Parameters:**
 
@@ -89,7 +90,7 @@ non-sequential array is rejected rather than silently re-indexed. Integer values
 
 **Returns:** `self` - A new vector containing the array values.
 
-**Throws:** `DomainException` if the array is not a list, or any element is not a number.
+**Throws:** `DomainException` if the array is not a list, or any element is not a finite number.
 
 **Examples:**
 
@@ -100,6 +101,9 @@ $v3 = Vector::fromArray([]);  // Count-0 vector
 
 // Non-list arrays are rejected, not re-indexed.
 Vector::fromArray([5 => 10, 10 => 20]);  // throws DomainException
+
+// Non-finite elements are rejected too.
+Vector::fromArray([1, INF]);  // throws DomainException
 ```
 
 ---

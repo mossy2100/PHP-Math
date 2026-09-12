@@ -157,6 +157,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   name, never a real registered PHP extension name — so it always evaluated `false` and silently redeclared
   `OceanMoon\Math\M_I` in userland even when the native extension (which registers the same constant itself) was loaded.
   Fixed to check `extension_loaded('oceanmoon_math')`, the extension's actual module name.
+- **`Vector::fromArray()`** and **`Matrix::fromArray()`** — both accepted non-finite elements (`±INF` and `NAN`),
+  producing vectors/matrices that violated the finite-value guarantee the package enforces (and that `set()` already
+  applied), with the failure only surfacing later — and far from its cause — inside an unrelated operation. Both
+  factories now reject non-finite elements with a `DomainException`, matching `set()`.
 
 ### Removed
 

@@ -7,6 +7,7 @@ namespace OceanMoon\Math\Tests\Vector;
 use DomainException;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Vector::class)]
@@ -72,6 +73,32 @@ class VectorFactoryTest extends TestCase
             10 => 20,
             15 => 30,
         ]);
+    }
+
+    /**
+     * Data provider for non-finite element values.
+     *
+     * @return array<string, list<float>>
+     */
+    public static function nonFiniteElementProvider(): array
+    {
+        return [
+            'positive infinity' => [INF],
+            'negative infinity' => [-INF],
+            'NAN'               => [NAN],
+        ];
+    }
+
+    /**
+     * Test fromArray with a non-finite element throws DomainException.
+     *
+     * @param float $value The non-finite element value.
+     */
+    #[DataProvider('nonFiniteElementProvider')]
+    public function testFromArrayWithNonFiniteElementThrows(float $value): void
+    {
+        $this->expectException(DomainException::class);
+        Vector::fromArray([1.0, $value]);
     }
 
     #endregion
