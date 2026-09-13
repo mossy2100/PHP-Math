@@ -17,4 +17,4 @@ namespace OceanMoon\Math;
  * use const OceanMoon\Math\M_I;
  * ```
  */
-const M_I = new Complex(0, 1); // @codeCoverageIgnore
+const M_I = new Complex(0, 1);

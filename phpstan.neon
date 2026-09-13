@@ -3,8 +3,6 @@ parameters:
     paths:
         - src
         - tests
-    excludePaths:
-        - tests/*/extension/*
     bootstrapFiles:
         - tests/epsilon.php
     treatPhpDocTypesAsCertain: false

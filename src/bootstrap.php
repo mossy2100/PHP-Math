@@ -11,7 +11,7 @@ namespace OceanMoon\Math;
 
 // This if block is provided to allow for the case where the Math package and Math extension are both loaded at the same
 // time.
-// This file (bootstrap.php) is loaded by the Math package. But if the Math extension is also loaded, it already
+// This file (bootstrap.php) is loaded by the Math package. But if the Math extension is _also_ loaded, it already
 // registers the M_I constant itself. Redeclaring it causes an error.
 if (!extension_loaded('oceanmoon_math')) {
     // We need to use require_once because `const` isn't allowed inside an `if` block.
