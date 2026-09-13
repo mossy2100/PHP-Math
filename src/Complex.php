@@ -112,6 +112,7 @@ final class Complex implements Stringable, ArrayAccess
      * @param string $str The string to convert.
      * @return self The equivalent Complex.
      * @throws FormatException If the string does not represent a valid Complex.
+     * @throws DomainException If an out-of-range exponent makes a part non-finite (e.g. '1e400').
      */
     public static function fromString(string $str): self
     {

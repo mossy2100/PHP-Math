@@ -127,7 +127,10 @@ $z3 = Complex::fromString("i");
 $z4 = Complex::fromString("4i+3");
 ```
 
-**Throws:** `FormatException` if the string is empty or does not match a supported format.
+**Throws:**
+
+- `FormatException` if the string is empty or does not match a supported format.
+- `DomainException` if an out-of-range exponent makes a part non-finite (e.g. `'1e400'`).
 
 ### fromPolar()
 
