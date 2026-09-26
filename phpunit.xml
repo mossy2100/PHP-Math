@@ -2,6 +2,7 @@
 <phpunit bootstrap="tests/bootstrap.php"
          colors="true"
          cacheResult="false"
+         backupGlobals="true"
          beStrictAboutOutputDuringTests="true"
          beStrictAboutChangesToGlobalState="true"
          displayDetailsOnTestsThatTriggerDeprecations="true"
