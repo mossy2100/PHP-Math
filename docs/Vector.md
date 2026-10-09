@@ -240,7 +240,7 @@ echo $v->get(1);  // 99.0
 public function normalize(): void
 ```
 
-Normalize the vector to a unit vector (magnitude 1), in place. Mutates it rather than returning a new one — use
+Normalize the vector to a unit vector (magnitude 1), in place. Mutates it rather than returning a new one - use
 [`normalized()`](#normalized) instead if you want an unmodified copy.
 
 **Throws:** `ArithmeticException` if the vector has zero magnitude. If it throws, the vector is left unmodified.
@@ -257,12 +257,11 @@ echo $v;  // ⟨0.6, 0.8⟩
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the
-[`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait
-from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Vector` supplying its own type-checking logic
-since the trait's parameter is typed `mixed` (see the trait's docs for why).
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package, with
+`Vector` supplying its own type-checking logic since the trait's parameter is typed `mixed` (see the trait's docs for
+why).
 
-Both methods accept only a `Vector` for `$other` — not an `array` or a single-column `Matrix`, even though those could
+Both methods accept only a `Vector` for `$other` - not an `array` or a single-column `Matrix`, even though those could
 plausibly represent the same values. Anything else throws `InvalidArgumentException` rather than silently returning
 `false`, to catch bugs from comparing values that can't meaningfully be compared.
 
@@ -346,8 +345,7 @@ $v1->approxEqual('string');  // throws InvalidArgumentException
 
 ### Comparison Operators
 
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
-types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 
 ---
 

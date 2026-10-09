@@ -2,258 +2,124 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
-[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
-## [Unreleased]
+## [4.0.0] - 2026-10-10
 
-> **Version not yet decided.** This batch includes several breaking changes (exception types changed throughout, several
-> conversion methods removed, comparison methods narrowed to stricter type acceptance) that likely warrant a major
-> version bump — to be decided before this is tagged as a release.
+Requires `oceanmoon/core` `^4.0`. Breaking changes are marked **(breaking)**. The headline changes:
+`ArithmeticException` replaces `DivisionByZeroError`, the general-purpose conversion methods are gone, comparison
+methods only accept their own type, and serialization support is removed.
 
 ### Added
 
-- **`ArithmeticException`** (`OceanMoon\Core\Exceptions\ArithmeticException`) is now thrown for arithmetic operations
-  with no defined result — `Complex::div()` (division by zero), `pow()` (raising zero to a negative or complex power),
-  `ln()`/`log()` (logarithm of zero, or with base 0 or 1); `Rational`'s constructor/`inv()`/`div()`/`pow()` (zero
-  denominator, reciprocal of zero, division by zero, raising zero to a negative power); `Vector::div()`/`normalized()`
-  (zero scalar/magnitude); and `Matrix::inv()`/`div()`/`pow()` (zero determinant / non-invertible matrix). This
-  displaces `DivisionByZeroError` throughout the package — see Removed.
-- **`Vector::hadamardMul()`**, **`Matrix::hadamardMul()`** — element-wise (Hadamard) product of two same-shaped
-  vectors/matrices.
-- **`Vector::hadamardDiv()`**, **`Matrix::hadamardDiv()`** — element-wise (Hadamard) quotient of two same-shaped
-  vectors/matrices, throwing `ArithmeticException` for a zero divisor element. The `Mul` suffix on `hadamardMul()`
-  exists specifically to leave room for this counterpart, matching the `mul()`/`div()` naming pattern already used for
-  scalar arithmetic.
-- **`Vector::reciprocal()`**, **`Matrix::reciprocal()`** — element-wise reciprocal, throwing `ArithmeticException` for a
-  zero element. On `Matrix`, distinct from `inv()` (the matrix inverse) - `reciprocal()` has no relationship to matrix
-  multiplication, it's purely `1 / $element` applied to each entry. Combined with a scalar `*`, this gives a way to
-  express "scalar divided by every element of a matrix/vector" (e.g. `$x * $a->reciprocal()`), which neither `/` nor any
-  other existing method computes directly.
-- **`Vector::sum()`**, **`Vector::prod()`** — sum and product of all elements.
-- **`Matrix::mulVector()`** — multiply this matrix by a vector (_Ax_), returning a `Vector`. Replaces the `Vector`
-  branch removed from `Matrix::mul()` (see Removed) with a dedicated, non-polymorphic method.
-- **`Vector::outer()`** — outer product of two vectors, returning an m×n `Matrix`. Unlike `dot()`/`cross()`, the two
-  vectors don't need to be the same size.
-- **`Vector::normalize()`** — normalizes the vector to unit magnitude (1) in place, mutating it and returning `void`.
-  Complements the existing (now renamed) `normalized()`, which returns a new normalized vector without modifying the
-  original — see Changed.
-- **`Matrix::copy()`** — extract a rectangular sub-matrix.
-- **`Matrix::paste()`** — copy another matrix's elements into this one in place, at a given offset.
-- **`Matrix::resize()`** — return a new matrix with different dimensions, built from `copy()`/ `paste()`, zero-filling
-  on growth and truncating on shrink.
-- **`Vector`** and **`Matrix`** now implement `Countable`: `count()` returns `size` for `Vector`, and
-  `rowCount * columnCount` for `Matrix`.
-- **`Rational::round()`** now takes an optional `RoundingMode $mode` parameter (defaults to `HalfAwayFromZero`,
-  preserving the previous behavior), supporting all eight of PHP's built-in rounding modes. Implemented with exact
-  integer arithmetic on the numerator/denominator throughout — the Rational is never converted to a `float` — so it has
-  no precision loss near tie boundaries or for a numerator/denominator beyond float's 53-bit mantissa, unlike a naive
-  `(int) round((float) $this, 0, $mode)` implementation would.
-- **`Vector::set()`** and **`Matrix::set()`** now throw `DomainException` for a non-finite value (±INF or NAN), matching
-  the finite-value guarantee already enforced elsewhere in this package (e.g. `Complex`'s constructor). Since every
-  arithmetic method on `Vector`/`Matrix` sets elements via `set()` internally, this also catches non-finite results
-  produced deep inside operations like `mul()` (scalar overflow) or `Matrix::inv()` (near-singular matrices) instead of
-  letting `INF`/`NAN` silently propagate.
-- **`Complex::equal()`/`approxEqual()` and `Rational::approxEqual()` now handle a non-finite `$other` explicitly**,
-  distinguishing `NAN` from `±INF` instead of treating both the same way: `NAN` throws `DomainException` (there's no
-  meaningful equality result for it — the same reasoning `Rational::compare()` already applied), while `±INF` returns
-  `false` (a finite `Complex`/`Rational` is simply never equal to infinity, which isn't a type error worth throwing
-  over). This makes both classes consistent with each other and with `Rational::compare()`, which already threw for
-  `NAN` and already handled `±INF` correctly via the spaceship operator.
+- **`Vector`/`Matrix` element-wise operations:** `hadamardMul()`, `hadamardDiv()` and `reciprocal()`. `hadamardDiv()`
+  and `reciprocal()` throw `ArithmeticException` for a zero element.
+- **`Vector::sum()`**, **`Vector::prod()`** - sum and product of all elements.
+- **`Vector::outer()`** - outer product, returning an m×n `Matrix`. The vectors don't need to be the same size.
+- **`Vector::mul()`** accepts a `Matrix`, treating the vector as a row vector (_xA_).
+- **`Vector::normalize()`** - normalizes the vector in place. See Changed for the method previously called
+  `normalize()`.
+- **`Matrix::mulVector()`** - multiplies the matrix by a vector (_Ax_), returning a `Vector`. Replaces
+  `Matrix::mul(Vector)` (see Changed).
+- **`Matrix::copy()`**, **`Matrix::paste()`**, **`Matrix::resize()`** - extract a sub-matrix, paste one matrix into
+  another in place, and return a resized copy (zero-filled when growing).
+- **`Matrix` implements `ArrayAccess`** - `$m[$row]` returns the live row `Vector`, so `$m[$row][$col] = $x` works.
+- **`Vector` and `Matrix` implement `Countable`** - `count()` returns the element count (`rowCount * columnCount` for a
+  `Matrix`).
+- **`Complex::round()`** - rounds both parts, with optional `RoundingMode` (default `HalfAwayFromZero`).
+- **`Rational::isInt()`** - whether the denominator is 1.
+- **`Rational::sign()`** - `-1`, `0` or `1`, with the same `$zeroForZero` parameter as `Numbers::sign()`.
 
 ### Changed
 
-- **`Vector::$size` renamed to `$count`**, for consistency with `Matrix`'s `rowCount`/`columnCount` naming and to
-  reduce the risk of confusion with `$magnitude` (both describe "how big is this vector" in a loose sense, but only
-  one of them is the element count). Purely a rename — behavior, including the `Countable::count()` method (which
-  now just returns `$this->count`), is unchanged. Update `$v->size` to `$v->count`, and `new Vector(size: ...)` to
-  `new Vector(count: ...)` if you're using named arguments.
-- **`Vector::normalize()` renamed to `normalized()`** — it returns a new normalized vector rather than mutating in
-  place, so it needed the `-d` suffix to make room for a genuine in-place `normalize()` (see Added) without the two
-  being confusable.
-- **`Matrix::transpose()` renamed to `t()`** — a well-established short form (NumPy's `.T`, R's `t()`).
-- **`Rational::parse()` renamed to `fromString()`** — matching `Complex::fromString()`, so both value classes name their
-  string-parsing factory the same way. A rename only; the accepted input formats are unchanged.
-- **Comparison methods narrowed to a small, fixed set of accepted types**, matching Core's finalized comparison-trait
-  policy (strict `instanceof self` checks, throw `InvalidArgumentException` for anything else — no silent conversion):
-  `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` now only accept an instance of the same class
-  (previously accepted arrays and, for `Vector`, single-column `Matrix` conversions too).
-  `Complex::equal()`/`approxEqual()` accept `Complex`, `int`, or `float` only — the one deliberate, documented exception
-  to same-type-only comparison in this package, since a bare number is genuinely part of the same numeric domain as a
-  `Complex`.
-- **`OceanMoon\Math\I`** is now **`OceanMoon\Math\M_I`**, matching Core's `M_TAU` naming convention. Code using
-  `Floats::TAU` should use the new `OceanMoon\Core\M_TAU` constant directly instead (moved out of `Floats`).
-- **`Vector::fromArray()`** and **`Matrix::fromArray()`** now reject arrays with non-sequential keys (`DomainException`)
-  instead of silently re-indexing them. If you were relying on the re-indexing behavior, call `array_values()`
-  explicitly before passing the array in. Both methods' shape-validation failures (wrong list-ness, non-numeric
-  elements) are now `DomainException` — the array argument is already correctly typed by the time these methods run, so
-  a malformed array is a domain/value problem, not a type-conversion one. `Matrix::fromArray()`'s ragged-row check (rows
-  with differing column counts) is `LengthException` instead, matching the convention used elsewhere in this package for
-  a length mismatch between two collections (e.g. `Vector::add()`, `Matrix::setRow()`).
-- **`Rational::add()`/`sub()`/`mul()`/`div()` no longer accept `float`** — narrowed from `self|int|float` to `self|int`.
-  Passing a `float` now throws `TypeError`; convert it with `fromFloat()` first if you need to combine it with a
-  `Rational`. Narrowing this (rather than keeping the `self|float` return it would otherwise need) avoids a PHPStan
-  level 9 fight in `pow()`/`sqr()`, where the compiler can't see that a call site passing a known `self` argument can
-  never actually receive the `float` branch of a `self|float` return.
-- **`Rational::pow(1)`** now returns a new, distinct (but equal) clone rather than `$this` itself.
-- Consolidated the float-comparison tolerance used throughout the test suite into a single global `EPSILON` constant
-  (`tests/bootstrap.php`), replacing the `Complex::EPSILON` class constant and various ad-hoc tolerance values scattered
-  across individual test files.
-- Replaced `assertApproxEqual()` (from Core's `FloatAssertions` trait) with PHPUnit's own
-  `assertEqualsWithDelta(..., EPSILON)` in the `Matrix` and `Vector` test suites, matching the pattern already used
-  everywhere else in this package's tests. `FloatAssertions`'s relative-tolerance behavior wasn't being exercised by any
-  of the seven call sites it had here (all in a similar, modest magnitude range), so the switch is a simplification, not
-  a loss of coverage. The trait itself is untouched in Core.
-- **`Complex::fromString()` no longer accepts `j`/`J` or uppercase `I` as an imaginary unit suffix** — only lowercase
-  `i` now. Dropping `j`/`J` frees up `j` (and `k`) for a planned `Quaternion` class, where `i`, `j`, and `k` will each
-  mean something distinct; keeping `j` as a synonym for `i` on `Complex` would make that ambiguous. Dropping uppercase
-  `I` matches `__toString()`, which has only ever emitted lowercase `i`. Strings like `'3+4j'` and `'3+4I'` now throw
-  `FormatException` instead of parsing as `3 + 4i`.
-- **`Vector::$magnitude` is no longer cached.** It's still a readonly property (unlike the brief detour through a
-  `magnitude()` method earlier in this Unreleased cycle), but the property hook now recomputes it from the current
-  elements on every read instead of caching the value and invalidating it on mutation (`offsetSet()` no longer needs
-  to reset it to `null`). Same reasoning as `Complex`'s `$magnitude`/`$phase` below: keeping a cache in sync forever
-  needs every mutating method to remember to invalidate it, so it's simpler to just not cache.
-- **`Complex::$magnitude`/`$phase`** are now computed eagerly in the constructor instead of lazily on first access via
-  a property hook. `Complex` is immutable, so laziness was never load-bearing for correctness — the values themselves
-  are unchanged — but it did mean both properties were internally `?float` with a caching `get` hook, requiring
-  `assert()`/`@var` hints elsewhere in the class to convince PHPStan the values were non-null after the first access.
-  `fromPolar()` no longer manually re-assigns the known magnitude/phase onto the constructed instance afterward either
-  — the constructor now computes them itself from the resulting real/imaginary parts, the same as any other
-  constructor call. This trades a small amount of precision (the recomputed magnitude/phase now round-trips through
-  `cos()`/`sin()` and back rather than storing the original input exactly) for a single, uniform code path.
+- **`ArithmeticException` replaces `DivisionByZeroError` (breaking).** Thrown for operations with no defined result:
+  - `Complex`: division by zero, zero to a negative or complex power, logarithm of zero or with base 0 or 1.
+  - `Rational`: zero denominator, reciprocal of zero, division by zero, zero to a negative power.
+  - `Vector`: division by zero, normalizing a zero vector.
+  - `Matrix`: inverting, dividing by, or raising to a negative power a non-invertible matrix.
+- **Comparison methods only accept their own type (breaking)**, throwing `InvalidArgumentException` for anything else:
+  - `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` no longer accept arrays, or a
+    single-column `Matrix` for `Vector`.
+  - `Complex::equal()`/`approxEqual()` accept `Complex`, `int` or `float`.
+  - `Rational::compare()` (and the methods built on it) throws `InvalidArgumentException` instead of
+    `IncomparableTypesException`.
+- **Non-finite values are rejected consistently (breaking):**
+  - `Vector::set()`/`Matrix::set()` and `fromArray()` throw `DomainException` for `±INF` or `NAN`. Because every
+    arithmetic method uses `set()`, a non-finite result (e.g. from overflow) now throws instead of propagating.
+  - `Complex::equal()`/`approxEqual()` and `Rational::approxEqual()` throw `DomainException` for a `NAN` argument and
+    return `false` for `±INF`.
+- **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** non-sequential keys now throw `DomainException` instead of
+  being re-indexed - call `array_values()` first. Other shape errors are also `DomainException`. Ragged matrix rows
+  throw `LengthException`.
+- **`Rational::fromFloat()`** throws `DomainException` for a value too large or too small to represent, instead of
+  `OverflowException`/`UnderflowException` **(breaking)**.
+- **`Rational::add()`/`sub()`/`mul()`/`div()` no longer accept `float` (breaking)** - convert with `fromFloat()` first.
+- **`Matrix::mul()` no longer accepts a `Vector` (breaking)** - use `mulVector()`. Its return type is now always
+  `Matrix`.
+- **`Matrix::div()` no longer accepts a `Matrix` (breaking)** - `A / B` is ambiguous about multiplication order. Use
+  `$a->mul($b->inv())` or `$b->inv()->mul($a)`.
+- **`Matrix::setRow()`/`setColumn()` only accept a `Vector` (breaking)**, not an array. Wrap arrays with
+  `Vector::fromArray()`.
+- **Renames (breaking):**
+
+  | Old                           | New                                |
+  | ----------------------------- | ---------------------------------- |
+  | `Vector::$size`               | `Vector::$count`                   |
+  | `Vector::normalize()`         | `Vector::normalized()`             |
+  | `Matrix::transpose()`         | `Matrix::t()`                      |
+  | `Complex::parse()`            | `Complex::fromString()`            |
+  | `Rational::parse()`           | `Rational::fromString()`           |
+  | `OceanMoon\Math\I`            | `OceanMoon\Math\M_I`               |
+
+- **Renamed parameters (breaking for named arguments):** `new Vector(size:)` → `count:`, `Complex::pow(other:)` →
+  `exp:`, `Complex::roots(n:)` → `degree:`, `Rational::pow(exponent:)` → `exp:`, `Matrix::pow(power:)` → `exp:`.
+- **`Rational::round()`** takes an optional `RoundingMode` (default `HalfAwayFromZero`, the previous behavior). Rounding
+  uses exact integer arithmetic, so there's no precision loss near ties or for large values.
+- **`Complex::fromString()`** accepts only lowercase `i` as the imaginary unit - `j`, `J` and `I` now throw
+  `FormatException` **(breaking)**. This leaves `j` and `k` free for a planned `Quaternion` class.
+- **`Vector::__toString()`** uses ordered-tuple notation (`⟨1, 2, 3⟩`) instead of box-drawing characters.
+- **`Vector::$magnitude`** is recomputed on every read instead of cached. **`Complex::$magnitude`/`$phase`** are
+  computed in the constructor instead of lazily.
+- **`Rational::pow(1)`** returns a new, equal instance instead of `$this`.
+- **`Complex::pow()`** with an integer exponent uses exponentiation by squaring instead of `exp()`/`ln()`, giving exact
+  results for small integer powers.
+- **`Floats::TAU`** (Core 2) was removed in Core 3 - use `use const OceanMoon\Core\M_TAU;` instead.
 
 ### Fixed
 
-- **`Vector::toColumnMatrix()`** — an empty vector previously converted to a degenerate 0×0 matrix instead of the
-  correct 0×1, because it routed through `Matrix::fromArray()`, whose empty-array shortcut can't distinguish the two
-  shapes. Now constructs the matrix directly, always producing a proper n×1 shape. This also fixes a downstream bug in
-  **`Matrix::mulVector()`**: multiplying a 0-column matrix by an empty vector previously threw a spurious
-  `OutOfRangeException` instead of returning the correct zero-length-result `Vector`.
-- **`Vector::offsetSet()`** — the `ArrayAccess` implementation had an unconditional `throw new OutOfRangeException(...)`
-  placed before the actual offset-validity check, making every assignment via `$vector[$i] = $value` fail regardless of
-  whether `$i` was valid. Guard reordered to match `offsetGet()`'s pattern.
-- **`Rational::fromString()`** — a variable had literally lost its name during a prior edit
-  (`$ = Floats::tryConvertToInt($n);`, `is_int($)`, `$n = $;`), a hard syntax error. Restored as `$i`.
-- **`Rational::fromString()`** — the zero-denominator case (`'5/0'`) was being caught by an inner
-  `catch (DomainException)` block written for a different, narrower case (the `PHP_INT_MIN` unsimplifiable-ratio edge
-  case), causing it to fall through to `fromFloat($n / $d)` — which itself divides by zero — instead of reporting the
-  original, more specific error. Introduced when the zero- denominator case was migrated from `DivisionByZeroError` (an
-  `Error`, never caught by that block) to `ArithmeticException` (a `DomainException` subtype, which _is_ caught by it).
-  Fixed by checking `$d === 0` explicitly before the `try`, bypassing the unrelated fallback entirely.
-- **`Rational`'s constructor** — the guard rejecting an unrepresentable `PHP_INT_MIN` ratio checked oddness with
-  `$den % 2 === 1`, which is wrong for negative odd values: PHP's `%` returns a result with the _dividend's_ sign, so
-  `-1 % 2 === -1`, not `1`. This let calls like `new Rational(PHP_INT_MIN, -1)` slip past the guard, where negating
-  `PHP_INT_MIN` to fix up the denominator's sign silently overflows to a `float` (ordinary PHP int-overflow promotion) —
-  which then failed the strictly `int`-typed `$numerator`/`$denominator` property assignment with a confusing
-  `TypeError` instead of the intended `DomainException`. Fixed by checking `% 2 !== 0` instead.
-- **`Rational::div()`** incorrectly threw `OverflowException` for `0 ÷ PHP_INT_MIN` (and other zero-dividend cases
-  involving `PHP_INT_MIN`), even though the true result (`0`) is perfectly representable — the cross-cancellation step
-  computed `gcd(0, PHP_INT_MIN)`, which correctly overflows for its own sake but doesn't apply here. Now short-circuits
-  to `0` whenever the dividend's numerator is zero, before reaching that computation.
-- **`bootstrap.php`'s extension-loaded guard** checked `extension_loaded('oceanmoon/math-ext')` — a Composer package
-  name, never a real registered PHP extension name — so it always evaluated `false` and silently redeclared
-  `OceanMoon\Math\M_I` in userland even when the native extension (which registers the same constant itself) was loaded.
-  Fixed to check `extension_loaded('oceanmoon_math')`, the extension's actual module name.
-- **`Vector::fromArray()`** and **`Matrix::fromArray()`** — both accepted non-finite elements (`±INF` and `NAN`),
-  producing vectors/matrices that violated the finite-value guarantee the package enforces (and that `set()` already
-  applied), with the failure only surfacing later — and far from its cause — inside an unrelated operation. Both
-  factories now reject non-finite elements with a `DomainException`, matching `set()`.
-- **`Complex::log()`** — the "both arguments are real" shortcut called PHP's real `log($this->real, $base->real)`
-  whenever both parts were real, but that's only valid for positive arguments. A negative real `$this` (e.g.
-  `Complex(-8)->log(2)`) produced `NAN`, so the constructor threw a confusing `DomainException`; a negative real
-  `$base` (e.g. `Complex(8)->log(-2)`) leaked a raw engine `ValueError` that escaped the documented contract
-  entirely. The shortcut is now taken only when both parts are positive reals, so every other case falls through to
-  the general change-of-base solution and returns the correct principal complex value.
-- **`Vector::offsetSet()`** — the "invalid element" error message interpolated `$offset` (already validated as an
-  `int` one check earlier) instead of `$value`, so it always read "Invalid element type: int. Must be int or float."
-  no matter what was actually passed — pointing the reader at the wrong thing. Now reports `$value`'s type, matching
-  `Matrix::offsetSet()`.
-- **`Matrix::det()`** — the determinant of the 0×0 matrix was `0.0`: none of the closed-form cases in `calcDet()`
-  matched, and the cofactor loop never ran. It now returns `1.0`, the empty product, so the identity and
-  multiplicativity properties hold for empty matrices.
+- **`Matrix::det()`** of the 0×0 matrix returns `1.0` (the empty product) instead of `0.0`.
 
 ### Removed
 
-- **`ConversionException`** (from Core) is no longer used anywhere in this package. `Complex`, `Rational`, `Vector`, and
-  `Matrix` no longer have general-purpose `mixed`-accepting conversion factories (`fromObject()`, `toComplex()`,
-  `toVector()`, `toMatrix()` are all gone — see below); what remains are narrow, explicitly-typed constructors/factories
-  and the strict-type comparison methods above, so there's no longer a "value of unknown type being converted" scenario
-  for this exception to describe.
-- **`Rational::toRational()`** — the general-purpose `mixed`-accepting static conversion factory (public in `3.0.0`),
-  removed as part of the conversion-factory cleanup above. It was only ever called internally, to coerce the arguments
-  of `add()`/`sub()`/`mul()`/`div()`; the comparison methods never used it, so comparison behavior is unchanged. Use
-  the narrow, explicitly-typed factories instead: the constructor or `fromFloat()` for numbers, `fromString()` for
-  strings.
-- **`Complex::fromArray()`**, **`Complex::fromObject()`**, **`Complex::toComplex()`** — removed entirely, not just
-  changed. Construct via the constructor, `fromString()`, or `fromPolar()` instead.
-- **`Vector::toVector()`**, **`Matrix::toMatrix()`** — the general-purpose `mixed`-accepting conversion factories
-  floated earlier in this Unreleased cycle were removed again along with the comparison-method narrowing above; they
-  existed to serve comparison methods that no longer accept arbitrary convertible input.
-- **`Vector::toMatrix(bool $asRow)`**, **`Vector::format(bool $asRow)`** — replaced by
-  `toRowMatrix()`/`toColumnMatrix()`. `__toString()` no longer delegates to `format()`; it now renders directly using
-  ordered tuple notation (`⟨1, 2, 3⟩`) instead of box-drawing characters.
-- `Complex::EPSILON` — superseded by the global `EPSILON` constant, above.
-- **`Complex::i()`** — redundant now that the `OceanMoon\Math\M_I` constant does the same thing; use the constant
-  directly.
-- **`Complex::identical()`** — added earlier in this Unreleased cycle, removed again along with Core's
-  `Equatable::identical()`, which it depended on.
-- **`Complex::fromVector()`**, **`Complex::toVector()`**, and the `Vector` branch of **`Complex::toComplex()`** (moot
-  now that `toComplex()` itself is gone) — `Complex` no longer has any dependency on `Vector`, so the extension
-  currently in development (which implements `Complex` but not the rest of the package) can support it standalone.
-  Convert via `toArray()`/`fromArray()` and `Vector::toArray()`/`Vector::fromArray()` instead.
-- **`DivisionByZeroError`** — no longer thrown anywhere in this package; displaced by `ArithmeticException` (see Added).
-- **Native PHP serialization and JSON encoding support removed from `Complex` and `Rational`** — both classes no longer
-  implement `JsonSerializable`, and `__serialize()`/`__unserialize()`/`jsonSerialize()` are gone. This reverts what was
-  added in `3.0.0`; the capability wasn't needed and was adding maintenance surface without a real use case.
-- **`Matrix::mul()` no longer accepts a `Vector`** — narrowed from `float|Vector|self` (returning `self|Vector`) to
-  `float|self` (returning `self`). The polymorphic return type forced `assert($result instanceof self)` at every
-  internal call site that multiplies by a known scalar or `Matrix` (`neg()`, `div()`, `pow()`, `sqr()`, and
-  `Vector::mul()`'s own `Matrix` branch) purely because PHPStan can't narrow a union return type by argument — the same
-  static-analysis cost that motivated dropping `float` from `Rational`'s arithmetic methods, above. Use the new
-  `Matrix::mulVector()` instead (see Added).
-- **`Matrix::div()` no longer accepts a `Matrix`** — narrowed from `float|self` to `float`; `A / B` no longer means
-  `A × B⁻¹`. Matrix division is order-dependent (`A × B⁻¹` and `B⁻¹ × A` differ in general, since matrix multiplication
-  isn't commutative), so a `/` operator between two matrices is inherently ambiguous about which order it means — an
-  antipattern regardless of MATLAB's precedent for it. Use `$a->mul($b->inv())` directly to express the specific order
-  you want. For the same reason, `Vector::divMatrix()` (multiplying a vector by a matrix's inverse) was considered but
-  not added.
-- **`Complex::sec()`/`csc()`/`cot()`, `asec()`/`acsc()`/`acot()`, `sech()`/`csch()`/`coth()`, and
-  `asech()`/`acsch()`/`acoth()`** — twelve reciprocal-trig convenience methods removed entirely. Each was a one-line
-  reciprocal identity over a method that still exists (e.g. `sec()` was just `$this->cos()->inv()`), so nothing is lost
-  — call the underlying method and `inv()`/`div()` directly instead. No mainstream complex-number library (C99's
-  `<complex.h>`, C++'s `std::complex`, Python's `cmath`) provides these either; keeping them was scope beyond the
-  standard twelve trig/hyperbolic functions for no real benefit, and every method here is one the native extension (in
-  development) would otherwise have to port and keep in sync.
+- **Conversion methods (breaking):**
 
-### Tests
+  | Removed                                                  | Use instead                                        |
+  | -------------------------------------------------------- | -------------------------------------------------- |
+  | `Complex::fromArray()`, `toArray()`                      | Constructor, or `$z->real`/`$z->imaginary`         |
+  | `Complex::fromObject()`, `toObject()`                    | Constructor, or `$z->real`/`$z->imaginary`         |
+  | `Complex::toComplex()`, `Rational::toRational()`         | Constructor, `fromFloat()` or `fromString()`       |
+  | `Complex::fromVector()`, `toVector()`                    | `new Complex($v[0], $v[1])`, `Vector::fromArray()` |
+  | `Vector::toMatrix(bool $asRow)`                          | `toRowMatrix()`, `toColumnMatrix()`                |
+  | `Vector::format(bool $asRow)`                            | `__toString()`                                     |
 
-- Added `MatrixArrayAccessTest::testOffsetSetNonIntegerOffsetThrows()`, covering `offsetSet()`'s non-int-offset guard
-  (e.g. `$mat['row'] = ...`), which previously had no direct test — only its `offsetGet()` counterpart did.
+- **`Complex::i()` (breaking)** - use the `M_I` constant.
+- **`Complex::EPSILON` (breaking).**
+- **Twelve reciprocal trig methods on `Complex` (breaking):** `sec()`, `csc()`, `cot()`, `asec()`, `acsc()`, `acot()`
+  and their hyperbolic forms. Use the underlying method with `inv()`, e.g. `$z->cos()->inv()` for `sec()`.
+- **Serialization (breaking):** `Complex` and `Rational` no longer implement `JsonSerializable`, and
+  `__serialize()`/`__unserialize()` are gone.
+- **`ConversionException`** is no longer thrown anywhere in this package.
 
 ### Documentation
 
-- Rewrote `Complex.md`, `Rational.md`, `Vector.md`, and `Matrix.md` to match the current API: updated all exception
-  types (`ArithmeticException` in place of `DivisionByZeroError`/ `ConversionException` where applicable), removed
-  documentation for every removed conversion method above, added documentation for every new method above, and
-  reorganised section order to match each class's source region order (most notably moving "Conversion Methods" in
-  `Rational.md`/`Matrix.md`, and splitting the old "Element Access"/"Get/Set Matrix Elements" headings into separate
-  Inspection/Modification sections).
-- Fixed a pre-existing doc bug in all four files: `equal()`/`approxEqual()` docs claimed to "return false" for
-  unconvertible values; corrected to document the (correct, existing) throwing behavior.
-- Re-synced `Complex.md` and `Rational.md` with the current source after the serialization removal and the `Rational`
-  arithmetic-method signature narrowing above: removed the "Serialization Methods" sections, updated
-  `add()`/`sub()`/`mul()`/`div()`/`pow()` signatures and `Throws` lists, fixed a usage example that would now throw a
-  `TypeError` (`Rational::add()` called with a `float`), and made list-item punctuation consistent throughout both files
-  (sentence-like `Parameters`/`Returns`/`Throws`/`Behavior` bullets now consistently end with a period; label and
-  example lists consistently don't).
-- Removed the `sec()`/`csc()`/`cot()` (and inverse/hyperbolic variant) sections from `Complex.md`, matching their
-  removal above.
-- **New "Strict Typing" section in `README.md`**, explaining the one PHP-level exception `declare(strict_types=1)`
-  makes: an `int` is always accepted where a `float` is type-hinted (lossless widening), but never the reverse. This is
-  why many methods throughout the package are typed `float` yet happily accept an `int` argument.
+- `Complex.md`, `Rational.md`, `Vector.md` and `Matrix.md` rewritten for the current API, with sections in source order.
+- New: `docs/Globals.md` (`M_I`), a "Strict Typing" section in `README.md`.
+
+### Tests
+
+- Shared float tolerance is a single `EPSILON` constant in `tests/bootstrap.php`. Coverage remains 100%.
 
 ---
 
@@ -261,7 +127,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Breaking
 
-- **`Rational::__construct()` no longer accepts `float`** — it's now `__construct(int $num = 0, int $den = 1)`. Code
+- **`Rational::__construct()` no longer accepts `float`** - it's now `__construct(int $num = 0, int $den = 1)`. Code
   calling `new Rational(0.5)` (or any float argument) will now throw a `TypeError`. Use the new `Rational::fromFloat()`
   instead, which handles the approximation via continued fractions explicitly. This mirrors `Complex`'s existing
   pattern: a tight, exact constructor plus dedicated factory methods for conversions that require real logic, rather
@@ -269,17 +135,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- **`Complex`**: `toObject()`, `toVector()`, `fromArray()`, `fromObject()`, `fromVector()` — conversion to/from plain
+- **`Complex`**: `toObject()`, `toVector()`, `fromArray()`, `fromObject()`, `fromVector()` - conversion to/from plain
   objects, arrays, and `Vector`. `toComplex()` is now `public` (was previously private), so it can be called directly.
   `Complex` now implements `JsonSerializable`, and gained `__serialize()`/`__unserialize()` for correct native PHP
   serialization (validated and canonicalized via the constructor, rather than PHP's default property-hydration bypassing
   it).
-- **`Rational`**: `fromFloat()` — the float-to-Rational conversion extracted from the constructor (see Breaking, above).
+- **`Rational`**: `fromFloat()` - the float-to-Rational conversion extracted from the constructor (see Breaking, above).
   `Rational` now implements `JsonSerializable`, and gained `__unserialize()` for the same constructor-validated
   serialization guarantee as `Complex`. (No corresponding `__serialize()`: unlike `Complex`, `Rational` has no computed
   properties to exclude from the payload, so PHP's default serialization already matches what a custom one would
   produce.)
-- **`OceanMoon\Math\I`** — the imaginary unit as a real language-level constant (`src/constants.php`, wired up via
+- **`OceanMoon\Math\I`** - the imaginary unit as a real language-level constant (`src/constants.php`, wired up via
   Composer's `files` autoload), a convenient abbreviation for `Complex::i()`.
 - **`Matrix`**: `calcDet()` gained a closed-form 3×3 fast path (Sarrus' Rule), which also speeds up `inv()` on 4×4
   matrices via its minors.
@@ -294,14 +160,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - `Matrix`: `set()`, `mul()`, `div()`.
 - `Rational::toRational()`'s parameter widened from `int|float|string|self` to `mixed`; it now throws
   `InvalidArgumentException` for a value of any other type, rather than a language-level `TypeError`. Backward
-  compatible — every previously-accepted type still works.
+  compatible - every previously-accepted type still works.
 - Fixed a latent bug in `Complex::toComplex()`: the `Vector` branch was unreachable, because the generic `is_object()`
   check ran first and always failed it (`Vector` has no public `real`/`imaginary` properties). Reordered so `Vector` is
   checked first.
 
 ### Removed
 
-- `Rational::__serialize()` — redundant now that `Rational` has no computed properties to exclude from serialization;
+- `Rational::__serialize()` - redundant now that `Rational` has no computed properties to exclude from serialization;
   `__unserialize()` alone provides the correctness guarantee (routing through the constructor rather than bypassing it).
 
 ---
@@ -310,7 +176,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- **Renamed package** from `galaxon/math` to `oceanmoon/math` — update your `composer.json` require accordingly.
+- **Renamed package** from `galaxon/math` to `oceanmoon/math` - update your `composer.json` require accordingly.
 - **Renamed PHP namespaces** from `Galaxon\Math\*` to `OceanMoon\Math\*` throughout all source and test files.
 - Updated runtime dependency `galaxon/core` → `oceanmoon/core: ^2.0`.
 - Updated dev dependency `galaxon/coding-standard` → `oceanmoon/coding-standard: ^2.0`.
@@ -322,23 +188,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
-- **`Complex::__toString()`** — Now routes both real and imaginary parts through `Floats::format()` instead of casting
+- **`Complex::__toString()`** - Now routes both real and imaginary parts through `Floats::format()` instead of casting
   directly to string. IEEE-754 representation noise from arithmetic (e.g. `0.1 + 0.2 == 0.30000000000000004`) is
   suppressed: `(string)(new Complex(0.1 + 0.2, 0))` now renders as `'0.3'` instead of `'0.30000000000000004'`. Pinned
   outputs for clean values (`'5'`, `'-3.14'`, `'3 + 4i'`, etc.) are unchanged.
-- **`Matrix::__toString()`** — Cells are now formatted via `Floats::format()` up front, so column-width calculations and
+- **`Matrix::__toString()`** - Cells are now formatted via `Floats::format()` up front, so column-width calculations and
   rendering both use the cleaned strings. Without this, a single noisy cell like `0.1 + 0.2` would dominate the column
   width with its 17-digit representation. `Vector::__toString()` inherits the fix automatically via its delegation to
   `Matrix`.
-- **`composer.json`** — Bumped `galaxon/core` constraint to `^1.6`. Required for `Floats::format()` and for the trait
+- **`composer.json`** - Bumped `galaxon/core` constraint to `^1.6`. Required for `Floats::format()` and for the trait
   namespace reorganisation shipped in Core v1.6.0.
-- **Trait namespace updates** — Updated `use` statements throughout the package to match Core v1.6.0's trait
+- **Trait namespace updates** - Updated `use` statements throughout the package to match Core v1.6.0's trait
   reorganisation:
   - `Galaxon\Core\Traits\ApproxComparable` → `Galaxon\Core\Traits\Comparison\ApproxComparable` (in `Vector`)
   - `Galaxon\Core\Traits\ApproxEquatable` → `Galaxon\Core\Traits\Comparison\ApproxEquatable` (in `Rational`)
   - `Galaxon\Core\Traits\FloatAssertions` → `Galaxon\Core\Traits\Asserts\FloatAssertions` (in `MatrixLinearAlgebraTest`,
     `VectorArithmeticTest`)
-- **Documentation** — Updated "See Also" links in `Complex.md`, `Matrix.md`, `Rational.md`, and `Vector.md` to point at
+- **Documentation** - Updated "See Also" links in `Complex.md`, `Matrix.md`, `Rational.md`, and `Vector.md` to point at
   the new `Traits/Comparison/` paths for `ApproxEquatable`/`ApproxComparable`.
 
 ### Tests
@@ -352,11 +218,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- **Matrix**: `setRow()`, `setColumn()` — set a row or column from a Vector or array.
-- **Matrix**: `trace()` — sum of diagonal elements (square matrices only).
-- **Matrix**: `norm()`, `p1Norm()`, `pInfNorm()` — Frobenius, P1, and P-infinity matrix norms.
-- **Vector**: `normalize()` — return a unit vector with the same direction.
-- **Rational**: `toMixedNumber()` — convert to integer part and fractional remainder with trunc/frac semantics.
+- **Matrix**: `setRow()`, `setColumn()` - set a row or column from a Vector or array.
+- **Matrix**: `trace()` - sum of diagonal elements (square matrices only).
+- **Matrix**: `norm()`, `p1Norm()`, `pInfNorm()` - Frobenius, P1, and P-infinity matrix norms.
+- **Vector**: `normalize()` - return a unit vector with the same direction.
+- **Rational**: `toMixedNumber()` - convert to integer part and fractional remainder with trunc/frac semantics.
 - **Complex, Rational, Matrix**: `sqr()` method for squaring values. Uses `mul($this)` for efficiency, equivalent to
   `pow(2)`.
 - **Complex**: Constructor now validates that both parts are finite (rejects ±INF and NAN).
@@ -366,7 +232,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **Rational**: Renamed properties `$num` → `$numerator` and `$den` → `$denominator`.
 - **Rational**: Zero denominator now throws `DivisionByZeroError` (was `DomainException`).
 - **Rational**: `floatToRatio()` is now private (use the constructor instead).
-- **Matrix**: Removed `ArrayAccess` interface — bracket syntax was misleading for element-level mutation (`$m[1][1] = 9`
+- **Matrix**: Removed `ArrayAccess` interface - bracket syntax was misleading for element-level mutation (`$m[1][1] = 9`
   silently failed).
 - **Matrix**: `rowCount` is now a stored `private(set)` property (was derived from data).
 - **Vector**: `magnitude` is now cached with a property hook, invalidated on mutation (was recomputed every access).
@@ -377,12 +243,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
-- `Rational::floatToRatio()` — sign is now correctly placed on the numerator (not denominator) for the `1/PHP_INT_MAX`
+- `Rational::floatToRatio()` - sign is now correctly placed on the numerator (not denominator) for the `1/PHP_INT_MAX`
   boundary case.
-- `Rational::floatToRatio()` — `(float)PHP_INT_MAX` and `(float)PHP_INT_MIN` now return correct boundary values instead
+- `Rational::floatToRatio()` - `(float)PHP_INT_MAX` and `(float)PHP_INT_MIN` now return correct boundary values instead
   of throwing.
-- `Complex.php` — missing `#endregion` for ArrayAccess implementation region.
-- `Matrix` — `rowCount` property was not initialised in constructor after property declaration change.
+- `Complex.php` - missing `#endregion` for ArrayAccess implementation region.
+- `Matrix` - `rowCount` property was not initialised in constructor after property declaration change.
 
 ### Documentation
 

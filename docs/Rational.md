@@ -51,8 +51,8 @@ The denominator. Always positive in canonical form. Read-only from outside the c
 public function __construct(int $num = 0, int $den = 1)
 ```
 
-Create a new rational number from integers. For converting a `float` to a `Rational`, use [`fromFloat()`](#fromfloat)
-instead, which handles approximation via continued fractions.
+Create a new rational number from integers. For converting a `float` to a `Rational`, use [`fromFloat()`](#fromfloat) instead, which
+handles approximation via continued fractions.
 
 **Parameters:**
 
@@ -122,10 +122,10 @@ or too small, but non-zero).
 **Examples:**
 
 ```php
-Rational::fromFloat(1e19);              // DomainException — too large
-Rational::fromFloat(1e-20);             // DomainException — too small
-Rational::fromFloat(INF);               // DomainException — non-finite
-Rational::fromFloat(NAN);               // DomainException — non-finite
+Rational::fromFloat(1e19);              // DomainException - too large
+Rational::fromFloat(1e-20);             // DomainException - too small
+Rational::fromFloat(INF);               // DomainException - non-finite
+Rational::fromFloat(NAN);               // DomainException - non-finite
 ```
 
 ### fromString()
@@ -185,7 +185,7 @@ echo $r2->toFloat();  // 0.33333...
 public function toMixedNumber(): array
 ```
 
-Convert to a mixed number representation: an integer part and a fractional part. Uses trunc/frac semantics — the integer
+Convert to a mixed number representation: an integer part and a fractional part. Uses trunc/frac semantics - the integer
 part truncates toward zero, and the fractional part carries the same sign as the original. In this way, the two can be
 added to reconstruct the original value.
 
@@ -270,16 +270,15 @@ public function sign(bool $zeroForZero = true): int
 
 Get the sign of the Rational: `-1` if negative, `0` if zero, or `1` if positive.
 
-The numerator is always a plain int, never a signed zero, so `$zeroForZero` only matters for a zero value: with
-the default `true`, zero returns `0`; with `false`, zero returns `1` (there's no `-0` equivalent for a `Rational`,
-unlike `Numbers::sign()`'s float case).
+The numerator is always a plain int, never a signed zero, so `$zeroForZero` only matters for a zero value: with the
+default `true`, zero returns `0`; with `false`, zero returns `1` (there's no `-0` equivalent for a `Rational`, unlike
+`Numbers::sign()`'s float case).
 
 **Parameters:**
 
 - `$zeroForZero` (bool) - If `true` (default), return `0` when this Rational is zero; if `false`, return `1`.
 
-**Returns:** `int` - `-1` if negative, `0` if zero (or `1` if zero and `$zeroForZero` is `false`), or `1` if
-positive.
+**Returns:** `int` - `-1` if negative, `0` if zero (or `1` if zero and `$zeroForZero` is `false`), or `1` if positive.
 
 **Example:**
 
@@ -299,15 +298,14 @@ echo $r3->sign(false);     // 1
 
 ## Comparison Methods
 
-The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the
-[`ApproxComparable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait
-from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Rational` supplying `compare()` and
-`approxEqual()` (the trait's abstract methods) plus its own type-checking logic.
+The `equal()`, `approxEqual()`, `compare()`, and `approxCompare()` methods are provided by the [`ApproxComparable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxComparable.md) trait
+from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Rational` supplying `compare()` and `approxEqual()` (the trait's abstract methods) plus its
+own type-checking logic.
 
-All comparison methods accept only a `Rational`, `int`, or `float` for `$other` — not a `string`, even a Rational-format
+All comparison methods accept only a `Rational`, `int`, or `float` for `$other` - not a `string`, even a Rational-format
 one like `"1/2"`. Anything else throws `InvalidArgumentException` rather than silently returning `false`, to catch bugs
-from comparing values that can't meaningfully be compared. Use [`fromString()`](#fromstring) explicitly first if you
-need to compare against a string.
+from comparing values that can't meaningfully be compared. Use [`fromString()`](#fromstring) explicitly first if you need to compare
+against a string.
 
 ### equal()
 
@@ -360,7 +358,7 @@ public function approxEqual(
 Check if the rational number approximately equals another value within specified tolerances.
 
 Converts both values to floats and uses combined relative and absolute tolerance approach. `NAN` throws, since it has no
-meaningful equality result; `±INF` returns `false` instead — a `Rational` (always finite) is never approximately equal
+meaningful equality result; `±INF` returns `false` instead - a `Rational` (always finite) is never approximately equal
 to infinity.
 
 **Parameters:**
@@ -526,8 +524,7 @@ var_dump($r2->greaterThan(0));          // true
 
 ### Comparison Operators
 
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
-types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 
 ---
 
@@ -902,5 +899,4 @@ var_dump($r3->lessThan(0.5));  // true (can compare with floats)
 - **[Complex](Complex.md)** - Complex number arithmetic
 - **[Matrix](Matrix.md)** - Matrix operations
 - **[Vector](Vector.md)** - Numeric vectors
-- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate
-  comparison
+- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison

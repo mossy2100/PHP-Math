@@ -36,12 +36,12 @@ triggering a notice; no type conversion is attempted, and no property values wil
 
 ### Comparing an object with a scalar
 
-Behaviour depends on the operand type — there's no single rule:
+Behaviour depends on the operand type - there's no single rule:
 
 | Operand type              | Behaviour                                                                                                                                 |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
 | `int`, `float`            | PHP tries to convert the object to the scalar type, which emits a notice; the object converts to `1` regardless of its actual properties. |
-| `bool`                    | No conversion attempted, no notice. **Any object loosely equals `true`**, and never equals `false` — a silent, dangerous gotcha.          |
+| `bool`                    | No conversion attempted, no notice. **Any object loosely equals `true`**, and never equals `false` - a silent, dangerous gotcha.          |
 | `null`, `string`, `array` | No conversion attempted, no notice. Always compares as **not equal**, even against a numeric string or an empty array.                    |
 
 **Example** (the `int`/`float` case):
@@ -84,9 +84,8 @@ var_export($z == 0.5);
 Again, a notice will be issued and the result will be `false`, even though technically it should have been `true`. (This
 is unrelated to floating point rounding issues; 0.5 can be represented exactly as a `float`.)
 
-My [Math extension](https://github.com/mossy2100/PHP-Math-extension), which replicates this package **and** adds
-operators, solves this problem by overloading comparison operators for `Complex` and `Rational`, which enables these
-types to be compared correctly for equality with numbers.
+My [Math extension](https://github.com/mossy2100/PHP-Math-extension), which replicates this package **and** adds operators, solves this problem by overloading comparison
+operators for `Complex` and `Rational`, which enables these types to be compared correctly for equality with numbers.
 
 ### Coding Standards
 
@@ -94,13 +93,9 @@ Another problem with these operators is that several modern coding standards eit
 
 This includes:
 
-- **Forbidden** by the [Slevomat coding standard](https://github.com/slevomat/coding-standard/blob/master/README.md)
-  (via its `DisallowEqualOperators` sniff), [PHPStan Strict Rules](https://github.com/phpstan/phpstan-strict-rules) (via
-  the `disallowedLooseComparison` rule), and the
-  [coding standard for Nextcloud](https://docs.nextcloud.com/server/latest/developer_manual/getting_started/coding_standards/php.html#operators).
-- **Discouraged** by the coding standards for
-  [Symfony](https://symfony.com/doc/current/contributing/code/standards.html#structure) and
-  [WordPress](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/#clever-code).
+- **Forbidden** by the [Slevomat coding standard](https://github.com/slevomat/coding-standard/blob/master/README.md) (via its `DisallowEqualOperators` sniff), [PHPStan Strict Rules](https://github.com/phpstan/phpstan-strict-rules) (via the
+  `disallowedLooseComparison` rule), and the [coding standard for Nextcloud](https://docs.nextcloud.com/server/latest/developer_manual/getting_started/coding_standards/php.html#operators).
+- **Discouraged** by the coding standards for [Symfony](https://symfony.com/doc/current/contributing/code/standards.html#structure) and [WordPress](https://developer.wordpress.org/coding-standards/wordpress-coding-standards/php/#clever-code).
 
 Furthermore, the PhpStorm plugin **Php Inspections (EA Extended)** includes an inspection for "Type unsafe comparison",
 which will complain about `==` and `!=` operators.
@@ -115,7 +110,7 @@ floating point rounding errors can be a problem.
 
 ## Ordering Comparison (`<=>`, `<`, `<=`, `>`, and `>=`)
 
-These operations always execute without a notice, warning, or error — **except** against an `int` or `float` operand,
+These operations always execute without a notice, warning, or error - **except** against an `int` or `float` operand,
 where PHP's attempt to convert the object to that scalar type triggers a notice (as above).
 
 These comparisons have no defined meaning for `Complex`, `Vector`, and `Matrix`, and simply do not work correctly for
@@ -143,9 +138,8 @@ var_export($r1 > $r2);
 // Prints "false"
 ```
 
-Of course, 1/2 is greater than 1/3, so the result of this comparison should have been `true`. The
-[Math extension](https://github.com/mossy2100/PHP-Math-extension) fixes this too — for `Rational` values, ordering
-comparisons work correctly once its operators are overloaded.
+Of course, 1/2 is greater than 1/3, so the result of this comparison should have been `true`. The [Math extension](https://github.com/mossy2100/PHP-Math-extension) fixes
+this too - for `Rational` values, ordering comparisons work correctly once its operators are overloaded.
 
 For `Vector` and `Matrix` values, the sizes will be compared first, then the element values.
 
@@ -153,8 +147,9 @@ For `Vector` and `Matrix` values, the sizes will be compared first, then the ele
 
 PHP considers these genuinely incomparable, and the operators disagree with each other about precisely how:
 
-- `<=>` can't express "incomparable" (it must return an `int`), so it always returns `1` — **regardless of operand
-  order**. `$complex <=> $rational` and `$rational <=> $complex` both return `1`, which is supposed to mean "greater than". Welcome to PHP.
+- `<=>` can't express "incomparable" (it must return an `int`), so it always returns `1` - **regardless of operand
+  order**. `$complex <=> $rational` and `$rational <=> $complex` both return `1`, which is supposed to mean "greater
+  than". Welcome to PHP.
 - `<`, `<=`, `>`, `>=` do **not** derive their result from that `1` the way you'd expect from `<=>`'s usual meaning.
   They're independently always `false`, for both operands and in both directions.
 
@@ -165,12 +160,12 @@ $z = new Complex(5, 0);
 $r = new Rational(1, 2);
 
 var_export($z <=> $r); // 1
-var_export($r <=> $z); // Also 1 — not the expected -1.
+var_export($r <=> $z); // Also 1 - not the expected -1.
 var_export($z > $r);   // false
-var_export($z < $r);   // Also false — nothing is "less than" or "greater than" here, despite the 1 above.
+var_export($z < $r);   // Also false - nothing is "less than" or "greater than" here, despite the 1 above.
 ```
 
-No notice, warning, or error is triggered for any of this — it fails silently.
+No notice, warning, or error is triggered for any of this - it fails silently.
 
 ### Comparing an object with a scalar
 
@@ -178,11 +173,11 @@ Behaviour depends on the scalar type, and does **not** follow a simple "object i
 
 | Scalar type    | Behaviour                                                                                                                                                   |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `null`         | Object casts to `bool` `true`, `null` to `false` — object always compares greater.                                                                          |
+| `null`         | Object casts to `bool` `true`, `null` to `false` - object always compares greater.                                                                          |
 | `bool`         | Same rule. An object always casts to `true`, so **`$obj <=> true` is always `0`** (equal), regardless of the object's value.                                |
-| `int`, `float` | PHP casts the object via `(int)`/`(float)`, which is always exactly `1` — unrelated to its properties — and triggers a notice. Effectively `1 <=> $scalar`. |
+| `int`, `float` | PHP casts the object via `(int)`/`(float)`, which is always exactly `1` - unrelated to its properties - and triggers a notice. Effectively `1 <=> $scalar`. |
 | `string`       | No cast is attempted; the object always compares greater, even against numeric strings.                                                                     |
-| `array`        | Also always compares greater — contradicting the commonly-cited "arrays beat everything" rule.                                                              |
+| `array`        | Also always compares greater - contradicting the commonly-cited "arrays beat everything" rule.                                                              |
 
 The `bool` and `int`/`float` rows are the most dangerous: `$complex <=> true` silently returns `0`, and ordering against
 a number is entirely divorced from the object's actual value.
@@ -257,9 +252,8 @@ Refer to the class documentation for more details:
 
 ## Overloading Operators: the Math Extension
 
-The [OceanMoon Math extension](https://github.com/mossy2100/PHP-Math-extension) provides a PHP extension that replicates
-this package, with the addition of operators. This enhances the utility of the types and readability of code, while also
-providing a substantial performance boost.
+The [OceanMoon Math extension](https://github.com/mossy2100/PHP-Math-extension) provides a PHP extension that replicates this package, with the addition of operators. This
+enhances the utility of the types and readability of code, while also providing a substantial performance boost.
 
 All types get a useful set of arithmetic operators. `Complex` and `Rational` also get comparison operators, overriding
 the default behaviour described above.
@@ -269,13 +263,11 @@ the default behaviour described above.
 Overloading comparison operators for `Complex` means that `Complex` values can be compared for equality with `int` and
 `float` values, producing the correct result for `==` and `!=` operations without triggering notices.
 
-See:
-[Complex Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Complex.md#comparison-operators).
+See: [Complex Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Complex.md#comparison-operators).
 
 ### Rational
 
 Overloading comparison operators for `Rational` means that `Rational` values can be compared with `Rational`, `int` and
 `float` values, including equality and ordering comparisons, producing the correct result without triggering notices.
 
-See:
-[Rational Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Rational.md#comparison-operators).
+See: [Rational Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Rational.md#comparison-operators).

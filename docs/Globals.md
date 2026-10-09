@@ -23,8 +23,8 @@ automatically. Instead, `globals.php` is loaded from `src/bootstrap.php`, which 
 
 `bootstrap.php` only loads `globals.php` conditionally, though: if the Math extension is also loaded, the extension
 already registers `M_I` itself, and redeclaring a `const` a second time is a fatal error. `bootstrap.php` checks
-`extension_loaded('oceanmoon_math')` first and skips `globals.php` when the extension is present, so the package and
-the extension can coexist safely.
+`extension_loaded('oceanmoon_math')` first and skips `globals.php` when the extension is present, so the package and the
+extension can coexist safely.
 
 To use a constant without qualifying the namespace every time, add a `use const` import:
 
@@ -44,7 +44,8 @@ use const OceanMoon\Math\M_I;
 const M_I = new Complex(0, 1);
 ```
 
-The imaginary unit `i`, represented as a [`Complex`](Complex.md) instance with real part `0` and imaginary part `1`. Named to match PHP's own naming pattern for mathematical constants, such as `M_PI`, `M_E`, etc.
+The imaginary unit `i`, represented as a [`Complex`](Complex.md) instance with real part `0` and imaginary part `1`. Named to match
+PHP's own naming pattern for mathematical constants, such as `M_PI`, `M_E`, etc.
 
 ```php
 use const OceanMoon\Math\M_I;
@@ -57,5 +58,5 @@ $result = M_I->pow(2);  // -1 + 0i
 ## See Also
 
 - **[Complex](Complex.md)** - Complex number arithmetic; `M_I` is a `Complex` instance representing the imaginary unit.
-- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used internally by `Complex::roots()` and `Complex::exp()`. See
-  [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).
+- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used internally by `Complex::roots()` and `Complex::exp()`.
+  See [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).

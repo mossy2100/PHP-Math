@@ -293,7 +293,7 @@ $col = $m->getColumn(0);  // Vector(1, 3, 5)
 public function copy(int $row, int $col, int $rowCount, int $colCount): self
 ```
 
-Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. Purely functional — does not modify the
+Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. Purely functional - does not modify the
 matrix.
 
 **Parameters:**
@@ -359,8 +359,8 @@ public function setRow(int $row, Vector $vec): void
 ```
 
 Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
-row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
-reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
+row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and reflects the new values.
+`$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
 
 **Parameters:**
 
@@ -437,12 +437,11 @@ $m->paste(Matrix::fromArray([[1, 2], [3, 4]]), 1, 1);
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the
-[`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait
-from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Matrix` supplying its own type-checking logic
-since the trait's parameter is typed `mixed` (see the trait's docs for why).
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package, with
+`Matrix` supplying its own type-checking logic since the trait's parameter is typed `mixed` (see the trait's docs for
+why).
 
-Both methods accept only a `Matrix` for `$other` — not a `Vector` or a plain array, even though those could plausibly
+Both methods accept only a `Matrix` for `$other` - not a `Vector` or a plain array, even though those could plausibly
 represent the same values. Anything else throws `InvalidArgumentException` rather than silently returning `false`, to
 catch bugs from comparing values that can't meaningfully be compared.
 
@@ -528,8 +527,7 @@ $m1->approxEqual('string');  // throws InvalidArgumentException
 
 ### Comparison operators
 
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
-types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 
 ---
 
@@ -599,8 +597,8 @@ $result = $m->neg();
 public function reciprocal(): self
 ```
 
-Calculate the element-wise reciprocal of the matrix. Not to be confused with `inv()`, the matrix inverse - `reciprocal()`
-simply replaces each element with its own reciprocal, with no relationship to matrix multiplication.
+Calculate the element-wise reciprocal of the matrix. Not to be confused with `inv()`, the matrix inverse -
+`reciprocal()` simply replaces each element with its own reciprocal, with no relationship to matrix multiplication.
 
 **Returns:** `self` - A new matrix with each element replaced by its reciprocal.
 
@@ -826,8 +824,8 @@ public function pow(int $exp): self
 
 Raise the matrix to an integer power. Uses exponentiation by squaring for efficiency. The matrix must be square.
 
-For a negative exponent, the base is inverted before squaring rather than squaring the base and inverting the result
-at the end, so intermediate values shrink toward the (typically small) final answer instead of risking an unnecessary
+For a negative exponent, the base is inverted before squaring rather than squaring the base and inverting the result at
+the end, so intermediate values shrink toward the (typically small) final answer instead of risking an unnecessary
 overflow to `INF` on the way there. This also avoids any overflow hazard at `PHP_INT_MIN`, the most extreme negative
 exponent.
 
@@ -1082,8 +1080,8 @@ unset($m[0]);  // Throws LogicException
 what makes `$m[$row][$col] = $x` work: PHP fetches the row via `offsetGet()`, then sets the element on that same
 `Vector` object.
 
-This is different from [`getRow()`](#getrow), which returns an **independent copy** - mutating the result of `getRow()`
-never affects the Matrix. See `getRow()` and `setRow()` below for the full contrast.
+This is different from [`getRow()`](#getrow), which returns an **independent copy** - mutating the result of `getRow()` never
+affects the Matrix. See `getRow()` and `setRow()` below for the full contrast.
 
 ### offsetExists()
 

@@ -194,7 +194,7 @@ class RationalConstructorTest extends TestCase
      * Test PHP_INT_MIN numerator with odd denominator throws DomainException.
      *
      * simplify() can't compute the GCD of PHP_INT_MIN with an odd counterpart. This isn't a
-     * magnitude problem — PHP_INT_MIN/3 is well within the representable range — it's specifically
+     * magnitude problem - PHP_INT_MIN/3 is well within the representable range - it's specifically
      * this exact integer ratio that can't be reduced, since PHP_INT_MIN can't be safely negated.
      * The constructor is int-only and tight, so it doesn't fall back to a float approximation; use
      * fromFloat() if an approximation is acceptable.

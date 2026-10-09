@@ -52,9 +52,8 @@ For z = a + bi: |z| = √(a² + b²)
 private(set) float $phase
 ```
 
-The phase (argument or angle) of the complex number in radians, normalized to the
-[principal value](<https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value>), which is in the range
-**(-π, π]**. (This means the range excludes -π but includes π.)
+The phase (argument or angle) of the complex number in radians, normalized to the [principal value](<https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value>),
+which is in the range **(-π, π]**. (This means the range excludes -π but includes π.)
 
 Automatically computed during object creation.
 
@@ -115,8 +114,8 @@ Create a Complex from a string. Supports various formats.
 
 There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space
 between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself
-(meaning `1i`), but there cannot be a space between the number and the `i` it relates to; for example, `5.67i`
-is ok, `5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
+(meaning `1i`), but there cannot be a space between the number and the `i` it relates to; for example, `5.67i` is ok,
+`5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
 
 **Examples:**
 
@@ -165,8 +164,8 @@ public function __toString(): string
 ```
 
 Convert to string representation. This will format the real and imaginary parts using the PHP default style for `float`
-values, which may or may not include a decimal point (`.`) or exponent (`E`). You may wish to call
-`round(3)` (for example) before echoing.
+values, which may or may not include a decimal point (`.`) or exponent (`E`). You may wish to call `round(3)` (for
+example) before echoing.
 
 **Format:**
 
@@ -210,10 +209,9 @@ var_dump($z2->isReal());  // false
 
 ## Comparison Methods
 
-The `equal()` and `approxEqual()` methods are provided by the
-[`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait
-from the [Core](https://github.com/mossy2100/PHP-Core) package, with `Complex` supplying its own type-checking logic
-since the trait's parameter is typed `mixed` (see the trait's docs for why).
+The `equal()` and `approxEqual()` methods are provided by the [`ApproxEquatable`](https://github.com/mossy2100/PHP-Core/blob/main/docs/Traits/Comparison/ApproxEquatable.md) trait from the [Core](https://github.com/mossy2100/PHP-Core) package, with
+`Complex` supplying its own type-checking logic since the trait's parameter is typed `mixed` (see the trait's docs for
+why).
 
 ### equal()
 
@@ -223,10 +221,10 @@ public function equal(mixed $other): bool
 
 Check if the complex number exactly equals another value.
 
-Compares both real and imaginary parts using exact equality (`===`). `$other` must be a `Complex`, `int`, or `float` —
+Compares both real and imaginary parts using exact equality (`===`). `$other` must be a `Complex`, `int`, or `float` -
 an `int`/`float` is treated as a real number for the comparison. A type that can't meaningfully be compared throws,
 rather than silently returning `false`, to catch bugs. `NAN` also throws, since it has no meaningful equality result;
-`±INF` is not a type error, so it returns `false` instead — a `Complex` (always finite) is simply never equal to
+`±INF` is not a type error, so it returns `false` instead - a `Complex` (always finite) is simply never equal to
 infinity.
 
 **Parameters:**
@@ -329,8 +327,7 @@ $z1->approxEqual('3.0000000001+4.0000000001i');  // throws InvalidArgumentExcept
 
 ### Comparison Operators
 
-See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the
-types in this package.
+See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 
 ---
 
@@ -724,7 +721,7 @@ $atanh = $z->atanh();
 ### round()
 
 ```php
-public function round(int $precision, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
+public function round(int $precision = 0, RoundingMode $mode = RoundingMode::HalfAwayFromZero): self
 ```
 
 Round the real and imaginary parts to the given number of decimal places, using the specified rounding mode. Defaults to
@@ -868,8 +865,6 @@ $sum = $sin2->add($cos2);  // 1 + 0i
 - **[Rational](Rational.md)** - Exact rational number arithmetic
 - **[Matrix](Matrix.md)** - Matrix operations (can contain complex-valued computations)
 - **[Vector](Vector.md)** - Vector operations
-- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate
-  comparison
+- **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison
 - **[Globals](Globals.md)** - `M_I`, the imaginary unit constant, used throughout this class's examples
-- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`. See
-  [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).
+- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`. See [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).

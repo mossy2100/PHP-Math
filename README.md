@@ -33,14 +33,12 @@ The salient features of the package include:
 
 ## Development and Quality Assurance
 
-[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the
-development of this package. The core classes were designed, coded, and commented primarily by the author, with Claude
-providing substantial assistance with code review, suggesting improvements, debugging, and generating tests and
-documentation. All code was thoroughly reviewed by the author, and validated using industry-standard tools including
-[PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and
-[PHPUnit](https://phpunit.de/index.html) to ensure full compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/)
-coding standards and comprehensive unit testing with 100% code coverage. This collaborative approach has produced a
-well-designed, production-ready package with thorough test coverage and documentation.
+[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and
+commented primarily by the author, with Claude providing substantial assistance with code review, suggesting
+improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and
+validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full
+compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative
+approach has produced a well-designed, production-ready package with thorough test coverage and documentation.
 
 ![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
@@ -76,8 +74,7 @@ $v->mul(3);      // int - accepted, widens to 3.0
 $v->mul(3.0);    // float - also fine
 ```
 
-See the "Strict typing" section of the
-[PHP manual's Type Declarations page](https://www.php.net/manual/en/language.types.declarations.php) for the full rules.
+See the "Strict typing" section of the [PHP manual's Type Declarations page](https://www.php.net/manual/en/language.types.declarations.php) for the full rules.
 
 ---
 
@@ -131,8 +128,8 @@ Mutable two-dimensional matrix with support for:
 
 ## [Globals](docs/Globals.md)
 
-`M_I`, the imaginary unit constant (namespaced to `OceanMoon\Math`), which is more convenient to use a global than as a class
-member.
+`M_I`, the imaginary unit constant (namespaced to `OceanMoon\Math`), which is more convenient to use a global than as a
+class member.
 
 ---
 

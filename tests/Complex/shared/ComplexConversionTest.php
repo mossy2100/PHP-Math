@@ -122,7 +122,7 @@ class ComplexConversionTest extends TestCase
         // part would render as something like '4.4408920985006e-16'. With Floats::format()'s
         // default 'g' precision of 7, it gets formatted in scientific notation but cleanly.
         $z = new Complex(1.0, 0.1 + 0.2 - 0.3);
-        // The imaginary part is ~5.55e-17 — still non-zero, so isReal() returns false.
+        // The imaginary part is ~5.55e-17 - still non-zero, so isReal() returns false.
         $this->assertStringStartsWith('1 + ', (string) $z);
         $this->assertStringEndsWith('i', (string) $z);
     }

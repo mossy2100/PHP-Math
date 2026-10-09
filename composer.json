@@ -27,7 +27,7 @@
     },
     "require": {
         "php": "^8.4",
-        "oceanmoon/core": "dev-main"
+        "oceanmoon/core": "^4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
@@ -36,12 +36,6 @@
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
         "oceanmoon/coding-standard": "^2.1"
     },
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../Core"
-        }
-    ],
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
@@ -78,7 +72,5 @@
             "@test",
             "@coverage"
         ]
-    },
-    "minimum-stability": "dev",
-    "prefer-stable": true
+    }
 }
