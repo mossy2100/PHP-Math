@@ -234,25 +234,6 @@ $v->set(1, 99);
 echo $v->get(1);  // 99.0
 ```
 
-### normalize()
-
-```php
-public function normalize(): void
-```
-
-Normalize the vector to a unit vector (magnitude 1), in place. Mutates it rather than returning a new one - use
-[`normalized()`](#normalized) instead if you want an unmodified copy.
-
-**Throws:** `ArithmeticException` if the vector has zero magnitude. If it throws, the vector is left unmodified.
-
-**Examples:**
-
-```php
-$v = Vector::fromArray([3, 4]);
-$v->normalize();
-echo $v;  // ⟨0.6, 0.8⟩
-```
-
 ---
 
 ## Comparison Methods
@@ -637,27 +618,25 @@ $v2 = Vector::fromArray([3, 4]);
 $result = $v1->outer($v2);  // [[3, 4], [6, 8]]
 ```
 
-### normalized()
+### normalize()
 
 ```php
-public function normalized(): self
+public function normalize(): self
 ```
 
-Get the vector normalized to a unit vector (magnitude 1). Returns a new vector with the same direction as the original.
-Use [`normalize()`](#normalize) instead if you want to mutate a vector in place.
+Normalize the vector to a unit vector (magnitude 1). Returns a new vector with the same direction, leaving the original
+unchanged.
 
 **Returns:** `self` - A new vector with magnitude 1.
 
-**Throws:**
-
-- `ArithmeticException` if the vector has zero magnitude.
+**Throws:** `ArithmeticException` - If the vector has zero magnitude.
 
 **Examples:**
 
 ```php
 $v = Vector::fromArray([3, 4]);
-$unit = $v->normalized();
-echo $unit->magnitude;  // 1.0
+$unit = $v->normalize();
+echo $unit->magnitude;  // 1
 echo $unit->get(0);     // 0.6
 echo $unit->get(1);     // 0.8
 ```

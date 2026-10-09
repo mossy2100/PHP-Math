@@ -133,15 +133,15 @@ class VectorLinearAlgebraTest extends TestCase
 
     #endregion
 
-    #region Method normalized() tests.
+    #region Method normalize() tests.
 
     /**
-     * Test normalized produces a unit vector.
+     * Test normalize() produces a unit vector.
      */
-    public function testNormalizedProducesUnitVector(): void
+    public function testNormalizeProducesUnitVector(): void
     {
         $v = Vector::fromArray([3, 4]);
-        $unit = $v->normalized();
+        $unit = $v->normalize();
 
         $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
         $this->assertEqualsWithDelta(3.0 / 5.0, $unit->get(0), EPSILON);
@@ -149,12 +149,24 @@ class VectorLinearAlgebraTest extends TestCase
     }
 
     /**
-     * Test normalized on a unit vector returns equivalent vector.
+     * Test normalize() returns a new vector, leaving the original unchanged.
      */
-    public function testNormalizedUnitVector(): void
+    public function testNormalizeLeavesOriginalUnchanged(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+        $unit = $v->normalize();
+
+        $this->assertNotSame($v, $unit);
+        $this->assertSame([3.0, 4.0], $v->toArray());
+    }
+
+    /**
+     * Test normalize() on a unit vector returns an equivalent vector.
+     */
+    public function testNormalizeUnitVector(): void
     {
         $v = Vector::fromArray([1, 0, 0]);
-        $unit = $v->normalized();
+        $unit = $v->normalize();
 
         $this->assertEqualsWithDelta(1.0, $unit->magnitude, EPSILON);
         $this->assertSame(1.0, $unit->get(0));
@@ -163,13 +175,13 @@ class VectorLinearAlgebraTest extends TestCase
     }
 
     /**
-     * Test normalized on zero vector throws ArithmeticException.
+     * Test normalize() on a zero vector throws ArithmeticException.
      */
-    public function testNormalizedZeroVectorThrows(): void
+    public function testNormalizeZeroVectorThrows(): void
     {
         $v = new Vector(3);
         $this->expectException(ArithmeticException::class);
-        $v->normalized();
+        $v->normalize();
     }
 
     #endregion

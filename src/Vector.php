@@ -221,19 +221,6 @@ final class Vector implements Stringable, Countable, ArrayAccess
         $this->data[$index] = $value;
     }
 
-    /**
-     * Normalize this vector in place to a unit vector (magnitude 1).
-     *
-     * @throws ArithmeticException If the vector has zero magnitude.
-     */
-    public function normalize(): void
-    {
-        $unit = $this->normalized();
-        for ($i = 0; $i < $this->count; $i++) {
-            $this->set($i, $unit->get($i));
-        }
-    }
-
     #endregion
 
     #region Comparison methods
@@ -604,12 +591,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Get this vector normalized to a unit vector (magnitude 1).
+     * Normalize this vector to a unit vector (magnitude 1).
      *
      * @return self A new vector with the same direction and magnitude 1.
      * @throws ArithmeticException If the vector has zero magnitude.
      */
-    public function normalized(): self
+    public function normalize(): self
     {
         return $this->div($this->magnitude);
     }

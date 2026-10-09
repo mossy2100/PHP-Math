@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [4.0.1] - 2026-10-10
+
+Reverses an unintended breaking change in 4.0.0, released the same day.
+
+### Changed
+
+- **`Vector::normalize()`** is back to its 2.x/3.x behaviour: it returns a new unit vector and leaves the original
+  unchanged. In 4.0.0 it normalized in place and returned `void`, so existing code such as `$unit = $v->normalize();`
+  still ran but silently set `$unit` to `null`.
+
+### Removed
+
+- **`Vector::normalize()`'s in-place form and `Vector::normalized()`**, both added in 4.0.0. Use `normalize()`.
+
+---
+
 ## [4.0.0] - 2026-10-10
 
 Requires `oceanmoon/core` `^4.0`. Breaking changes are marked **(breaking)**. The headline changes:
