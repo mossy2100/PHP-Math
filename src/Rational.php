@@ -344,7 +344,7 @@ final class Rational implements Stringable
 
         // Calculate the integer part and the remainder. The remainder will have the same sign as
         // the original fraction.
-        $int = intdiv($this->numerator, $this->denominator);
+        $int = $this->trunc();
         $rem = $this->numerator % $this->denominator;
         return [
             $int,
@@ -867,10 +867,9 @@ final class Rational implements Stringable
             return $this->numerator;
         }
 
-        // PHP's intdiv() truncates toward zero, so for negative fractions the quotient is already
-        // rounded up (toward zero). We need to subtract 1 to floor it (toward negative infinity).
-        // For positive fractions, intdiv() already truncates down, which is the floor.
-        $q = intdiv($this->numerator, $this->denominator);
+        // Truncating rounds a negative fraction up (toward zero), so subtract 1 to floor it (toward negative
+        // infinity). For a positive fraction, truncating already rounds down, which is the floor.
+        $q = $this->trunc();
         return $this->numerator < 0 ? $q - 1 : $q;
     }
 
@@ -885,11 +884,23 @@ final class Rational implements Stringable
             return $this->numerator;
         }
 
-        // PHP's intdiv() truncates toward zero, so for positive fractions the quotient is already
-        // rounded down (toward zero). We need to add 1 to ceil it (toward positive infinity).
-        // For negative fractions, intdiv() already truncates up, which is the ceiling.
-        $q = intdiv($this->numerator, $this->denominator);
+        // Truncating rounds a positive fraction down (toward zero), so add 1 to ceil it (toward positive
+        // infinity). For a negative fraction, truncating already rounds up, which is the ceiling.
+        $q = $this->trunc();
         return $this->numerator > 0 ? $q + 1 : $q;
+    }
+
+    /**
+     * Find the integer part of the Rational, truncating toward zero.
+     *
+     * Equivalent to round(RoundingMode::TowardsZero), and to the integer part of toMixedNumber().
+     *
+     * @return int The truncated value.
+     */
+    public function trunc(): int
+    {
+        // The denominator is always positive, so intdiv() can't overflow.
+        return intdiv($this->numerator, $this->denominator);
     }
 
     #endregion

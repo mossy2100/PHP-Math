@@ -844,6 +844,25 @@ $r2 = new Rational(-7, 3);
 echo $r2->ceil();  // -2
 ```
 
+### trunc()
+
+```php
+public function trunc(): int
+```
+
+Find the integer part of the rational number, truncating toward zero. Equivalent to `round(RoundingMode::TowardsZero)`,
+and to the integer part of `toMixedNumber()`.
+
+**Examples:**
+
+```php
+$r1 = new Rational(7, 3);
+echo $r1->trunc();  // 2
+
+$r2 = new Rational(-7, 3);
+echo $r2->trunc();  // -2
+```
+
 ---
 
 ## Usage Examples

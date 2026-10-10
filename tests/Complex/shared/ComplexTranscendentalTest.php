@@ -64,6 +64,16 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertEqualsWithDelta(0.0, $result5->imaginary, EPSILON);
     }
 
+    /**
+     * Test exp() throws when the magnitude overflows, as it's computed via fromPolar().
+     */
+    public function testExpOverflowThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Complex with non-finite magnitude: INF.');
+        new Complex(1000, 1)->exp();
+    }
+
     #endregion
 
     #region Method ln() tests.

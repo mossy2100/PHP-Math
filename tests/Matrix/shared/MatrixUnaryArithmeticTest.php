@@ -6,13 +6,17 @@ namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Matrix::class)]
 class MatrixUnaryArithmeticTest extends TestCase
 {
+    use FloatAssertions;
+
     #region Method neg() tests.
 
     /**
@@ -121,6 +125,55 @@ class MatrixUnaryArithmeticTest extends TestCase
         ]);
         $this->expectException(DomainException::class);
         $m->inv();
+    }
+
+    /**
+     * Data for matrices whose determinant would underflow or overflow, though the inverse is representable.
+     *
+     * @return array<string, array{float}> The scale of the elements.
+     */
+    public static function invExtremeProvider(): array
+    {
+        return [
+            'tiny' => [1e-200],
+            'huge' => [1e200],
+        ];
+    }
+
+    /**
+     * Test inv() of a matrix with uniformly tiny or huge elements, whose determinant would underflow or overflow.
+     */
+    #[DataProvider('invExtremeProvider')]
+    public function testInvExtreme(float $scale): void
+    {
+        // [[4, 7], [2, 6]] has determinant 10 and inverse [[0.6, -0.7], [-0.2, 0.4]].
+        $m = Matrix::fromArray([
+            [
+                4 * $scale,
+                7 * $scale,
+            ],
+            [
+                2 * $scale,
+                6 * $scale,
+            ],
+        ]);
+        $inv = $m->inv();
+
+        $this->assertApproxEqual(0.6 / $scale, $inv->get(0, 0));
+        $this->assertApproxEqual(-0.7 / $scale, $inv->get(0, 1));
+        $this->assertApproxEqual(-0.2 / $scale, $inv->get(1, 0));
+        $this->assertApproxEqual(0.4 / $scale, $inv->get(1, 1));
+    }
+
+    /**
+     * Test inv() of an empty matrix is an empty matrix, and of a zero matrix throws.
+     */
+    public function testInvEmptyAndZero(): void
+    {
+        $this->assertSame([], new Matrix(0, 0)->inv()->toArray());
+
+        $this->expectException(ArithmeticException::class);
+        new Matrix(2, 2)->inv();
     }
 
     #endregion

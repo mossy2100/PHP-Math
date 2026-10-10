@@ -706,8 +706,16 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot invert non-square Matrix.');
         }
 
+        // Scale so the largest element is in the range [1, 2), so the determinant and cofactors of a matrix with
+        // uniformly tiny or huge elements don't underflow or overflow. Scaling by a power of 2 is exact, so ordinary
+        // results are unchanged. inv(A) = inv(A / s) / s.
+        $elements = array_map(abs(...), array_merge(...$this->toArray()));
+        $max = $elements === [] ? 0.0 : max($elements);
+        $scale = $max === 0.0 ? 1.0 : 2 ** floor(log($max, 2));
+        $scaled = $this->div($scale);
+
         // Calculate the inverse using cofactor expansion and the adjugate matrix.
-        $det = $this->det();
+        $det = $scaled->det();
         if ($det === 0.0) {
             throw new ArithmeticException('Cannot invert Matrix with zero determinant.');
         }
@@ -717,9 +725,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
         for ($i = 0; $i < $n; $i++) {
             for ($j = 0; $j < $n; $j++) {
-                $minor = $this->getMinor($i, $j);
+                $minor = $scaled->getMinor($i, $j);
                 $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
-                $adjugate->set($j, $i, $cofactor / $det); // Note: transposed
+                $adjugate->set($j, $i, $cofactor / $det / $scale); // Note: transposed
             }
         }
 

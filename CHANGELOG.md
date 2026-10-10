@@ -10,33 +10,33 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Added
 
-- **`Rational::pow()` accepts a `Rational` exponent.** `p/q` means the q-th root, raised to the power p. The result
-  must be rational, so it's exact or it throws `DomainException`:
+- **`Rational::pow()` accepts a `Rational` exponent.** `p/q` means the q-th root, raised to the power p. The result must
+  be rational, so it's exact or it throws `DomainException`:
   - `(4/9) ** (1/2)` is `2/3`, and an odd root of a negative base is real: `(-8/27) ** (1/3)` is `-2/3`.
   - An irrational result, e.g. `2 ** (1/2)`, or an even root of a negative base throws.
   - Whether there's an exact root is determined with integer arithmetic only.
+- **`Rational::trunc()`** gives the integer part, truncating toward zero, like `round(RoundingMode::TowardsZero)`.
 
 ### Changed
 
-- **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and
-  returns a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
+- **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and returns
+  a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
 - **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** a non-numeric element now throws
-  `InvalidArgumentException` instead of `DomainException`, and the message no longer includes the value, e.g.
-  "Cannot create Vector from array. Element at index 1 must be an int or float." A non-finite element still throws
+  `InvalidArgumentException` instead of `DomainException`, and the message no longer includes the value, e.g. "Cannot
+  create Vector from array. Element at index 1 must be an int or float." A non-finite element still throws
   `DomainException`, e.g. "Cannot create Vector from array. Element at index 1 (INF) must be finite." Likewise, a
-  `Matrix::fromArray()` row that isn't an array now throws `InvalidArgumentException`; a row that's an array but not
-  a list still throws `DomainException`.
-- **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot
-  divide by zero." The exception class (`ArithmeticException`) is unchanged.
+  `Matrix::fromArray()` row that isn't an array now throws `InvalidArgumentException`; a row that's an array but not a
+  list still throws `DomainException`.
+- **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot divide
+  by zero." The exception class (`ArithmeticException`) is unchanged.
 
 ### Fixed
 
 - **`Complex::div()`/`inv()` gave wrong results or threw for a very small or large divisor**, even when the result was
-  representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to
-  1e154. Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and
-  `1 / 1e200` gave `0`.
-- **`Complex::div()`/`inv()`** throw `OverflowException` when the result is too large to represent, e.g.
-  `1 / 1e-320`.
+  representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to 1e154.
+  Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and `1 / 1e200` gave
+  `0`.
+- **`Complex::div()`/`inv()`** throw `OverflowException` when the result is too large to represent, e.g. `1 / 1e-320`.
 - **`Vector::div()`/`Matrix::div()` by ±INF silently returned a zero vector or matrix.** A non-finite scalar now throws
   `DomainException`.
 - **`Vector::magnitude` and `Matrix::norm()` overflowed or underflowed when squaring the elements did**, e.g. the
@@ -44,9 +44,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   ordinary results are unchanged.
 - **`Vector::normalize()`** gave `[0, 0]` for a huge vector and threw for a tiny one. Now scales first, like
   `magnitude`.
-- **`Vector::cross()`** threw a misleading `fromArray()` message on overflow, and threw for huge parallel vectors,
-  whose cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException`
-  otherwise.
+- **`Vector::cross()`** threw a misleading `fromArray()` message on overflow, and threw for huge parallel vectors, whose
+  cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException` otherwise.
+
+- **`Matrix::inv()` threw "zero determinant" for a matrix of uniformly tiny elements**, e.g.
+  `[[1e-300, 0], [0, 1e-300]]`, because the determinant underflowed to 0, and overflowed for huge ones. The matrix is
+  now scaled by a power of 2 first, which is exact, so ordinary results are unchanged.
 
 ### Documentation
 
@@ -109,8 +112,8 @@ methods only accept their own type, and serialization support is removed.
   - `Vector`: division by zero, normalizing a zero vector.
   - `Matrix`: inverting, dividing by, or raising to a negative power a non-invertible matrix.
 - **Comparison methods only accept their own type (breaking)**, throwing `InvalidArgumentException` for anything else:
-  - `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` no longer accept arrays, or a
-    single-column `Matrix` for `Vector`.
+  - `Vector::equal()`/`approxEqual()` and `Matrix::equal()`/`approxEqual()` no longer accept arrays, or a single-column
+    `Matrix` for `Vector`.
   - `Complex::equal()`/`approxEqual()` accept `Complex`, `int` or `float`.
   - `Rational::compare()` (and the methods built on it) throws `InvalidArgumentException` instead of
     `IncomparableTypesException`.

@@ -204,6 +204,29 @@ class ComplexPowerTest extends TestCase
         new Complex(0)->pow(new Complex(1, 1));
     }
 
+    /**
+     * Test pow() with an integer exponent throws at the first product that overflows, as it uses exponentiation by
+     * squaring.
+     */
+    public function testPowIntegerOverflowThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: NAN.');
+        new Complex(10, 1)->pow(1000);
+    }
+
+    /**
+     * Test pow() with an integer exponent gives exactly the products of exponentiation by squaring.
+     */
+    public function testPowIntegerUsesSquaring(): void
+    {
+        $z = new Complex(1.5, -2.25);
+        $inv = $z->inv();
+
+        $this->assertTrue($z->pow(3)->equal($z->mul($z->mul($z))));
+        $this->assertTrue($z->pow(-2)->equal($inv->mul($inv)));
+    }
+
     #endregion
 
     #region Method sqr() tests.

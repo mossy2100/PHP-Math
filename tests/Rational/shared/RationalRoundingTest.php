@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Rational;
 
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RoundingMode;
 
@@ -195,6 +196,74 @@ class RationalRoundingTest extends TestCase
         // ceil(0) = 0
         $r4 = new Rational(0);
         $this->assertSame(0, $r4->ceil());
+    }
+
+    #endregion
+
+    #region Method trunc() tests.
+
+    /**
+     * Test trunc.
+     */
+    public function testTrunc(): void
+    {
+        // trunc(7/3) = 2
+        $r1 = new Rational(7, 3);
+        $this->assertSame(2, $r1->trunc());
+
+        // trunc(-7/3) = -2
+        $r2 = new Rational(-7, 3);
+        $this->assertSame(-2, $r2->trunc());
+
+        // trunc(5) = 5
+        $r3 = new Rational(5);
+        $this->assertSame(5, $r3->trunc());
+
+        // trunc(0) = 0
+        $r4 = new Rational(0);
+        $this->assertSame(0, $r4->trunc());
+
+        // trunc(-1/2) = 0
+        $r5 = new Rational(-1, 2);
+        $this->assertSame(0, $r5->trunc());
+    }
+
+    /**
+     * Test trunc at the limits of the int range.
+     */
+    public function testTruncExtremes(): void
+    {
+        $this->assertSame(PHP_INT_MAX, new Rational(PHP_INT_MAX)->trunc());
+        $this->assertSame(-PHP_INT_MAX, new Rational(-PHP_INT_MAX)->trunc());
+        $this->assertSame(PHP_INT_MAX >> 1, new Rational(PHP_INT_MAX, 2)->trunc());
+        $this->assertSame(0, new Rational(1, PHP_INT_MAX)->trunc());
+    }
+
+    /**
+     * Data for comparing trunc() with its equivalents.
+     *
+     * @return array<string, array{int, int}> Numerator and denominator.
+     */
+    public static function truncEquivalentsProvider(): array
+    {
+        return [
+            'positive improper' => [9, 4],
+            'negative improper' => [-9, 4],
+            'positive proper'   => [1, 2],
+            'negative proper'   => [-1, 2],
+            'integer'           => [6, 1],
+        ];
+    }
+
+    /**
+     * Test trunc matches round(RoundingMode::TowardsZero) and the integer part of toMixedNumber().
+     */
+    #[DataProvider('truncEquivalentsProvider')]
+    public function testTruncMatchesEquivalents(int $num, int $den): void
+    {
+        $r = new Rational($num, $den);
+        $this->assertSame($r->round(RoundingMode::TowardsZero), $r->trunc());
+        $this->assertSame($r->toMixedNumber()[0], $r->trunc());
     }
 
     #endregion

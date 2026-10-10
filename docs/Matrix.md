@@ -361,8 +361,8 @@ public function setRow(int $row, Vector $vec): void
 ```
 
 Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
-row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and reflects the new values.
-`$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
+row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
+reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
 
 **Parameters:**
 

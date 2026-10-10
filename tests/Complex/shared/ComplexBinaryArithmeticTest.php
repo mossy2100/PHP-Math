@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
@@ -61,6 +62,16 @@ class ComplexBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
+    }
+
+    /**
+     * Test add() throws when the result overflows, naming the non-finite part.
+     */
+    public function testAddOverflowThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: INF.');
+        new Complex(1e308)->add(new Complex(1e308));
     }
 
     #endregion

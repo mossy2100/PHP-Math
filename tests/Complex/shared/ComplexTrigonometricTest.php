@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use DomainException;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -126,6 +127,16 @@ class ComplexTrigonometricTest extends TestCase
 
         $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test tan() throws when sin() overflows, as it's computed as sin(z) / cos(z).
+     */
+    public function testTanOverflowThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: INF.');
+        new Complex(1, 1000)->tan();
     }
 
     #endregion
