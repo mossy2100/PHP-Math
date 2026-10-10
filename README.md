@@ -62,7 +62,7 @@ composer require oceanmoon/math
 ## Strict Typing
 
 Strict typing (`declare(strict_types=1)`) is used throughout the library, with type hints on every property, parameter,
-and return type - this catches type errors at the call site instead of them surfacing as subtle bugs later.
+and return type. This catches type errors at the call site instead of letting them surface as subtle bugs later.
 
 One PHP-level exception applies: an `int` is always accepted where a `float` is type-hinted, even under strict types,
 since PHP treats this as lossless "widening" (the reverse - passing a `float` where `int` is expected - is not allowed,

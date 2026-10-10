@@ -30,8 +30,8 @@ Vectors with a count of 0 are allowed.
 public float $magnitude { get; }
 ```
 
-The magnitude (Euclidean norm) of the vector. Computed on demand from the current elements every time it's read - not
-cached, so it's always up to date even after mutating the vector via `set()`.
+The magnitude (Euclidean norm) of the vector. Computed on demand from the current elements every time it's read. It
+isn't cached, so it's always up to date even after mutating the vector via `set()`.
 
 For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 

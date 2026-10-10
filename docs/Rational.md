@@ -185,7 +185,7 @@ echo $r2->toFloat();  // 0.33333...
 public function toMixedNumber(): array
 ```
 
-Convert to a mixed number representation: an integer part and a fractional part. Uses trunc/frac semantics - the integer
+Convert to a mixed number representation: an integer part and a fractional part. Uses trunc/frac semantics: the integer
 part truncates toward zero, and the fractional part carries the same sign as the original. In this way, the two can be
 added to reconstruct the original value.
 
@@ -358,8 +358,8 @@ public function approxEqual(
 Check if the rational number approximately equals another value within specified tolerances.
 
 Converts both values to floats and uses combined relative and absolute tolerance approach. `NAN` throws, since it has no
-meaningful equality result; `±INF` returns `false` instead - a `Rational` (always finite) is never approximately equal
-to infinity.
+meaningful equality result; `±INF` returns `false` instead. A `Rational` is always finite, so it's never approximately
+equal to infinity.
 
 **Parameters:**
 
@@ -427,7 +427,7 @@ Compare the rational number with another value using exact comparison.
 - Optimizes comparison with integers and simple floats.
 - Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c.
 - Falls back to float comparison if overflow occurs.
-- Returns 0 for exact equality (no epsilon needed - integers are exact).
+- Returns 0 for exact equality (no epsilon is needed, since integers are exact).
 - Works with ±INF: comparing against `INF` always returns -1, and against `-INF` always returns 1.
 
 **Examples:**

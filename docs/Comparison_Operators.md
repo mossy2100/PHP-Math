@@ -36,7 +36,7 @@ triggering a notice; no type conversion is attempted, and no property values wil
 
 ### Comparing an object with a scalar
 
-Behaviour depends on the operand type - there's no single rule:
+Behaviour depends on the operand type. There's no single rule:
 
 | Operand type              | Behaviour                                                                                                                                 |
 | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,7 +53,7 @@ var_export($z == 5);
 
 Prints:
 
-```
+```text
 Notice: Object of class OceanMoon\Math\Complex could not be converted to int in /path/example.php on line 19
 
 Call Stack:
@@ -110,7 +110,7 @@ floating point rounding errors can be a problem.
 
 ## Ordering Comparison (`<=>`, `<`, `<=`, `>`, and `>=`)
 
-These operations always execute without a notice, warning, or error - **except** against an `int` or `float` operand,
+These operations always execute without a notice, warning, or error, **except** against an `int` or `float` operand,
 where PHP's attempt to convert the object to that scalar type triggers a notice (as above).
 
 These comparisons have no defined meaning for `Complex`, `Vector`, and `Matrix`, and simply do not work correctly for
@@ -139,7 +139,7 @@ var_export($r1 > $r2);
 ```
 
 Of course, 1/2 is greater than 1/3, so the result of this comparison should have been `true`. The [Math extension](https://github.com/mossy2100/PHP-Math-extension) fixes
-this too - for `Rational` values, ordering comparisons work correctly once its operators are overloaded.
+this too. For `Rational` values, ordering comparisons work correctly once its operators are overloaded.
 
 For `Vector` and `Matrix` values, the sizes will be compared first, then the element values.
 
@@ -165,7 +165,7 @@ var_export($z > $r);   // false
 var_export($z < $r);   // Also false - nothing is "less than" or "greater than" here, despite the 1 above.
 ```
 
-No notice, warning, or error is triggered for any of this - it fails silently.
+No notice, warning, or error is triggered for any of this. It fails silently.
 
 ### Comparing an object with a scalar
 

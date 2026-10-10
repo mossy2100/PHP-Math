@@ -295,8 +295,7 @@ $col = $m->getColumn(0);  // Vector(1, 3, 5)
 public function copy(int $row, int $col, int $rowCount, int $colCount): self
 ```
 
-Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. Purely functional - does not modify the
-matrix.
+Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. It doesn't modify the matrix.
 
 **Parameters:**
 
@@ -360,8 +359,8 @@ $m->set(1, 1, 10);
 public function setRow(int $row, Vector $vec): void
 ```
 
-Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced - the
-row's object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
+Set a row from a Vector. `$vec`'s elements are copied into the row's existing Vector, which is never replaced. The row's
+object identity is preserved, so a live reference obtained via [`$m[$row]`](#arrayaccess-methods) stays valid and
 reflects the new values. `$vec` itself is never stored by reference: mutating it afterward has no effect on the Matrix.
 
 **Parameters:**
@@ -1066,7 +1065,7 @@ unset($m[0]);  // Throws LogicException
 what makes `$m[$row][$col] = $x` work: PHP fetches the row via `offsetGet()`, then sets the element on that same
 `Vector` object.
 
-This is different from [`getRow()`](#getrow), which returns an **independent copy** - mutating the result of `getRow()` never
+This is different from [`getRow()`](#getrow), which returns an **independent copy**. Mutating the result of `getRow()` never
 affects the Matrix. See `getRow()` and `setRow()` below for the full contrast.
 
 ### offsetExists()
@@ -1089,7 +1088,7 @@ Check if a row offset exists. Returns true if the offset is an integer within th
 public function offsetGet(mixed $offset): Vector
 ```
 
-Get the row `Vector` at an offset. This is the Matrix's live internal row - see the note above.
+Get the row `Vector` at an offset. This is the Matrix's live internal row. See the note above.
 
 **Parameters:**
 

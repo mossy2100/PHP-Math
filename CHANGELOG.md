@@ -123,8 +123,8 @@ methods only accept their own type, and serialization support is removed.
   - `Complex::equal()`/`approxEqual()` and `Rational::approxEqual()` throw `DomainException` for a `NAN` argument and
     return `false` for `±INF`.
 - **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** non-sequential keys now throw `DomainException` instead of
-  being re-indexed - call `array_values()` first. Other shape errors are also `DomainException`. Ragged matrix rows
-  throw `LengthException`.
+  being re-indexed. Call `array_values()` first. Other shape errors are also `DomainException`. Ragged matrix rows throw
+  `LengthException`.
 - **`Rational::fromFloat()`** throws `DomainException` for a value too large or too small to represent, instead of
   `OverflowException`/`UnderflowException` **(breaking)**.
 - **`Rational::add()`/`sub()`/`mul()`/`div()` no longer accept `float` (breaking)** - convert with `fromFloat()` first.
@@ -149,7 +149,7 @@ methods only accept their own type, and serialization support is removed.
   `exp:`, `Complex::roots(n:)` → `degree:`, `Rational::pow(exponent:)` → `exp:`, `Matrix::pow(power:)` → `exp:`.
 - **`Rational::round()`** takes an optional `RoundingMode` (default `HalfAwayFromZero`, the previous behavior). Rounding
   uses exact integer arithmetic, so there's no precision loss near ties or for large values.
-- **`Complex::fromString()`** accepts only lowercase `i` as the imaginary unit - `j`, `J` and `I` now throw
+- **`Complex::fromString()`** accepts only lowercase `i` as the imaginary unit: `j`, `J` and `I` now throw
   `FormatException` **(breaking)**. This leaves `j` and `k` free for a planned `Quaternion` class.
 - **`Vector::__toString()`** uses ordered-tuple notation (`⟨1, 2, 3⟩`) instead of box-drawing characters.
 - **`Vector::$magnitude`** is recomputed on every read instead of cached. **`Complex::$magnitude`/`$phase`** are
@@ -157,7 +157,7 @@ methods only accept their own type, and serialization support is removed.
 - **`Rational::pow(1)`** returns a new, equal instance instead of `$this`.
 - **`Complex::pow()`** with an integer exponent uses exponentiation by squaring instead of `exp()`/`ln()`, giving exact
   results for small integer powers.
-- **`Floats::TAU`** (Core 2) was removed in Core 3 - use `use const OceanMoon\Core\M_TAU;` instead.
+- **`Floats::TAU`** (Core 2) was removed in Core 3. Use `use const OceanMoon\Core\M_TAU;` instead.
 
 ### Fixed
 
@@ -232,7 +232,7 @@ methods only accept their own type, and serialization support is removed.
   - `Matrix`: `set()`, `mul()`, `div()`.
 - `Rational::toRational()`'s parameter widened from `int|float|string|self` to `mixed`; it now throws
   `InvalidArgumentException` for a value of any other type, rather than a language-level `TypeError`. Backward
-  compatible - every previously-accepted type still works.
+  compatible: every previously-accepted type still works.
 - Fixed a latent bug in `Complex::toComplex()`: the `Vector` branch was unreachable, because the generic `is_object()`
   check ran first and always failed it (`Vector` has no public `real`/`imaginary` properties). Reordered so `Vector` is
   checked first.
@@ -248,7 +248,7 @@ methods only accept their own type, and serialization support is removed.
 
 ### Changed
 
-- **Renamed package** from `galaxon/math` to `oceanmoon/math` - update your `composer.json` require accordingly.
+- **Renamed package** from `galaxon/math` to `oceanmoon/math`. Update your `composer.json` require accordingly.
 - **Renamed PHP namespaces** from `Galaxon\Math\*` to `OceanMoon\Math\*` throughout all source and test files.
 - Updated runtime dependency `galaxon/core` → `oceanmoon/core: ^2.0`.
 - Updated dev dependency `galaxon/coding-standard` → `oceanmoon/coding-standard: ^2.0`.
@@ -304,8 +304,8 @@ methods only accept their own type, and serialization support is removed.
 - **Rational**: Renamed properties `$num` → `$numerator` and `$den` → `$denominator`.
 - **Rational**: Zero denominator now throws `DivisionByZeroError` (was `DomainException`).
 - **Rational**: `floatToRatio()` is now private (use the constructor instead).
-- **Matrix**: Removed `ArrayAccess` interface - bracket syntax was misleading for element-level mutation (`$m[1][1] = 9`
-  silently failed).
+- **Matrix**: Removed `ArrayAccess` interface, because bracket syntax was misleading for element-level mutation
+  (`$m[1][1] = 9` silently failed).
 - **Matrix**: `rowCount` is now a stored `private(set)` property (was derived from data).
 - **Vector**: `magnitude` is now cached with a property hook, invalidated on mutation (was recomputed every access).
 - **Vector**: `size` is now a stored `private(set)` property (was recomputed via `count()`).

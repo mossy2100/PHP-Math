@@ -224,7 +224,7 @@ Check if the complex number exactly equals another value.
 Compares both real and imaginary parts using exact equality (`===`). `$other` must be a `Complex`, `int`, or `float` -
 an `int`/`float` is treated as a real number for the comparison. A type that can't meaningfully be compared throws,
 rather than silently returning `false`, to catch bugs. `NAN` also throws, since it has no meaningful equality result;
-`±INF` is not a type error, so it returns `false` instead - a `Complex` (always finite) is simply never equal to
+`±INF` is not a type error, so it returns `false` instead. A `Complex` is always finite, so it's never equal to
 infinity.
 
 **Parameters:**
