@@ -434,7 +434,7 @@ Multiply the vector by a scalar or a matrix.
 
 Multiplying by a matrix (_xA_) treats the vector as a row vector; its count must equal the matrix's row count.
 
-To multiply a matrix by a vector in order to get a new vector, call [Matrix::mulVector()](Matrix.md#mulvector).
+To multiply a matrix by a vector in order to get a new vector, call [Matrix::mul()](Matrix.md#mul).
 
 **Parameters:**
 

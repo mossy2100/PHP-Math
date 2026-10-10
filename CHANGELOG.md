@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and
+  returns a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
 - **`Vector::fromArray()`/`Matrix::fromArray()`** invalid-element message now follows the "Cannot" style, e.g.
   "Cannot create Vector from array. Element at index 1 ('hello') must be a finite int or float."
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot

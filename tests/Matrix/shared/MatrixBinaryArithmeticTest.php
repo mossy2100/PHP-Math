@@ -8,6 +8,7 @@ use DomainException;
 use LengthException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Matrix;
+use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -154,6 +155,60 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m2 = new Matrix(2, 2);
         $this->expectException(LengthException::class);
         $m1->mul($m2);
+    }
+
+    /**
+     * Test multiplying a matrix by a vector.
+     */
+    public function testMulByVector(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3],
+            [4, 5, 6],
+        ]);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mul($v);
+        // Row 0: 1*1+2*2+3*3=14
+        // Row 1: 4*1+5*2+6*3=32
+        $this->assertEqualsWithDelta(14.0, $result->toArray()[0], EPSILON);
+        $this->assertEqualsWithDelta(32.0, $result->toArray()[1], EPSILON);
+    }
+
+    /**
+     * Test multiplying a 0-row matrix by a vector returns a count-0 vector.
+     */
+    public function testMulByVectorWithZeroRowMatrix(): void
+    {
+        $m = new Matrix(0, 3);
+        $v = Vector::fromArray([1, 2, 3]);
+        $result = $m->mul($v);
+        $this->assertSame(0, $result->count);
+    }
+
+    /**
+     * Test multiplying a 0-column matrix by an empty vector returns a zero vector matching the matrix's row
+     * count. Each row of a 0-column matrix is itself a count-0 Vector, so this exercises Vector::dot() between
+     * two count-0 vectors, which must return 0.0 rather than erroring, so the result has the right shape and
+     * values rather than being empty or malformed.
+     */
+    public function testMulByVectorWithEmptyVectorAndZeroColumnMatrix(): void
+    {
+        $m = new Matrix(3, 0);
+        $v = new Vector(0);
+        $result = $m->mul($v);
+        $this->assertSame(3, $result->count);
+        $this->assertSame([0.0, 0.0, 0.0], $result->toArray());
+    }
+
+    /**
+     * Test multiplying a matrix with a non-zero column count by an empty vector throws
+     * LengthException, since the dimensions are genuinely incompatible.
+     */
+    public function testMulByVectorWithIncompatibleCountThrows(): void
+    {
+        $m = new Matrix(3, 2);
+        $this->expectException(LengthException::class);
+        $m->mul(new Vector(0));
     }
 
     #endregion

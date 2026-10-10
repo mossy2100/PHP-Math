@@ -698,23 +698,27 @@ $diff = $m1->sub($m2);
 ### mul()
 
 ```php
-public function mul(float|self $other): self
+public function mul(float|Vector|self $other): Vector|self
 ```
 
-Multiply the matrix by a scalar or another matrix.
+Multiply the matrix by a scalar, a vector or another matrix.
 
-When multiplying by a scalar, each element is scaled. When multiplying by a matrix, standard matrix multiplication is
-performed (the number of columns in the matrix must equal the number of rows in the other).
+| Argument | Result   | Calculated as                                                                       |
+| -------- | -------- | ----------------------------------------------------------------------------------- |
+| `float`  | `Matrix` | Each element is scaled                                                              |
+| `Vector` | `Vector` | _Ax_, treating the vector as a column vector. Its count must equal the column count |
+| `Matrix` | `Matrix` | Matrix multiplication. The column count must equal the other's row count            |
 
-To multiply by a `Vector` (_Ax_), call [`mulVector()`](#mulvector) instead.
+The return type depends on the argument type, and PHPStan infers it: `mul($vector)` is a `Vector`, and otherwise a
+`Matrix`.
 
 To go the other way (_xA_), call [`Vector::mul()`](Vector.md#mul).
 
 **Parameters:**
 
-- `$other` (float|self) - Number or matrix to multiply by
+- `$other` (float|Vector|self) - Number, vector or matrix to multiply by
 
-**Returns:** `self` - A new matrix representing the product.
+**Returns:** `Vector|self` - A new vector for a `Vector` argument, otherwise a new matrix.
 
 **Throws:** `LengthException` if dimensions are incompatible for matrix multiplication.
 
@@ -731,6 +735,10 @@ $scaled = $m1->mul(2);
 $m2 = Matrix::fromArray([[5, 6], [7, 8]]);
 $product = $m1->mul($m2);
 // [[19, 22], [43, 50]]
+
+// Matrix-vector multiplication
+$v = Vector::fromArray([1, 2]);
+$result = $m1->mul($v);  // Vector(5, 11)
 ```
 
 ### div()
@@ -882,33 +890,6 @@ $result = $m->sqr();  // [[7, 10], [15, 22]]
 ---
 
 ## Linear Algebra Methods
-
-### mulVector()
-
-```php
-public function mulVector(Vector $vec): Vector
-```
-
-Multiply the matrix by a vector (_Ax_). The vector is treated as a column vector; its count must equal the matrix's
-column count.
-
-To go the other way (_xA_), use `Vector::mul()` instead.
-
-**Parameters:**
-
-`$vec` (Vector) - The vector to multiply by.
-
-**Returns:** `Vector` - New vector representing the result.
-
-**Throws:** `LengthException` if the vector's count doesn't equal the matrix's column count.
-
-**Examples:**
-
-```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-$v = Vector::fromArray([1, 2]);
-$result = $m->mulVector($v);  // Vector(5, 11)
-```
 
 ### t()
 
@@ -1181,7 +1162,7 @@ $idMat = Matrix::identity(3);
 // Solve Ax = b using x = A⁻¹b
 $m = Matrix::fromArray([[2, 1], [5, 3]]);
 $b = Vector::fromArray([4, 7]);
-$x = $m->inv()->mulVector($b);  // Vector(5, -6)
+$x = $m->inv()->mul($b);  // Vector(5, -6)
 ```
 
 ### 3D Transformations
@@ -1199,7 +1180,7 @@ $rot90 = Matrix::fromArray([
 ]);
 
 $point = Vector::fromArray([1, 0, 0]);
-$rotated = $rot90->mulVector($point);  // Vector(0, 1, 0)
+$rotated = $rot90->mul($point);  // Vector(0, 1, 0)
 
 // Scale by 2x in all axes.
 $scale = Matrix::fromArray([
@@ -1207,11 +1188,11 @@ $scale = Matrix::fromArray([
     [0, 2, 0],
     [0, 0, 2],
 ]);
-$scaled = $scale->mulVector($point);  // Vector(2, 0, 0)
+$scaled = $scale->mul($point);  // Vector(2, 0, 0)
 
 // Chain transformations: scale then rotate.
 $combined = $rot90->mul($scale);
-$result = $combined->mulVector($point);  // Vector(0, 2, 0)
+$result = $combined->mul($point);  // Vector(0, 2, 0)
 ```
 
 ### Matrix Powers

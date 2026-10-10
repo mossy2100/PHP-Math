@@ -773,16 +773,16 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Multiply this Matrix by a scalar or another Matrix.
+     * Multiply this Matrix by a scalar, a Vector, or another Matrix.
      *
-     * To multiply by a Vector, use `mulVector()` instead.
+     * Multiplying by a Vector (_Ax_) treats the vector as a column vector; its count must equal this matrix's column
+     * count. The result is a Vector. To go the other way (_xA_), call {@see Vector::mul()}.
      *
-     * @param float|self $other Number or matrix to multiply by.
-     * @return self New matrix representing the product.
+     * @param float|Vector|self $other Number, vector, or matrix to multiply by.
+     * @return ($other is Vector ? Vector : self) New vector for a Vector, otherwise a new matrix.
      * @throws LengthException If dimensions are incompatible for multiplication.
-     * @see Vector::mul()
      */
-    public function mul(float|self $other): self
+    public function mul(float|Vector|self $other): Vector|self
     {
         // Multiply matrix by a float.
         if (is_float($other)) {
@@ -794,6 +794,24 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 }
             }
             return $scaled;
+        }
+
+        // Multiply matrix by a vector: Ax, treating the vector as a column vector.
+        if ($other instanceof Vector) {
+            if ($this->columnCount !== $other->count) {
+                throw new LengthException(
+                    "Invalid Vector count: {$other->count}. Must equal this Matrix's column count: " .
+                    "{$this->columnCount}."
+                );
+            }
+
+            // Calculate each element of the result as the dot product of a row with the vector.
+            $result = new Vector($this->rowCount);
+            for ($i = 0; $i < $this->rowCount; $i++) {
+                $result->set($i, $this->data[$i]->dot($other));
+            }
+
+            return $result;
         }
 
         // Multiply matrix by a matrix.
@@ -1004,38 +1022,6 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     #endregion
 
     #region Linear algebra methods
-
-    /**
-     * Multiply this matrix by a vector: Ax.
-     *
-     * The vector is treated as a column vector; its count must equal this matrix's column count. To go the other way
-     * (xA), use `Vector::mul()` instead.
-     *
-     * This operation is not handled by the mul() method because the return type is different.
-     * Although we could set up mul() to return Matrix|Vector, this causes problems for static analysis and breaks the
-     * fluent API.
-     *
-     * @param Vector $vec The vector to multiply by.
-     * @return Vector New vector representing the result.
-     * @throws LengthException If the vector's count doesn't equal this matrix's column count.
-     */
-    public function mulVector(Vector $vec): Vector
-    {
-        // Check if dimensions are compatible for multiplication.
-        if ($this->columnCount !== $vec->count) {
-            throw new LengthException(
-                "Invalid Vector count: {$vec->count}. Must equal this Matrix's column count: {$this->columnCount}."
-            );
-        }
-
-        // Calculate each element of the result as the dot product of a row with the vector.
-        $result = new Vector($this->rowCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            $result->set($i, $this->data[$i]->dot($vec));
-        }
-
-        return $result;
-    }
 
     /**
      * Get the transpose of this matrix.
