@@ -167,6 +167,28 @@ class VectorBinaryArithmeticTest extends TestCase
         $this->assertSame(0, $result->count);
     }
 
+    /**
+     * Test multiplying by a vector is the Hadamard (element-wise) product.
+     */
+    public function testMulByVector(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $this->assertSame([4.0, 10.0, 18.0], $v1->mul($v2)->toArray());
+    }
+
+    /**
+     * Test multiplying by a vector with a different count throws LengthException.
+     */
+    public function testMulByVectorWithDifferentCountsThrows(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
+        $this->expectException(LengthException::class);
+        $this->expectExceptionMessage('Cannot multiply by Vector of incorrect count: 2. Expected 3.');
+        $v1->mul($v2);
+    }
+
     #endregion
 
     #region Method div() tests.
@@ -207,67 +229,38 @@ class VectorBinaryArithmeticTest extends TestCase
         }
     }
 
-    #endregion
-
-    #region Method hadamardMul() tests.
-
     /**
-     * Test the Hadamard (element-wise) product of two vectors.
+     * Test dividing by a vector is Hadamard (element-wise) division.
      */
-    public function testHadamardMul(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([4, 5, 6]);
-        $result = $v1->hadamardMul($v2);
-        $this->assertEqualsWithDelta([4.0, 10.0, 18.0], $result->toArray(), EPSILON);
-    }
-
-    /**
-     * Test the Hadamard product of vectors with different sizes throws LengthException.
-     */
-    public function testHadamardMulWithDifferentSizesThrows(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([1, 2]);
-        $this->expectException(LengthException::class);
-        $v1->hadamardMul($v2);
-    }
-
-    #endregion
-
-    #region Method hadamardDiv() tests.
-
-    /**
-     * Test the Hadamard (element-wise) division of two vectors.
-     */
-    public function testHadamardDiv(): void
+    public function testDivByVector(): void
     {
         $v1 = Vector::fromArray([4, 10, 18]);
         $v2 = Vector::fromArray([4, 5, 6]);
-        $result = $v1->hadamardDiv($v2);
-        $this->assertEqualsWithDelta([1.0, 2.0, 3.0], $result->toArray(), EPSILON);
+        $this->assertSame([1.0, 2.0, 3.0], $v1->div($v2)->toArray());
     }
 
     /**
-     * Test the Hadamard division of vectors with different sizes throws LengthException.
+     * Test dividing by a vector with a different count throws LengthException.
      */
-    public function testHadamardDivWithDifferentSizesThrows(): void
+    public function testDivByVectorWithDifferentCountsThrows(): void
     {
         $v1 = Vector::fromArray([1, 2, 3]);
         $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
-        $v1->hadamardDiv($v2);
+        $this->expectExceptionMessage('Cannot divide by Vector of incorrect count: 2. Expected 3.');
+        $v1->div($v2);
     }
 
     /**
-     * Test the Hadamard division by a vector containing a zero element throws ArithmeticException.
+     * Test dividing by a vector with a zero element throws ArithmeticException.
      */
-    public function testHadamardDivByZeroElementThrows(): void
+    public function testDivByVectorWithZeroElementThrows(): void
     {
         $v1 = Vector::fromArray([1, 2, 3]);
         $v2 = Vector::fromArray([1, 0, 1]);
         $this->expectException(ArithmeticException::class);
-        $v1->hadamardDiv($v2);
+        $this->expectExceptionMessage('Cannot divide by zero at index 1.');
+        $v1->div($v2);
     }
 
     #endregion

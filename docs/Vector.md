@@ -431,30 +431,33 @@ $diff = $v1->sub($v2);  // [4, 5, 6]
 ### mul()
 
 ```php
-public function mul(float|Matrix $other): self
+public function mul(float|self|Matrix $other): self
 ```
 
-Multiply the vector by a scalar or a matrix.
+Multiply the vector by a scalar, another vector, or a matrix.
 
-Multiplying by a matrix (_xA_) treats the vector as a row vector; its count must equal the matrix's row count.
+- Multiplying by a vector is element-wise (the Hadamard product). The vectors must have the same count.
+- Multiplying by a matrix (_xA_) treats the vector as a row vector. Its count must equal the matrix's row count.
 
 To multiply a matrix by a vector in order to get a new vector, call [Matrix::mul()](Matrix.md#mul).
 
 **Parameters:**
 
-- `$other` (float|Matrix) - Number or matrix to multiply by.
+- `$other` (float|Vector|Matrix) - Number, vector, or matrix to multiply by.
 
 **Returns:** `self` - New vector representing the product.
 
-**Throws:**
-
-- `LengthException` if multiplying by a matrix whose row count doesn't equal the vector's count.
+**Throws:** `LengthException` if the vectors have different counts, or the matrix's row count doesn't equal the vector's
+count.
 
 **Examples:**
 
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
+
+$v2 = Vector::fromArray([4, 5, 6]);
+$result = $v->mul($v2);  // [4, 10, 18]
 
 $m = Matrix::fromArray([
     [1, 4],
@@ -467,80 +470,32 @@ $result = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ### div()
 
 ```php
-public function div(float $scalar): self
+public function div(float|self $other): self
 ```
 
-Divide the vector by a scalar.
+Divide the vector by a scalar or another vector. Dividing by a vector is element-wise (Hadamard division). The vectors
+must have the same count.
 
 **Parameters:**
 
-- `$scalar` (float) - Number to divide by.
+- `$other` (float|Vector) - Number or vector to divide by.
 
 **Returns:** `self` - New vector representing the quotient.
 
 **Throws:**
 
-- `DomainException` if `$scalar` is not finite (±INF or NAN).
-- `ArithmeticException` if `$scalar` is zero.
+- `DomainException` if `$other` is a float that isn't finite (±INF or NAN).
+- `ArithmeticException` if `$other` is zero, or a vector with a zero element.
+- `LengthException` if the vectors have different counts.
 
 **Examples:**
 
 ```php
 $v = Vector::fromArray([6, 9, 12]);
 $result = $v->div(3);  // [2, 3, 4]
-```
 
-### hadamardMul()
-
-```php
-public function hadamardMul(self $other): self
-```
-
-Calculate the Hadamard product (element-wise product) of one vector with another.
-
-**Parameters:**
-
-- `$other` (Vector) - Vector to multiply element-wise with.
-
-**Returns:** `self` - New vector representing the Hadamard product.
-
-**Throws:**
-
-- `LengthException` if vectors have different counts.
-
-**Examples:**
-
-```php
-$v1 = Vector::fromArray([1, 2, 3]);
-$v2 = Vector::fromArray([4, 5, 6]);
-$result = $v1->hadamardMul($v2);  // [4, 10, 18]
-```
-
-### hadamardDiv()
-
-```php
-public function hadamardDiv(self $other): self
-```
-
-Calculate the Hadamard division (element-wise quotient) of one vector by another.
-
-**Parameters:**
-
-- `$other` (Vector) - Vector to divide element-wise by.
-
-**Returns:** `self` - New vector representing the Hadamard quotient.
-
-**Throws:**
-
-- `LengthException` if vectors have different counts.
-- `ArithmeticException` if any element of `$other` is zero.
-
-**Examples:**
-
-```php
-$v1 = Vector::fromArray([4, 10, 18]);
-$v2 = Vector::fromArray([4, 5, 6]);
-$result = $v1->hadamardDiv($v2);  // [1, 2, 3]
+$v2 = Vector::fromArray([3, 3, 4]);
+$result = $v->div($v2);  // [2, 3, 3]
 ```
 
 ---

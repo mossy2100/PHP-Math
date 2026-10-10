@@ -21,6 +21,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and returns
   a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
+- **`Vector::mul()` and `Vector::div()` accept a `Vector`, replacing `hadamardMul()` and `hadamardDiv()` (breaking).**
+  `$v1->mul($v2)` and `$v1->div($v2)` are element-wise. `div()`'s parameter is renamed from `$scalar` to `$other`.
+  `Matrix::hadamardMul()` and `Matrix::hadamardDiv()` are unchanged.
 - **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** a non-numeric element now throws
   `InvalidArgumentException` instead of `DomainException`, and the message no longer includes the value, e.g. "Cannot
   create Vector from array. Element at index 1 must be an int or float." A non-finite element still throws

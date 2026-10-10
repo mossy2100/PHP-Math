@@ -417,16 +417,19 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Multiply this vector by a scalar or a matrix.
+     * Multiply this vector by a scalar, another vector, or a matrix.
+     *
+     * Multiplying by a vector is element-wise (the Hadamard product); the vectors must have the same count.
      *
      * Multiplying by a matrix (_xA_) treats this vector as a row vector; its count must equal the matrix's row count.
      * To go the other way (_Ax_), call {@see Matrix::mul()}.
      *
-     * @param float|Matrix $other Number or matrix to multiply by.
+     * @param float|self|Matrix $other Number, vector, or matrix to multiply by.
      * @return self New vector representing the product.
-     * @throws LengthException If multiplying by a matrix whose row count doesn't equal this vector's count.
+     * @throws LengthException If the vectors have different counts, or the matrix's row count doesn't equal this
+     * vector's count.
      */
-    public function mul(float|Matrix $other): self
+    public function mul(float|self|Matrix $other): self
     {
         // Multiply vector by a float.
         if (is_float($other)) {
@@ -434,6 +437,22 @@ final class Vector implements Stringable, Countable, ArrayAccess
             $result = new self($this->count);
             for ($i = 0; $i < $this->count; $i++) {
                 $result->set($i, $this->data[$i] * $other);
+            }
+
+            return $result;
+        }
+
+        // Multiply vector by a vector, element-wise.
+        if ($other instanceof self) {
+            if ($this->count !== $other->count) {
+                throw new LengthException(
+                    "Cannot multiply by Vector of incorrect count: {$other->count}. Expected {$this->count}."
+                );
+            }
+
+            $result = new self($this->count);
+            for ($i = 0; $i < $this->count; $i++) {
+                $result->set($i, $this->data[$i] * $other->data[$i]);
             }
 
             return $result;
@@ -460,85 +479,51 @@ final class Vector implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Divide this vector by a scalar.
+     * Divide this vector by a scalar or another vector.
      *
-     * @param float $scalar Number to divide by.
+     * Dividing by a vector is element-wise (Hadamard division); the vectors must have the same count.
+     *
+     * @param float|self $other Number or vector to divide by.
      * @return self New vector representing the quotient.
-     * @throws DomainException If $scalar is not finite (±INF or NAN).
-     * @throws ArithmeticException If $scalar is zero.
+     * @throws DomainException If $other is a float that isn't finite (±INF or NAN).
+     * @throws ArithmeticException If $other is zero, or a vector with a zero element.
+     * @throws LengthException If the vectors have different counts.
      */
-    public function div(float $scalar): self
+    public function div(float|self $other): self
     {
+        // Divide vector by a vector, element-wise.
+        if ($other instanceof self) {
+            if ($this->count !== $other->count) {
+                throw new LengthException(
+                    "Cannot divide by Vector of incorrect count: {$other->count}. Expected {$this->count}."
+                );
+            }
+
+            $result = new self($this->count);
+            for ($i = 0; $i < $this->count; $i++) {
+                if ($other->data[$i] === 0.0) {
+                    throw new ArithmeticException("Cannot divide by zero at index $i.");
+                }
+                $result->set($i, $this->data[$i] / $other->data[$i]);
+            }
+
+            return $result;
+        }
+
         // Check the scalar is finite. Dividing by ±INF would otherwise silently give a zero vector.
-        if (!is_finite($scalar)) {
-            throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $scalar));
+        if (!is_finite($other)) {
+            throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $other));
         }
 
         // Guard.
-        if ($scalar === 0.0) {
+        if ($other === 0.0) {
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        // Divide the vectors element-wise.
+        // Divide each element by the scalar.
         $result = new self($this->count);
         for ($i = 0; $i < $this->count; $i++) {
-            $result->set($i, $this->data[$i] / $scalar);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Calculate the Hadamard product (element-wise product) of this vector with another.
-     *
-     * @param self $other Vector to multiply element-wise with.
-     * @return self New vector representing the Hadamard product.
-     * @throws LengthException If vectors have different counts.
-     */
-    public function hadamardMul(self $other): self
-    {
-        // Check if vectors have the same count.
-        if ($this->count !== $other->count) {
-            throw new LengthException(
-                "Cannot compute Hadamard product with Vector of incorrect count: {$other->count}. " .
-                "Expected {$this->count}."
-            );
-        }
-
-        // Multiply the vectors element-wise.
-        $result = new self($this->count);
-        for ($i = 0; $i < $this->count; $i++) {
-            $result->set($i, $this->data[$i] * $other->data[$i]);
-        }
-
-        return $result;
-    }
-
-    /**
-     * Calculate the Hadamard division (element-wise quotient) of this vector by another.
-     *
-     * @param self $other Vector to divide element-wise by.
-     * @return self New vector representing the Hadamard quotient.
-     * @throws LengthException If vectors have different counts.
-     * @throws ArithmeticException If any element of $other is zero.
-     */
-    public function hadamardDiv(self $other): self
-    {
-        // Check if vectors have the same count.
-        if ($this->count !== $other->count) {
-            throw new LengthException(
-                "Cannot compute Hadamard quotient with Vector of incorrect count: {$other->count}. " .
-                "Expected {$this->count}."
-            );
-        }
-
-        // Divide the vectors element-wise.
-        $result = new self($this->count);
-        for ($i = 0; $i < $this->count; $i++) {
-            if ($other->data[$i] === 0.0) {
-                throw new ArithmeticException("Cannot divide by zero at index $i.");
-            }
-            $result->set($i, $this->data[$i] / $other->data[$i]);
+            $result->set($i, $this->data[$i] / $other);
         }
 
         return $result;
