@@ -689,10 +689,21 @@ $quotient2 = $r3->div(2);   // 3/8
 ### pow()
 
 ```php
-public function pow(int $exp): self
+public function pow(int|self $exp): self
 ```
 
-Raise the rational number to an integer power.
+Raise the rational number to an integer or Rational power.
+
+| Exponent   | Calculated as                                    |
+| ---------- | ------------------------------------------------ |
+| `int`      | `(a/b)ⁿ = aⁿ/bⁿ`, simplified                     |
+| `Rational` | The q-th root of the base, raised to the power p |
+
+A `Rational` exponent `p/q` has a rational result only when the base's numerator and denominator are both perfect q-th
+powers. Otherwise the result is irrational, so `pow()` throws. That's determined with integer arithmetic only.
+
+A negative base has a real result only for an odd root (odd `q`). For example, `(-8/27) ** (1/3)` is `-2/3`, but
+`(-4/9) ** (1/2)` throws.
 
 **Examples:**
 
@@ -708,6 +719,13 @@ $result3 = $r3->pow(-2);   // 9/4 (negative exponent = reciprocal)
 
 $r4 = new Rational(5, 7);  // 5/7
 $result4 = $r4->pow(0);    // 1/1 (any number^0 = 1)
+
+$r5 = new Rational(4, 9);                  // 4/9
+$result5 = $r5->pow(new Rational(1, 2));   // 2/3
+$result6 = $r5->pow(new Rational(-3, 2));  // 27/8
+
+$r7 = new Rational(2);                     // 2
+$result7 = $r7->pow(new Rational(1, 2));   // throws DomainException (irrational)
 ```
 
 **Special cases:**

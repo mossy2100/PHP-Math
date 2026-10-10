@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
+use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Rational::class)]
@@ -176,6 +178,104 @@ class RationalPowerTest extends TestCase
 
         $this->assertSame(3, $r->numerator);
         $this->assertSame(4, $r->denominator);
+    }
+
+    /**
+     * Data for Rational exponents with an exact result.
+     *
+     * @return array<string, array{int, int, int, int, int, int}> Base numerator and denominator, exponent numerator
+     * and denominator, expected numerator and denominator.
+     */
+    public static function powRationalProvider(): array
+    {
+        return [
+            'square root'           => [4, 9, 1, 2, 2, 3],
+            'negative cube root'    => [8, 27, -1, 3, 3, 2],
+            'root then power'       => [8, 27, -2, 3, 9, 4],
+            'odd root of negative'  => [-8, 27, 1, 3, -2, 3],
+            'odd root, even power'  => [-8, 27, 2, 3, 4, 9],
+            'zero base'             => [0, 1, 1, 2, 0, 1],
+            'base one'              => [1, 1, 5, 7, 1, 1],
+            'whole-number exponent' => [2, 3, 3, 1, 8, 27],
+            'integer base'          => [4, 1, -1, 2, 1, 2],
+            'largest square root'   => [
+                3037000499 * 3037000499,
+                1,
+                1,
+                2,
+                3037000499,
+                1,
+            ],
+        ];
+    }
+
+    /**
+     * Test pow() with a Rational exponent returns the exact result.
+     */
+    #[DataProvider('powRationalProvider')]
+    public function testPowRationalExponent(int $a, int $b, int $p, int $q, int $num, int $den): void
+    {
+        $result = new Rational($a, $b)->pow(new Rational($p, $q));
+
+        $this->assertSame($num, $result->numerator);
+        $this->assertSame($den, $result->denominator);
+    }
+
+    /**
+     * Data for Rational exponents whose result is irrational.
+     *
+     * @return array<string, array{int, int, int, int}> Base numerator and denominator, exponent numerator and
+     * denominator.
+     */
+    public static function powRationalIrrationalProvider(): array
+    {
+        return [
+            'numerator has no root'   => [2, 9, 1, 2],
+            'denominator has no root' => [4, 3, 1, 2],
+            'odd root of negative'    => [-2, 1, 1, 3],
+            'root degree 63 or more'  => [2, 1, 1, 64],
+            'PHP_INT_MAX square root' => [PHP_INT_MAX, 1, 1, 2],
+        ];
+    }
+
+    /**
+     * Test pow() with a Rational exponent throws when the result is irrational.
+     */
+    #[DataProvider('powRationalIrrationalProvider')]
+    public function testPowRationalExponentIrrationalThrows(int $a, int $b, int $p, int $q): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('irrational');
+        new Rational($a, $b)->pow(new Rational($p, $q));
+    }
+
+    /**
+     * Test pow() with an even-root Rational exponent throws for a negative base.
+     */
+    public function testPowRationalExponentEvenRootOfNegativeThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot raise -4/9 to power 1/2. The result is not real.');
+        new Rational(-4, 9)->pow(new Rational(1, 2));
+    }
+
+    /**
+     * Test pow() with a negative Rational exponent throws for a zero base.
+     */
+    public function testPowRationalExponentZeroBaseNegativeThrows(): void
+    {
+        $this->expectException(ArithmeticException::class);
+        new Rational(0)->pow(new Rational(-1, 2));
+    }
+
+    /**
+     * Test pow() with a Rational exponent throws when the exact result overflows.
+     */
+    public function testPowRationalExponentOverflowThrows(): void
+    {
+        // 4^(127/2) = 2^127, which doesn't fit in an int.
+        $this->expectException(OverflowException::class);
+        new Rational(4)->pow(new Rational(127, 2));
     }
 
     #endregion

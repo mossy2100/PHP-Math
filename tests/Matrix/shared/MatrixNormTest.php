@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Matrix;
 
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Matrix::class)]
 class MatrixNormTest extends TestCase
 {
+    use FloatAssertions;
+
     #region Method norm() tests.
 
     /**
@@ -46,6 +50,54 @@ class MatrixNormTest extends TestCase
             [4, 5, 6],
         ]);
         $this->assertEqualsWithDelta(sqrt(91), $m->norm(), EPSILON);
+    }
+
+    /**
+     * Test Frobenius norm of an empty matrix is zero.
+     */
+    public function testNormFrobeniusEmpty(): void
+    {
+        $this->assertSame(0.0, new Matrix(0, 0)->norm());
+    }
+
+    /**
+     * Data for matrices whose elements would overflow or underflow if squared without scaling.
+     *
+     * @return array<string, array{float, float, float}> The two elements of a 1×2 matrix, expected norm.
+     */
+    public static function normFrobeniusExtremeProvider(): array
+    {
+        return [
+            'huge'                   => [3e300, 4e300, 5e300],
+            'huge, squares overflow' => [1e308, -1e308, 1.4142135623730951e308],
+            'tiny'                   => [3e-200, 4e-200, 5e-200],
+        ];
+    }
+
+    /**
+     * Test Frobenius norm is accurate for a matrix whose elements would overflow or underflow if squared.
+     */
+    #[DataProvider('normFrobeniusExtremeProvider')]
+    public function testNormFrobeniusExtreme(float $a, float $b, float $expected): void
+    {
+        $m = Matrix::fromArray([
+            [$a, $b],
+        ]);
+
+        // Use a zero absolute tolerance, so a norm that wrongly underflows to 0 fails.
+        $this->assertApproxEqual($expected, $m->norm(), absTol: 0.0);
+    }
+
+    /**
+     * Test Frobenius norm is INF when the norm itself is too large to represent.
+     */
+    public function testNormFrobeniusOverflowGivesInf(): void
+    {
+        $m = Matrix::fromArray([
+            [1.5e308],
+            [1.5e308],
+        ]);
+        $this->assertSame(INF, $m->norm());
     }
 
     #endregion

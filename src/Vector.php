@@ -16,6 +16,7 @@ use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
+use OverflowException;
 use Override;
 use Stringable;
 
@@ -44,10 +45,21 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
     /**
      * Calculate the magnitude (norm) of the vector.
+     *
+     * The elements are scaled by a power of 2 before squaring, so the squares don't overflow to INF for a huge vector
+     * or underflow to 0 for a tiny one. The result is only INF if the magnitude itself is too large to represent.
      */
-    public float $magnitude
-    {
-        get => sqrt(array_sum(array_map(static fn ($x) => $x * $x, $this->data)));
+    public float $magnitude {
+        get {
+            // Handle a zero or empty vector.
+            $scale = self::powerOfTwoScale($this->data);
+            if ($scale === 0.0) {
+                return 0.0;
+            }
+
+            // Calculate the magnitude of the scaled vector, then undo the scaling.
+            return $scale * sqrt(array_sum(array_map(static fn ($x) => ($x / $scale) ** 2, $this->data)));
+        }
     }
 
     #endregion
@@ -100,7 +112,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
             // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
             if (!Numbers::isFiniteNumber($value)) {
                 throw new DomainException(Stringify::prepEx(
-                    "Invalid element at index $index: ?. Must be a finite int or float.",
+                    "Cannot create Vector from array. Element at index $index (?) must be a finite int or float.",
                     $value
                 ));
             }
@@ -444,10 +456,16 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param float $scalar Number to divide by.
      * @return self New vector representing the quotient.
+     * @throws DomainException If $scalar is not finite (±INF or NAN).
      * @throws ArithmeticException If $scalar is zero.
      */
     public function div(float $scalar): self
     {
+        // Check the scalar is finite. Dividing by ±INF would otherwise silently give a zero vector.
+        if (!is_finite($scalar)) {
+            throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $scalar));
+        }
+
         // Guard.
         if ($scalar === 0.0) {
             throw new ArithmeticException('Cannot divide by zero.');
@@ -550,9 +568,14 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Calculate the cross product of this vector with another vector. Both must have a count of 3.
      *
+     * If an intermediate product overflows, the vectors are scaled by powers of 2 (which is exact) and the cross
+     * product is calculated again. So a result that fits is still returned, e.g. a huge vector crossed with itself
+     * gives zero.
+     *
      * @param self $other Vector to calculate cross product with.
      * @return self New vector representing the cross product.
      * @throws LengthException If either vector's count isn't 3.
+     * @throws OverflowException If the result is too large to represent as floats.
      */
     public function cross(self $other): self
     {
@@ -568,11 +591,35 @@ final class Vector implements Stringable, Countable, ArrayAccess
             );
         }
 
-        return self::fromArray([
-            $this->data[1] * $other->data[2] - $this->data[2] * $other->data[1],
-            $this->data[2] * $other->data[0] - $this->data[0] * $other->data[2],
-            $this->data[0] * $other->data[1] - $this->data[1] * $other->data[0],
-        ]);
+        // Calculate the cross product directly, which is exact for ordinary values.
+        $a = $this->data;
+        $b = $other->data;
+        $result = self::calcCross($a, $b);
+
+        // If an intermediate product overflowed, scale each vector so its largest element is in the range [1, 2), and
+        // try again. Scaling by a power of 2 is exact. Neither vector can be zero here, or every product would be 0.
+        if (!self::allFinite($result)) {
+            $scaleA = self::powerOfTwoScale($a);
+            $scaleB = self::powerOfTwoScale($b);
+            $result = self::calcCross(
+                array_map(static fn ($x) => $x / $scaleA, $a),
+                array_map(static fn ($x) => $x / $scaleB, $b)
+            );
+
+            // Undo the scaling, applying the smaller scale first, so only a genuine overflow gives INF.
+            $minScale = min($scaleA, $scaleB);
+            $maxScale = max($scaleA, $scaleB);
+            $result = array_map(static fn ($x) => $x * $minScale * $maxScale, $result);
+            if (!self::allFinite($result)) {
+                throw new OverflowException(
+                    "Cannot compute cross product of $this and $other. The result would overflow."
+                );
+            }
+        }
+
+        $vector = new self(3);
+        $vector->data = $result;
+        return $vector;
     }
 
     /**
@@ -593,12 +640,23 @@ final class Vector implements Stringable, Countable, ArrayAccess
     /**
      * Normalize this vector to a unit vector (magnitude 1).
      *
+     * The vector is first scaled by a power of 2 (which is exact), so its magnitude can't overflow to INF even when the
+     * vector's true magnitude is too large to represent.
+     *
      * @return self A new vector with the same direction and magnitude 1.
      * @throws ArithmeticException If the vector has zero magnitude.
      */
     public function normalize(): self
     {
-        return $this->div($this->magnitude);
+        // Check for a zero (or empty) vector.
+        $scale = self::powerOfTwoScale($this->data);
+        if ($scale === 0.0) {
+            throw new ArithmeticException('Cannot normalize zero Vector.');
+        }
+
+        // Scale so the largest element is in the range [1, 2), then divide by the magnitude, which can't overflow.
+        $scaled = $this->div($scale);
+        return $scaled->div($scaled->magnitude);
     }
 
     #endregion
@@ -707,6 +765,56 @@ final class Vector implements Stringable, Countable, ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         throw new LogicException('Cannot unset Vector elements.');
+    }
+
+    #endregion
+
+    #region Helper methods
+
+    /**
+     * Get the power of 2 that scales the largest absolute value into the range [1, 2).
+     *
+     * Dividing by a power of 2 is exact, so it can be used to keep intermediate values (e.g. squares) in range
+     * without changing the result.
+     *
+     * @param list<float> $values The values.
+     * @return float The power of 2, or 0.0 if every value is zero (or there are none).
+     */
+    private static function powerOfTwoScale(array $values): float
+    {
+        $max = 0.0;
+        foreach ($values as $value) {
+            $max = max($max, abs($value));
+        }
+
+        return $max === 0.0 ? 0.0 : 2 ** floor(log($max, 2));
+    }
+
+    /**
+     * Calculate the cross product of two 3-element arrays, without overflow checks.
+     *
+     * @param list<float> $a The first vector's elements.
+     * @param list<float> $b The second vector's elements.
+     * @return list<float> The cross product's elements, which may include ±INF or NAN.
+     */
+    private static function calcCross(array $a, array $b): array
+    {
+        return [
+            $a[1] * $b[2] - $a[2] * $b[1],
+            $a[2] * $b[0] - $a[0] * $b[2],
+            $a[0] * $b[1] - $a[1] * $b[0],
+        ];
+    }
+
+    /**
+     * Check every value in an array is finite.
+     *
+     * @param list<float> $values The values to check.
+     * @return bool True if every value is finite.
+     */
+    private static function allFinite(array $values): bool
+    {
+        return array_all($values, static fn ($x) => is_finite($x));
     }
 
     #endregion

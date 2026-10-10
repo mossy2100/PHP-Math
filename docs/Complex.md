@@ -363,7 +363,10 @@ $z = new Complex(3, 4);
 $result = $z->inv();  // 0.12 - 0.16i
 ```
 
-**Throws:** `ArithmeticException` if the number is zero.
+**Throws:**
+
+- `ArithmeticException` if the number is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 ### conj()
 
@@ -464,6 +467,7 @@ $quotient = $z2->div($z3);
 
 - `DomainException` if `$other` is a non-finite float (±INF or NAN).
 - `ArithmeticException` if dividing by zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 ---
 

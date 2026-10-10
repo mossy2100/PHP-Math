@@ -146,7 +146,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
                 if (!Numbers::isFiniteNumber($value)) {
                     throw new DomainException(Stringify::prepEx(
-                        "Invalid element at row $i, column $j: ?. Must be a finite int or float.",
+                        "Cannot create Matrix from array. Element at row $i, column $j (?) must be a finite int or " .
+                        'float.',
                         $value
                     ));
                 }
@@ -824,10 +825,16 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @param float $scalar Number to divide by.
      * @return self New matrix representing the quotient.
+     * @throws DomainException If $scalar is not finite (±INF or NAN).
      * @throws ArithmeticException If $scalar is zero.
      */
     public function div(float $scalar): self
     {
+        // Check the scalar is finite. Dividing by ±INF would otherwise silently give a zero matrix.
+        if (!is_finite($scalar)) {
+            throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $scalar));
+        }
+
         // Guard against division by zero.
         if ($scalar === 0.0) {
             throw new ArithmeticException('Cannot divide by zero.');
@@ -1090,20 +1097,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     /**
      * Calculate the Frobenius norm (square root of the sum of all squared elements).
      *
-     * This is the matrix analogue of the Euclidean norm for vectors.
+     * This is the matrix analogue of the Euclidean norm for vectors: the magnitude of all the elements, taken as one
+     * vector. So, like Vector's magnitude, it doesn't overflow or underflow when squaring the elements would. The
+     * result is only INF if the norm itself is too large to represent.
      *
      * @return float The Frobenius norm.
      */
     public function norm(): float
     {
-        $sum = 0.0;
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $sum += $this->data[$i]->get($j) ** 2;
-            }
-        }
-
-        return sqrt($sum);
+        return Vector::fromArray(array_merge(...$this->toArray()))->magnitude;
     }
 
     /**

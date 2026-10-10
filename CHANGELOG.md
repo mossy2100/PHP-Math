@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **`Rational::pow()` accepts a `Rational` exponent.** `p/q` means the q-th root, raised to the power p. The result
+  must be rational, so it's exact or it throws `DomainException`:
+  - `(4/9) ** (1/2)` is `2/3`, and an odd root of a negative base is real: `(-8/27) ** (1/3)` is `-2/3`.
+  - An irrational result, e.g. `2 ** (1/2)`, or an even root of a negative base throws.
+  - Whether there's an exact root is determined with integer arithmetic only.
+
+### Changed
+
+- **`Vector::fromArray()`/`Matrix::fromArray()`** invalid-element message now follows the "Cannot" style, e.g.
+  "Cannot create Vector from array. Element at index 1 ('hello') must be a finite int or float."
+- **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot
+  divide by zero." The exception class (`ArithmeticException`) is unchanged.
+
+### Fixed
+
+- **`Complex::div()`/`inv()` gave wrong results or threw for a very small or large divisor**, even when the result was
+  representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to
+  1e154. Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and
+  `1 / 1e200` gave `0`.
+- **`Complex::div()`/`inv()`** throw `OverflowException` when the result is too large to represent, e.g.
+  `1 / 1e-320`.
+- **`Vector::div()`/`Matrix::div()` by ±INF silently returned a zero vector or matrix.** A non-finite scalar now throws
+  `DomainException`.
+- **`Vector::magnitude` and `Matrix::norm()` overflowed or underflowed when squaring the elements did**, e.g. the
+  magnitude of `[1e-200, 1e-200]` was `0`. The elements are now scaled by a power of 2 first, which is exact, so
+  ordinary results are unchanged.
+- **`Vector::normalize()`** gave `[0, 0]` for a huge vector and threw for a tiny one. Now scales first, like
+  `magnitude`.
+- **`Vector::cross()`** threw a misleading `fromArray()` message on overflow, and threw for huge parallel vectors,
+  whose cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException`
+  otherwise.
+
+---
+
 ## [4.0.1] - 2026-10-10
 
 Reverses an unintended breaking change in 4.0.0, released the same day.

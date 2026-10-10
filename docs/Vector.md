@@ -476,7 +476,8 @@ Divide the vector by a scalar.
 
 **Throws:**
 
-- `ArithmeticException` if scalar is zero.
+- `DomainException` if `$scalar` is not finite (±INF or NAN).
+- `ArithmeticException` if `$scalar` is zero.
 
 **Examples:**
 
@@ -585,6 +586,7 @@ Calculate the cross product of one vector with another. Both vectors must have a
 **Throws:**
 
 - `LengthException` if either vector's count isn't 3.
+- `OverflowException` if the result is too large to represent as floats.
 
 **Examples:**
 

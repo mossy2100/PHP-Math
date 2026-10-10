@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Vector;
 
+use DomainException;
 use LengthException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Matrix;
@@ -188,6 +189,22 @@ class VectorBinaryArithmeticTest extends TestCase
         $v = Vector::fromArray([1, 2, 3]);
         $this->expectException(ArithmeticException::class);
         $v->div(0);
+    }
+
+    /**
+     * Test dividing a vector by a non-finite scalar throws DomainException, rather than silently giving zeros.
+     */
+    public function testDivByNonFiniteThrows(): void
+    {
+        $x = Vector::fromArray([1, 2, 3]);
+        foreach ([INF, -INF, NAN] as $scalar) {
+            try {
+                $x->div($scalar);
+                $this->fail('Expected DomainException was not thrown for ' . var_export($scalar, true) . '.');
+            } catch (DomainException $e) {
+                $this->assertStringEndsWith('. Must be finite.', $e->getMessage());
+            }
+        }
     }
 
     #endregion

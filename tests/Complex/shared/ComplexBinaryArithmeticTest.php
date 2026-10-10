@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 use const OceanMoon\Math\M_I;
@@ -14,6 +17,8 @@ use const OceanMoon\Math\M_I;
 #[CoversClass(Complex::class)]
 class ComplexBinaryArithmeticTest extends TestCase
 {
+    use FloatAssertions;
+
     #region Method add() tests.
 
     /**
@@ -218,6 +223,48 @@ class ComplexBinaryArithmeticTest extends TestCase
 
         $this->expectException(ArithmeticException::class);
         $z->div(new Complex(0, 0));
+    }
+
+    /**
+     * Data for divisors whose components are too small or too large to square, but whose quotient is representable.
+     *
+     * @return array<string, array{float, float, float, float, float, float}> Dividend real and imaginary parts, divisor
+     * real and imaginary parts, expected real and imaginary parts.
+     */
+    public static function divExtremeProvider(): array
+    {
+        return [
+            'tiny real divisor'           => [1.0, 0.0, 1e-160, 0.0, 1e160, 0.0],
+            'tiny complex divisor'        => [1.0, 0.0, 1e-300, 1e-300, 5e299, -5e299],
+            'tiny imaginary divisor'      => [1.0, 0.0, 0.0, 1e-300, 0.0, -1e300],
+            'huge real divisor'           => [1.0, 0.0, 1e200, 0.0, 1e-200, 0.0],
+            'huge complex divisor'        => [1e200, 0.0, 1e200, 1e200, 0.5, -0.5],
+            'huge dividend and divisor'   => [3e300, 4e300, 1e300, 2e300, 2.2, -0.4],
+            'tiny dividend, tiny divisor' => [1e-300, 0.0, 0.0, 2e-300, 0.0, -0.5],
+        ];
+    }
+
+    /**
+     * Test div() gives an accurate result for a divisor whose components would underflow or overflow if squared.
+     */
+    #[DataProvider('divExtremeProvider')]
+    public function testDivExtremeDivisor(float $a, float $b, float $c, float $d, float $real, float $imag): void
+    {
+        $result = new Complex($a, $b)->div(new Complex($c, $d));
+
+        // Use a zero absolute tolerance, so a result that wrongly underflows to 0 fails.
+        $this->assertApproxEqual($real, $result->real, absTol: 0.0);
+        $this->assertApproxEqual($imag, $result->imaginary, absTol: 0.0);
+    }
+
+    /**
+     * Test div() throws when the quotient is too large to represent as a float.
+     */
+    public function testDivOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide 1 by 9.9998886718268E-321. The result would overflow.');
+        new Complex(1)->div(new Complex(1e-320));
     }
 
     /**

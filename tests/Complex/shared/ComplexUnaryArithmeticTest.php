@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -11,6 +12,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexUnaryArithmeticTest extends TestCase
 {
+    use FloatAssertions;
+
     #region Method neg() tests.
 
     /**
@@ -72,6 +75,18 @@ class ComplexUnaryArithmeticTest extends TestCase
         $product = $z->mul($result);
         $this->assertEqualsWithDelta(1.0, $product->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->imaginary, EPSILON);
+    }
+
+    /**
+     * Test inv() of a tiny complex number, whose components would underflow to zero if squared.
+     */
+    public function testInvTiny(): void
+    {
+        // 1 / (1e-300 + 1e-300i) = 5e299 - 5e299i
+        $result = new Complex(1e-300, 1e-300)->inv();
+
+        $this->assertApproxEqual(5e299, $result->real);
+        $this->assertApproxEqual(-5e299, $result->imaginary);
     }
 
     /**

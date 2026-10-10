@@ -15,6 +15,7 @@ use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
+use OverflowException;
 use Override;
 use RoundingMode;
 use Stringable;
@@ -345,6 +346,7 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @return self A new complex number representing the reciprocal.
      * @throws ArithmeticException If this Complex is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function inv(): self
     {
@@ -426,12 +428,17 @@ final class Complex implements Stringable, ArrayAccess
 
     /**
      * Divide this complex number by another.
-     * Uses the formula: (a + bi)/(c + di) = [(ac + bd) + (bc - ad)i]/(c² + d²)
+     *
+     * Uses Smith's algorithm, which divides by the larger of the divisor's components first. The textbook formula,
+     * (a + bi)/(c + di) = [(ac + bd) + (bc - ad)i]/(c² + d²), squares the divisor's components, so c² + d² underflows
+     * to zero or overflows to INF for a divisor whose magnitude is outside about 1e-154 to 1e154, even when the result
+     * is representable.
      *
      * @param self|float $other The real or complex number to divide by.
      * @return self A new complex number representing the quotient.
      * @throws DomainException If $other is a non-finite float (±INF or NAN).
      * @throws ArithmeticException If the divisor is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function div(self|float $other): self
     {
@@ -445,13 +452,29 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        // Do the division.
+        // Do the division, using Smith's algorithm.
         $a = $this->real;
         $b = $this->imaginary;
         $c = $other->real;
         $d = $other->imaginary;
-        $f = ($c * $c) + ($d * $d);
-        return new self(($a * $c + $b * $d) / $f, ($b * $c - $a * $d) / $f);
+        if (abs($c) >= abs($d)) {
+            $r = $d / $c;
+            $den = $c + $d * $r;
+            $real = ($a + $b * $r) / $den;
+            $imag = ($b - $a * $r) / $den;
+        } else {
+            $r = $c / $d;
+            $den = $c * $r + $d;
+            $real = ($a * $r + $b) / $den;
+            $imag = ($b * $r - $a) / $den;
+        }
+
+        // Check for overflow. With finite operands and a non-zero divisor, a non-finite part can only be ±INF.
+        if (!is_finite($real) || !is_finite($imag)) {
+            throw new OverflowException("Cannot divide $this by $other. The result would overflow.");
+        }
+
+        return new self($real, $imag);
     }
 
     #endregion

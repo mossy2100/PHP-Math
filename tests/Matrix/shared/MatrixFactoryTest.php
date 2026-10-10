@@ -69,6 +69,9 @@ class MatrixFactoryTest extends TestCase
     public function testFromArrayWithNonNumericValuesThrows(): void
     {
         $this->expectException(DomainException::class);
+        $this->expectExceptionMessage(
+            "Cannot create Matrix from array. Element at row 0, column 1 ('two') must be a finite int or float."
+        );
         Matrix::fromArray([
             [1, 'two', 3],
         ]);

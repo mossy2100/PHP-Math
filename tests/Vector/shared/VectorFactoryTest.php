@@ -59,6 +59,9 @@ class VectorFactoryTest extends TestCase
     public function testFromArrayWithNonNumericThrows(): void
     {
         $this->expectException(DomainException::class);
+        $this->expectExceptionMessage(
+            "Cannot create Vector from array. Element at index 1 ('hello') must be a finite int or float."
+        );
         Vector::fromArray([1, 'hello', 3]);
     }
 
@@ -98,6 +101,7 @@ class VectorFactoryTest extends TestCase
     public function testFromArrayWithNonFiniteElementThrows(float $value): void
     {
         $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Vector from array. Element at index 1 (');
         Vector::fromArray([1.0, $value]);
     }
 

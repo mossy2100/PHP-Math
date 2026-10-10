@@ -680,16 +680,53 @@ final class Rational implements Stringable
     #region Power methods
 
     /**
-     * Raise this Rational to an integer power.
+     * Raise this Rational to an integer or Rational power.
      *
-     * @param int $exp The exponent.
-     * @return self A new Rational representing the result of the exponentiation.
+     * A Rational exponent p/q (in lowest terms) means the q-th root, raised to the power p. The result must itself be
+     * rational, which it is only when this Rational's numerator and denominator are both perfect q-th powers. That's
+     * determined with integer arithmetic only. For example, (4/9) ** (1/2) is 2/3, but (2/9) ** (1/2) is irrational, so
+     * it throws.
+     *
+     * A negative base has a real result only for an odd root (odd q). For example, (-8/27) ** (1/3) is -2/3.
+     *
+     * For example:
+     * ```php
+     * new Rational(2, 3)->pow(2);                    // 4/9
+     * new Rational(4, 9)->pow(new Rational(1, 2));   // 2/3
+     * new Rational(8, 27)->pow(new Rational(-2, 3)); // 9/4
+     * ```
+     *
+     * @param int|self $exp The exponent.
+     * @return self A new Rational representing the result.
      * @throws ArithmeticException If raising zero to a negative power.
      * @throws OverflowException If integer overflow occurs.
      * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function pow(int $exp): self
+    public function pow(int|self $exp): self
     {
+        // Handle a Rational exponent.
+        if ($exp instanceof self) {
+            $p = $exp->numerator;
+            $q = $exp->denominator;
+
+            // A whole-number exponent is handled the same as an int.
+            if ($q === 1) {
+                return $this->pow($p);
+            }
+
+            // The result is the q-th root, raised to the power p. It's rational only if the numerator and denominator
+            // both have exact q-th roots.
+            $rootNum = self::exactRoot($this->numerator, $q);
+            $rootDen = self::exactRoot($this->denominator, $q);
+            if ($rootNum === null || $rootDen === null) {
+                $notReal = $this->numerator < 0 && $q % 2 === 0;
+                $reason = $notReal ? 'The result is not real.' : 'The result is irrational.';
+                throw new DomainException("Cannot raise $this to power $exp. $reason");
+            }
+            return new self($rootNum, $rootDen)->pow($p);
+        }
+
+        // $exp is an integer.
         // Any number to the power of 0 is 1, including 0.
         // 0^0 can be considered undefined, but many programming languages (including PHP) return 1.
         if ($exp === 0) {
@@ -879,6 +916,83 @@ final class Rational implements Stringable
         }
 
         return [$a, $b, $c, $d];
+    }
+
+    /**
+     * Find the exact integer q-th root of n, if there is one.
+     *
+     * Returns the integer k such that k^q == n, or null if there's no such integer (including an even root of a
+     * negative number, which isn't real). Uses integer arithmetic only.
+     *
+     * @param int $n The number to find the root of.
+     * @param int $q The degree of the root. Must be positive.
+     * @return ?int The exact root, or null if there isn't one.
+     */
+    private static function exactRoot(int $n, int $q): ?int
+    {
+        // Every integer is its own first root, and 0 and 1 are their own roots of any degree.
+        if ($q === 1 || $n === 0 || $n === 1) {
+            return $n;
+        }
+
+        // Handle a negative number.
+        if ($n < 0) {
+            // An even root of a negative number isn't real.
+            if ($q % 2 === 0) {
+                return null;
+            }
+
+            // An odd root of a negative number is the negative of the root of its magnitude. -n can't overflow, because
+            // n is a Rational's numerator, which is never PHP_INT_MIN.
+            $root = self::exactRoot(-$n, $q);
+            return $root === null ? null : -$root;
+        }
+
+        // From here, n >= 2. Since 2^63 > PHP_INT_MAX, no int >= 2 has an exact root of degree 63 or more.
+        if ($q >= 63) {
+            return null;
+        }
+
+        // Binary search for the root. Since q >= 2, the root can't exceed the square root of PHP_INT_MAX
+        // (3037000499.97...).
+        $low = 1;
+        $high = min($n, 3037000499);
+        while ($low <= $high) {
+            $mid = intdiv($low + $high, 2);
+            $cmp = self::comparePower($mid, $q, $n);
+            if ($cmp === 0) {
+                return $mid;
+            }
+            if ($cmp < 0) {
+                $low = $mid + 1;
+            } else {
+                $high = $mid - 1;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Compare k^q with n, without overflowing.
+     *
+     * @param int $k The base. Must be positive.
+     * @param int $q The exponent. Must be positive.
+     * @param int $n The number to compare with. Must be positive.
+     * @return int -1, 0, or 1 if k^q is less than, equal to, or greater than n.
+     */
+    private static function comparePower(int $k, int $q, int $n): int
+    {
+        $power = 1;
+        for ($i = 0; $i < $q; $i++) {
+            // If multiplying by k again would exceed n, k^q > n. Checking against intdiv() first means the
+            // multiplication below never overflows.
+            if ($power > intdiv($n, $k)) {
+                return 1;
+            }
+            $power *= $k;
+        }
+        return $power <=> $n;
     }
 
     #endregion

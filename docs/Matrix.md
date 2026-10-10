@@ -747,7 +747,10 @@ Divide the matrix by a scalar.
 
 **Returns:** `self` - New matrix representing the quotient.
 
-**Throws:** `ArithmeticException` if `$scalar` is zero.
+**Throws:**
+
+- `DomainException` if `$scalar` is not finite (±INF or NAN).
+- `ArithmeticException` if `$scalar` is zero.
 
 **Examples:**
 
