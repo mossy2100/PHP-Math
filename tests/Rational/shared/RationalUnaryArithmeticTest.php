@@ -20,8 +20,8 @@ class RationalUnaryArithmeticTest extends TestCase
     public function testAbs(): void
     {
         // abs(3/4) = 3/4
-        $r = new Rational(3, 4);
-        $result = $r->abs();
+        $r1 = new Rational(3, 4);
+        $result = $r1->abs();
 
         $this->assertSame(3, $result->numerator);
         $this->assertSame(4, $result->denominator);
@@ -63,8 +63,8 @@ class RationalUnaryArithmeticTest extends TestCase
      */
     public function testNeg(): void
     {
-        $r = new Rational(3, 4);
-        $result = $r->neg();
+        $r1 = new Rational(3, 4);
+        $result = $r1->neg();
 
         $this->assertSame(-3, $result->numerator);
         $this->assertSame(4, $result->denominator);
@@ -104,8 +104,8 @@ class RationalUnaryArithmeticTest extends TestCase
     public function testInv(): void
     {
         // inv(3/4) = 4/3
-        $r = new Rational(3, 4);
-        $result = $r->inv();
+        $r1 = new Rational(3, 4);
+        $result = $r1->inv();
 
         $this->assertSame(4, $result->numerator);
         $this->assertSame(3, $result->denominator);

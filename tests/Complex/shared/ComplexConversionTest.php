@@ -18,8 +18,8 @@ class ComplexConversionTest extends TestCase
      */
     public function testToStringReal(): void
     {
-        $z = new Complex(5, 0);
-        $this->assertSame('5', (string) $z);
+        $z1 = new Complex(5, 0);
+        $this->assertSame('5', (string) $z1);
 
         $z2 = new Complex(-3.14, 0);
         $this->assertSame('-3.14', (string) $z2);

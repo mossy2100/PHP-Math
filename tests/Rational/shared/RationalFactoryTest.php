@@ -21,9 +21,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testParseInteger(): void
     {
-        $r = Rational::fromString('5');
-        $this->assertSame(5, $r->numerator);
-        $this->assertSame(1, $r->denominator);
+        $r1 = Rational::fromString('5');
+        $this->assertSame(5, $r1->numerator);
+        $this->assertSame(1, $r1->denominator);
 
         $r2 = Rational::fromString('-123');
         $this->assertSame(-123, $r2->numerator);
@@ -39,9 +39,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testParseFloat(): void
     {
-        $r = Rational::fromString('0.5');
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(2, $r->denominator);
+        $r1 = Rational::fromString('0.5');
+        $this->assertSame(1, $r1->numerator);
+        $this->assertSame(2, $r1->denominator);
 
         $r2 = Rational::fromString('-0.25');
         $this->assertSame(-1, $r2->numerator);
@@ -58,9 +58,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testParseFraction(): void
     {
-        $r = Rational::fromString('3/4');
-        $this->assertSame(3, $r->numerator);
-        $this->assertSame(4, $r->denominator);
+        $r1 = Rational::fromString('3/4');
+        $this->assertSame(3, $r1->numerator);
+        $this->assertSame(4, $r1->denominator);
 
         $r2 = Rational::fromString('-5/6');
         $this->assertSame(-5, $r2->numerator);
@@ -112,9 +112,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatWholeNumber(): void
     {
-        $r = Rational::fromFloat(3.0);
-        $this->assertSame(3, $r->numerator);
-        $this->assertSame(1, $r->denominator);
+        $r1 = Rational::fromFloat(3.0);
+        $this->assertSame(3, $r1->numerator);
+        $this->assertSame(1, $r1->denominator);
 
         $r2 = Rational::fromFloat(1000000.0);
         $this->assertSame(1000000, $r2->numerator);
@@ -126,9 +126,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatApproximation(): void
     {
-        $r = Rational::fromFloat(0.5);
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(2, $r->denominator);
+        $r1 = Rational::fromFloat(0.5);
+        $this->assertSame(1, $r1->numerator);
+        $this->assertSame(2, $r1->denominator);
 
         $r2 = Rational::fromFloat(0.25);
         $this->assertSame(1, $r2->numerator);
@@ -153,8 +153,8 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatIrrational(): void
     {
-        $r = Rational::fromFloat(M_PI);
-        $this->assertEqualsWithDelta(M_PI, $r->numerator / $r->denominator, EPSILON);
+        $r1 = Rational::fromFloat(M_PI);
+        $this->assertEqualsWithDelta(M_PI, $r1->numerator / $r1->denominator, EPSILON);
 
         $r2 = Rational::fromFloat(M_E);
         $this->assertEqualsWithDelta(M_E, $r2->numerator / $r2->denominator, EPSILON);
@@ -195,9 +195,9 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromFloatInversePhpIntMax(): void
     {
-        $r = Rational::fromFloat(1.0 / PHP_INT_MAX);
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(PHP_INT_MAX, $r->denominator);
+        $r1 = Rational::fromFloat(1.0 / PHP_INT_MAX);
+        $this->assertSame(1, $r1->numerator);
+        $this->assertSame(PHP_INT_MAX, $r1->denominator);
 
         $r2 = Rational::fromFloat(-1.0 / PHP_INT_MAX);
         $this->assertSame(-1, $r2->numerator);

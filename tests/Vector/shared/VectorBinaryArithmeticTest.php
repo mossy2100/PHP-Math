@@ -196,10 +196,10 @@ class VectorBinaryArithmeticTest extends TestCase
      */
     public function testDivByNonFiniteThrows(): void
     {
-        $x = Vector::fromArray([1, 2, 3]);
+        $v = Vector::fromArray([1, 2, 3]);
         foreach ([INF, -INF, NAN] as $scalar) {
             try {
-                $x->div($scalar);
+                $v->div($scalar);
                 $this->fail('Expected DomainException was not thrown for ' . var_export($scalar, true) . '.');
             } catch (DomainException $e) {
                 $this->assertStringEndsWith('. Must be finite.', $e->getMessage());

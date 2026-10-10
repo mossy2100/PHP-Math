@@ -227,8 +227,8 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteOverwritesExistingElements(): void
     {
-        $m = Matrix::identity(2);
-        $m->paste(Matrix::fromArray([
+        $idMat = Matrix::identity(2);
+        $idMat->paste(Matrix::fromArray([
             [5, 6],
             [7, 8],
         ]));
@@ -236,7 +236,7 @@ class MatrixModificationTest extends TestCase
         $this->assertSame([
             [5.0, 6.0],
             [7.0, 8.0],
-        ], $m->toArray());
+        ], $idMat->toArray());
     }
 
     /**
@@ -261,13 +261,13 @@ class MatrixModificationTest extends TestCase
      */
     public function testPasteWithZeroDimensionMatrix(): void
     {
-        $m = Matrix::identity(2);
-        $m->paste(new Matrix(0, 0));
+        $idMat = Matrix::identity(2);
+        $idMat->paste(new Matrix(0, 0));
 
         $this->assertSame([
             [1.0, 0.0],
             [0.0, 1.0],
-        ], $m->toArray());
+        ], $idMat->toArray());
     }
 
     /**

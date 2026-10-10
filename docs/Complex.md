@@ -838,8 +838,8 @@ $result = $z->exp();  // 1 + 0i
 
 ```php
 // Find all cube roots of 8
-$eight = new Complex(8);
-$roots = $eight->roots(3);
+$z = new Complex(8);
+$roots = $z->roots(3);
 
 echo $roots[0];  // "2"                      (the real cube root)
 echo $roots[1];  // "-1 + 1.7320508075689i"  (-1 + √3 i)

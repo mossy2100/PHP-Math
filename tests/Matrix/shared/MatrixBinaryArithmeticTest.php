@@ -191,10 +191,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testDivByNonFiniteThrows(): void
     {
-        $x = new Matrix(2, 2);
+        $m = new Matrix(2, 2);
         foreach ([INF, -INF, NAN] as $scalar) {
             try {
-                $x->div($scalar);
+                $m->div($scalar);
                 $this->fail('Expected DomainException was not thrown for ' . var_export($scalar, true) . '.');
             } catch (DomainException $e) {
                 $this->assertStringEndsWith('. Must be finite.', $e->getMessage());

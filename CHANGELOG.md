@@ -42,6 +42,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   whose cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException`
   otherwise.
 
+### Documentation
+
+- Example variables follow consistent naming: `$z`, `$r`, `$v` or `$m` for a single `Complex`, `Rational`, `Vector` or
+  `Matrix`, numbered from 1 (`$z1`, `$z2`, ...) for several, and `$idMat` for an identity matrix.
+
+### Tests
+
+- Test variables follow the same naming as the documentation examples.
+
 ---
 
 ## [4.0.1] - 2026-10-10

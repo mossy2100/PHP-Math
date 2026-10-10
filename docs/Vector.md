@@ -452,12 +452,12 @@ To multiply a matrix by a vector in order to get a new vector, call [Matrix::mul
 $v = Vector::fromArray([1, 2, 3]);
 $result = $v->mul(3);  // [3, 6, 9]
 
-$m1 = Matrix::fromArray([
+$m = Matrix::fromArray([
     [1, 4],
     [2, 5],
     [3, 6],
 ]);
-$result = $v->mul($m1);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
+$result = $v->mul($m);  // [14, 32]  (1*1+2*2+3*3, 1*4+2*5+3*6)
 ```
 
 ### div()

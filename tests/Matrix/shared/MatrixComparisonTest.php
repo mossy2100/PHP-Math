@@ -279,7 +279,7 @@ class MatrixComparisonTest extends TestCase
      */
     public function testApproxEqualWithCustomTightTolerance(): void
     {
-        $m1 = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
@@ -292,14 +292,14 @@ class MatrixComparisonTest extends TestCase
             ],
             [3.0, 4.0],
         ]);
-        $this->assertFalse($m1->approxEqual($close, relTol: 1e-15, absTol: 1e-15));
+        $this->assertFalse($m->approxEqual($close, relTol: 1e-15, absTol: 1e-15));
 
         // But values that are actually equal should still pass.
         $same = Matrix::fromArray([
             [1.0, 2.0],
             [3.0, 4.0],
         ]);
-        $this->assertTrue($m1->approxEqual($same, relTol: 1e-15, absTol: 1e-15));
+        $this->assertTrue($m->approxEqual($same, relTol: 1e-15, absTol: 1e-15));
     }
 
     /**

@@ -724,8 +724,8 @@ $r5 = new Rational(4, 9);                  // 4/9
 $result5 = $r5->pow(new Rational(1, 2));   // 2/3
 $result6 = $r5->pow(new Rational(-3, 2));  // 27/8
 
-$r7 = new Rational(2);                     // 2
-$result7 = $r7->pow(new Rational(1, 2));   // throws DomainException (irrational)
+$r6 = new Rational(2);                     // 2
+$result7 = $r6->pow(new Rational(1, 2));   // throws DomainException (irrational)
 ```
 
 **Special cases:**
@@ -869,12 +869,12 @@ echo $r1;  // "3/4"
 
 // Combining Rationals; convert a float first with fromFloat() if needed
 $r2 = new Rational(1, 2);
-$r3 = $r2->add(new Rational(1, 4));  // 1/2 + 1/4
-echo $r3;                            // "3/4"
+$sum = $r2->add(new Rational(1, 4));  // 1/2 + 1/4
+echo $sum;                            // "3/4"
 
 // Complex calculations
-$r4 = new Rational(2, 3);
-$result = $r4->sqr()->mul(new Rational(9, 4));
+$r3 = new Rational(2, 3);
+$result = $r3->sqr()->mul(new Rational(9, 4));
 echo $result;  // "1"
 ```
 
@@ -882,8 +882,8 @@ echo $result;  // "1"
 
 ```php
 try {
-    $r1 = new Rational(PHP_INT_MAX, 1);
-    $r2 = $r1->add(1);  // Would overflow
+    $r = new Rational(PHP_INT_MAX, 1);
+    $r2 = $r->add(1);  // Would overflow
 } catch (OverflowException $e) {
     echo "Overflow detected!";
 }

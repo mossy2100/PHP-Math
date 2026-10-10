@@ -77,8 +77,8 @@ have been `true`, in a strict mathematical sense.
 **Example 2:**
 
 ```php
-$z = new Rational(1, 2);
-var_export($z == 0.5);
+$r = new Rational(1, 2);
+var_export($r == 0.5);
 ```
 
 Again, a notice will be issued and the result will be `false`, even though technically it should have been `true`. (This

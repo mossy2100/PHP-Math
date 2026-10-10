@@ -18,8 +18,8 @@ class RationalConversionTest extends TestCase
      */
     public function testToFloat(): void
     {
-        $r = new Rational(1, 2);
-        $this->assertSame(0.5, $r->toFloat());
+        $r1 = new Rational(1, 2);
+        $this->assertSame(0.5, $r1->toFloat());
 
         $r2 = new Rational(3, 4);
         $this->assertSame(0.75, $r2->toFloat());
@@ -36,11 +36,11 @@ class RationalConversionTest extends TestCase
      */
     public function testRoundTripExact(): void
     {
-        $r = new Rational(3, 4);
-        $f = $r->toFloat();
+        $r1 = new Rational(3, 4);
+        $f = $r1->toFloat();
         $r2 = Rational::fromFloat($f);
 
-        $this->assertTrue($r->equal($r2));
+        $this->assertTrue($r1->equal($r2));
     }
 
     /**
@@ -158,8 +158,8 @@ class RationalConversionTest extends TestCase
      */
     public function testToStringWholeNumber(): void
     {
-        $r = new Rational(5, 1);
-        $this->assertSame('5', (string) $r);
+        $r1 = new Rational(5, 1);
+        $this->assertSame('5', (string) $r1);
 
         $r2 = new Rational(10, 2);
         $this->assertSame('5', (string) $r2);
@@ -176,8 +176,8 @@ class RationalConversionTest extends TestCase
      */
     public function testToStringFraction(): void
     {
-        $r = new Rational(3, 4);
-        $this->assertSame('3/4', (string) $r);
+        $r1 = new Rational(3, 4);
+        $this->assertSame('3/4', (string) $r1);
 
         $r2 = new Rational(-5, 6);
         $this->assertSame('-5/6', (string) $r2);
@@ -191,8 +191,8 @@ class RationalConversionTest extends TestCase
      */
     public function testToStringReduced(): void
     {
-        $r = new Rational(6, 8);
-        $this->assertSame('3/4', (string) $r);
+        $r1 = new Rational(6, 8);
+        $this->assertSame('3/4', (string) $r1);
 
         $r2 = new Rational(10, 15);
         $this->assertSame('2/3', (string) $r2);

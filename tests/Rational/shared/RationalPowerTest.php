@@ -23,8 +23,8 @@ class RationalPowerTest extends TestCase
     public function testPowPositive(): void
     {
         // (2/3)^2 = 4/9
-        $r = new Rational(2, 3);
-        $result = $r->pow(2);
+        $r1 = new Rational(2, 3);
+        $result = $r1->pow(2);
 
         $this->assertSame(4, $result->numerator);
         $this->assertSame(9, $result->denominator);
@@ -43,8 +43,8 @@ class RationalPowerTest extends TestCase
     public function testPowZero(): void
     {
         // (3/4)^0 = 1
-        $r = new Rational(3, 4);
-        $result = $r->pow(0);
+        $r1 = new Rational(3, 4);
+        $result = $r1->pow(0);
 
         $this->assertSame(1, $result->numerator);
         $this->assertSame(1, $result->denominator);
@@ -77,8 +77,8 @@ class RationalPowerTest extends TestCase
     public function testPowNegativeOne(): void
     {
         // (3/4)^(-1) = 4/3
-        $r = new Rational(3, 4);
-        $result = $r->pow(-1);
+        $r1 = new Rational(3, 4);
+        $result = $r1->pow(-1);
 
         $this->assertSame(4, $result->numerator);
         $this->assertSame(3, $result->denominator);
@@ -114,8 +114,8 @@ class RationalPowerTest extends TestCase
     public function testPowIntMinExponent(): void
     {
         // 1^PHP_INT_MIN = 1
-        $r = new Rational(1);
-        $result = $r->pow(PHP_INT_MIN);
+        $r1 = new Rational(1);
+        $result = $r1->pow(PHP_INT_MIN);
 
         $this->assertSame(1, $result->numerator);
         $this->assertSame(1, $result->denominator);

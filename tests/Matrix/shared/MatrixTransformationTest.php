@@ -137,9 +137,9 @@ class MatrixTransformationTest extends TestCase
      */
     public function testResizeWithNegativeDimensionThrows(): void
     {
-        $m = Matrix::identity(2);
+        $idMat = Matrix::identity(2);
         $this->expectException(DomainException::class);
-        $m->resize(-1, 2);
+        $idMat->resize(-1, 2);
     }
 
     #endregion

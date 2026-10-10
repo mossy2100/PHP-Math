@@ -165,10 +165,10 @@ class RationalComparisonTest extends TestCase
      */
     public function testCompareWithPhpIntMin(): void
     {
-        $r = new Rational(1, 2);
+        $r1 = new Rational(1, 2);
 
         // Should compare via floats since PHP_INT_MIN can't be converted to Rational
-        $this->assertSame(1, $r->compare(PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
+        $this->assertSame(1, $r1->compare(PHP_INT_MIN)); // 0.5 > PHP_INT_MIN
 
         // Also test with negative rational
         $r2 = new Rational(-1, 2);
@@ -528,11 +528,11 @@ class RationalComparisonTest extends TestCase
      */
     public function testApproxEqualBasic(): void
     {
-        $r1 = new Rational(1, 3);
+        $r = new Rational(1, 3);
         $r2 = 0.333333333333;
 
         // Should be approximately equal
-        $this->assertTrue($r1->approxEqual($r2));
+        $this->assertTrue($r->approxEqual($r2));
     }
 
     /**
@@ -540,11 +540,11 @@ class RationalComparisonTest extends TestCase
      */
     public function testApproxEqualTightTolerance(): void
     {
-        $r1 = new Rational(1, 3);
+        $r = new Rational(1, 3);
         $r2 = 0.33333;
 
         // Should not be equal with very tight tolerance
-        $this->assertFalse($r1->approxEqual($r2, 1e-12, 1e-12));
+        $this->assertFalse($r->approxEqual($r2, 1e-12, 1e-12));
     }
 
     /**
@@ -552,14 +552,14 @@ class RationalComparisonTest extends TestCase
      */
     public function testApproxEqualZeroTolerances(): void
     {
-        $r1 = new Rational(1, 2);
+        $r = new Rational(1, 2);
         $r2 = 0.5;
 
         // Exact match
-        $this->assertTrue($r1->approxEqual($r2, 0.0, 0.0));
+        $this->assertTrue($r->approxEqual($r2, 0.0, 0.0));
 
         $r3 = 0.5 + 1e-15;
-        $this->assertFalse($r1->approxEqual($r3, 0.0, 0.0));
+        $this->assertFalse($r->approxEqual($r3, 0.0, 0.0));
     }
 
     /**

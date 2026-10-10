@@ -52,9 +52,9 @@ class VectorLinearAlgebraTest extends TestCase
      */
     public function testCrossUnitVectors(): void
     {
-        $i = Vector::fromArray([1, 0, 0]);
-        $j = Vector::fromArray([0, 1, 0]);
-        $result = $i->cross($j);
+        $v1 = Vector::fromArray([1, 0, 0]);
+        $v2 = Vector::fromArray([0, 1, 0]);
+        $result = $v1->cross($v2);
         // i × j = k => [0, 0, 1]
         $this->assertSame([0.0, 0.0, 1.0], $result->toArray());
     }

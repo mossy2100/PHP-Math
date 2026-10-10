@@ -97,13 +97,13 @@ every element must be a finite number, so `INF`, `-INF`, and `NAN` are rejected.
 **Examples:**
 
 ```php
-$m = Matrix::fromArray([
+$m1 = Matrix::fromArray([
     [1, 2, 3],
     [4, 5, 6],
 ]);
 // 2x3 matrix
 
-$m0 = Matrix::fromArray([]);
+$m2 = Matrix::fromArray([]);
 // 0x0 matrix
 
 // Non-finite elements are rejected.
@@ -169,16 +169,16 @@ Convert the matrix to a string representation using box-drawing characters. Valu
 **Examples:**
 
 ```php
-$m = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $m;
+$m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+echo $m1;
 // ┌          ┐
 // │ 1.0  2.0 │
 // │ 3.0  4.0 │
 // └          ┘
 
 // Empty matrices
-$m0 = new Matrix(0, 0);
-echo $m0;
+$m2 = new Matrix(0, 0);
+echo $m2;
 // ┌ ┐
 // └ ┘
 ```
@@ -209,8 +209,8 @@ var_dump($idMat->isSquare());     // true
 var_dump($idMat->isSquare(3));    // true
 var_dump($idMat->isSquare(2));    // false
 
-$m1 = new Matrix(2, 3);
-var_dump($m1->isSquare());    // false
+$m = new Matrix(2, 3);
+var_dump($m->isSquare());    // false
 ```
 
 ### get()
@@ -852,12 +852,12 @@ exponent.
 **Examples:**
 
 ```php
-$m1 = Matrix::fromArray([[1, 1], [0, 1]]);
+$m = Matrix::fromArray([[1, 1], [0, 1]]);
 
-$m2 = $m1->pow(0);   // Identity matrix
-$m3 = $m1->pow(2);   // [[1, 2], [0, 1]]
-$m4 = $m1->pow(3);   // [[1, 3], [0, 1]]
-$m5 = $m1->pow(-1);  // Inverse matrix
+$m2 = $m->pow(0);   // Identity matrix
+$m3 = $m->pow(2);   // [[1, 2], [0, 1]]
+$m4 = $m->pow(3);   // [[1, 3], [0, 1]]
+$m5 = $m->pow(-1);  // Inverse matrix
 ```
 
 ### sqr()

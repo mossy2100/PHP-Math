@@ -18,8 +18,8 @@ class RationalPropertiesTest extends TestCase
      */
     public function testNumerator(): void
     {
-        $r = new Rational(3, 4);
-        $this->assertSame(3, $r->numerator);
+        $r1 = new Rational(3, 4);
+        $this->assertSame(3, $r1->numerator);
 
         // Reduced to canonical form.
         $r2 = new Rational(6, 8);
@@ -39,8 +39,8 @@ class RationalPropertiesTest extends TestCase
      */
     public function testDenominator(): void
     {
-        $r = new Rational(3, 4);
-        $this->assertSame(4, $r->denominator);
+        $r1 = new Rational(3, 4);
+        $this->assertSame(4, $r1->denominator);
 
         // Reduced to canonical form.
         $r2 = new Rational(6, 8);

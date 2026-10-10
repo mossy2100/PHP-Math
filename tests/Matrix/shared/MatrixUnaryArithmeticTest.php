@@ -86,14 +86,14 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvTwoByTwo(): void
     {
-        $m1 = Matrix::fromArray([
+        $m = Matrix::fromArray([
             [4, 7],
             [2, 6],
         ]);
-        $inv = $m1->inv();
+        $inv = $m->inv();
 
         // Verify A * A^-1 = I.
-        $product = $m1->mul($inv);
+        $product = $m->mul($inv);
         $this->assertEqualsWithDelta(1.0, $product->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->get(1, 0), EPSILON);

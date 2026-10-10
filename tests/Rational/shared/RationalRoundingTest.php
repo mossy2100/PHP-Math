@@ -20,8 +20,8 @@ class RationalRoundingTest extends TestCase
     public function testRound(): void
     {
         // round(7/3) = 2 (2.333...)
-        $r = new Rational(7, 3);
-        $this->assertSame(2, $r->round());
+        $r1 = new Rational(7, 3);
+        $this->assertSame(2, $r1->round());
 
         // round(8/3) = 3 (2.666...)
         $r2 = new Rational(8, 3);
@@ -155,8 +155,8 @@ class RationalRoundingTest extends TestCase
     public function testFloor(): void
     {
         // floor(7/3) = 2
-        $r = new Rational(7, 3);
-        $this->assertSame(2, $r->floor());
+        $r1 = new Rational(7, 3);
+        $this->assertSame(2, $r1->floor());
 
         // floor(-7/3) = -3
         $r2 = new Rational(-7, 3);
@@ -181,8 +181,8 @@ class RationalRoundingTest extends TestCase
     public function testCeil(): void
     {
         // ceil(7/3) = 3
-        $r = new Rational(7, 3);
-        $this->assertSame(3, $r->ceil());
+        $r1 = new Rational(7, 3);
+        $this->assertSame(3, $r1->ceil());
 
         // ceil(-7/3) = -2
         $r2 = new Rational(-7, 3);

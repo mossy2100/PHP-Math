@@ -21,9 +21,9 @@ class RationalConstructorTest extends TestCase
      */
     public function testConstructorWithIntegers(): void
     {
-        $r = new Rational(3, 4);
-        $this->assertSame(3, $r->numerator);
-        $this->assertSame(4, $r->denominator);
+        $r1 = new Rational(3, 4);
+        $this->assertSame(3, $r1->numerator);
+        $this->assertSame(4, $r1->denominator);
 
         // Test reduction
         $r2 = new Rational(6, 8);
@@ -66,9 +66,9 @@ class RationalConstructorTest extends TestCase
      */
     public function testDefaultArguments(): void
     {
-        $r = new Rational();
-        $this->assertSame(0, $r->numerator);
-        $this->assertSame(1, $r->denominator);
+        $r1 = new Rational();
+        $this->assertSame(0, $r1->numerator);
+        $this->assertSame(1, $r1->denominator);
 
         $r2 = new Rational(5);
         $this->assertSame(5, $r2->numerator);
@@ -80,9 +80,9 @@ class RationalConstructorTest extends TestCase
      */
     public function testEqualNumeratorDenominator(): void
     {
-        $r = new Rational(5, 5);
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(1, $r->denominator);
+        $r1 = new Rational(5, 5);
+        $this->assertSame(1, $r1->numerator);
+        $this->assertSame(1, $r1->denominator);
 
         $r2 = new Rational(-7, -7);
         $this->assertSame(1, $r2->numerator);
@@ -94,9 +94,9 @@ class RationalConstructorTest extends TestCase
      */
     public function testNegativeEqualMagnitude(): void
     {
-        $r = new Rational(-5, 5);
-        $this->assertSame(-1, $r->numerator);
-        $this->assertSame(1, $r->denominator);
+        $r1 = new Rational(-5, 5);
+        $this->assertSame(-1, $r1->numerator);
+        $this->assertSame(1, $r1->denominator);
 
         $r2 = new Rational(5, -5);
         $this->assertSame(-1, $r2->numerator);

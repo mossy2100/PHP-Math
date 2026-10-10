@@ -18,8 +18,8 @@ class MatrixPropertiesTest extends TestCase
      */
     public function testRowCount(): void
     {
-        $m = new Matrix(2, 3);
-        $this->assertSame(2, $m->rowCount);
+        $m1 = new Matrix(2, 3);
+        $this->assertSame(2, $m1->rowCount);
 
         $m2 = new Matrix(5, 5);
         $this->assertSame(5, $m2->rowCount);
@@ -59,8 +59,8 @@ class MatrixPropertiesTest extends TestCase
      */
     public function testColumnCount(): void
     {
-        $m = new Matrix(2, 3);
-        $this->assertSame(3, $m->columnCount);
+        $m1 = new Matrix(2, 3);
+        $this->assertSame(3, $m1->columnCount);
 
         $m2 = new Matrix(5, 5);
         $this->assertSame(5, $m2->columnCount);

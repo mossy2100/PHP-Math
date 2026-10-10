@@ -150,11 +150,11 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromStringReturnsNewInstances(): void
     {
-        $c1 = Complex::fromString('3+4i');
-        $c2 = Complex::fromString('3+4i');
+        $z1 = Complex::fromString('3+4i');
+        $z2 = Complex::fromString('3+4i');
 
-        $this->assertEquals($c1, $c2);
-        $this->assertNotSame($c1, $c2); // Different object instances
+        $this->assertEquals($z1, $z2);
+        $this->assertNotSame($z1, $z2); // Different object instances
     }
 
     /**
@@ -336,8 +336,8 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromPolarNegativePhasePreserved(): void
     {
-        $z = Complex::fromPolar(1, -M_PI / 4);
-        $this->assertEqualsWithDelta(-M_PI / 4, $z->phase, EPSILON);
+        $z1 = Complex::fromPolar(1, -M_PI / 4);
+        $this->assertEqualsWithDelta(-M_PI / 4, $z1->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, -M_PI / 2);
         $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, EPSILON);
@@ -348,8 +348,8 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromPolarLargePositivePhaseNormalized(): void
     {
-        $z = Complex::fromPolar(1, 3 * M_PI);
-        $this->assertEqualsWithDelta(M_PI, $z->phase, EPSILON);
+        $z1 = Complex::fromPolar(1, 3 * M_PI);
+        $this->assertEqualsWithDelta(M_PI, $z1->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, 3 * M_PI / 2);
         $this->assertEqualsWithDelta(-M_PI / 2, $z2->phase, EPSILON);
@@ -362,8 +362,8 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromPolarVeryLargePhaseNormalized(): void
     {
-        $z = Complex::fromPolar(1, 10.5 * M_PI);
-        $this->assertEqualsWithDelta(M_PI / 2, $z->phase, EPSILON);
+        $z1 = Complex::fromPolar(1, 10.5 * M_PI);
+        $this->assertEqualsWithDelta(M_PI / 2, $z1->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, 11.25 * M_PI);
         $this->assertEqualsWithDelta(-3 * M_PI / 4, $z2->phase, EPSILON);
@@ -376,8 +376,8 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromPolarVeryLargeNegativePhaseNormalized(): void
     {
-        $z = Complex::fromPolar(1, -10.5 * M_PI);
-        $this->assertEqualsWithDelta(-M_PI / 2, $z->phase, EPSILON);
+        $z1 = Complex::fromPolar(1, -10.5 * M_PI);
+        $this->assertEqualsWithDelta(-M_PI / 2, $z1->phase, EPSILON);
 
         $z2 = Complex::fromPolar(1, -11.25 * M_PI);
         $this->assertEqualsWithDelta(3 * M_PI / 4, $z2->phase, EPSILON);
