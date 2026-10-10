@@ -20,8 +20,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and
   returns a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
-- **`Vector::fromArray()`/`Matrix::fromArray()`** invalid-element message now follows the "Cannot" style, e.g.
-  "Cannot create Vector from array. Element at index 1 ('hello') must be a finite int or float."
+- **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** a non-numeric element now throws
+  `InvalidArgumentException` instead of `DomainException`, and the message no longer includes the value, e.g.
+  "Cannot create Vector from array. Element at index 1 must be an int or float." A non-finite element still throws
+  `DomainException`, e.g. "Cannot create Vector from array. Element at index 1 (INF) must be finite." Likewise, a
+  `Matrix::fromArray()` row that isn't an array now throws `InvalidArgumentException`; a row that's an array but not
+  a list still throws `DomainException`.
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot
   divide by zero." The exception class (`ArithmeticException`) is unchanged.
 

@@ -91,7 +91,8 @@ every element must be a finite number, so `INF`, `-INF`, and `NAN` are rejected.
 
 **Throws:**
 
-- `DomainException` if the outer array or any row is not a list, or any element is not a finite number.
+- `InvalidArgumentException` if any row isn't an array, or any element isn't an `int` or `float`.
+- `DomainException` if the outer array or any row is not a list, or any element is not finite (±INF or NAN).
 - `LengthException` if the rows don't all have the same number of columns.
 
 **Examples:**
@@ -106,7 +107,8 @@ $m1 = Matrix::fromArray([
 $m2 = Matrix::fromArray([]);
 // 0x0 matrix
 
-// Non-finite elements are rejected.
+// Non-numeric and non-finite elements are rejected.
+Matrix::fromArray([[1, '2']]);  // throws InvalidArgumentException
 Matrix::fromArray([[1, INF]]);  // throws DomainException
 ```
 

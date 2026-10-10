@@ -90,7 +90,10 @@ non-sequential array is rejected rather than silently re-indexed. Every element 
 
 **Returns:** `self` - A new vector containing the array values.
 
-**Throws:** `DomainException` if the array is not a list, or any element is not a finite number.
+**Throws:**
+
+- `InvalidArgumentException` if any element isn't an `int` or `float`.
+- `DomainException` if the array is not a list, or any element is not finite (±INF or NAN).
 
 **Examples:**
 
@@ -102,7 +105,8 @@ $v3 = Vector::fromArray([]);  // Count-0 vector
 // Non-list arrays are rejected, not re-indexed.
 Vector::fromArray([5 => 10, 10 => 20]);  // throws DomainException
 
-// Non-finite elements are rejected too.
+// Non-numeric and non-finite elements are rejected too.
+Vector::fromArray([1, '2']);  // throws InvalidArgumentException
 Vector::fromArray([1, INF]);  // throws DomainException
 ```
 

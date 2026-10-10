@@ -91,7 +91,8 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param array<array-key, mixed> $arr Array of numbers.
      * @return self
-     * @throws DomainException If the array is not a list, or an element is not a finite number.
+     * @throws InvalidArgumentException If an element isn't an int or float.
+     * @throws DomainException If the array isn't a list, or an element isn't finite.
      */
     public static function fromArray(array $arr): self
     {
@@ -109,10 +110,17 @@ final class Vector implements Stringable, Countable, ArrayAccess
 
         // Check all elements are finite numbers.
         foreach ($arr as $index => $value) {
-            // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
-            if (!Numbers::isFiniteNumber($value)) {
+            // Check the value is a number.
+            if (!Numbers::isNumber($value)) {
+                throw new InvalidArgumentException(
+                    "Cannot create Vector from array. Element at index $index must be an int or float."
+                );
+            }
+
+            // Check the value is finite.
+            if (!is_finite($value)) {
                 throw new DomainException(Stringify::prepEx(
-                    "Cannot create Vector from array. Element at index $index (?) must be a finite int or float.",
+                    "Cannot create Vector from array. Element at index $index (?) must be finite.",
                     $value
                 ));
             }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Vector;
 
 use DomainException;
+use InvalidArgumentException;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -54,15 +55,37 @@ class VectorFactoryTest extends TestCase
     }
 
     /**
-     * Test fromArray with non-numeric values throws DomainException.
+     * Data provider for non-numeric element values.
+     *
+     * @return array<string, list<mixed>>
      */
-    public function testFromArrayWithNonNumericThrows(): void
+    public static function nonNumericElementProvider(): array
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage(
-            "Cannot create Vector from array. Element at index 1 ('hello') must be a finite int or float."
-        );
-        Vector::fromArray([1, 'hello', 3]);
+        return [
+            'string'         => ['hello'],
+            'numeric string' => ['2'],
+            'bool'           => [true],
+            'null'           => [null],
+            'array'          => [
+                [1, 2],
+            ],
+            'object'         => [
+                new Vector(2),
+            ],
+        ];
+    }
+
+    /**
+     * Test fromArray with a non-numeric element throws InvalidArgumentException, without the value in the message.
+     *
+     * @param mixed $value The non-numeric element value.
+     */
+    #[DataProvider('nonNumericElementProvider')]
+    public function testFromArrayWithNonNumericThrows(mixed $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot create Vector from array. Element at index 1 must be an int or float.');
+        Vector::fromArray([1, $value, 3]);
     }
 
     /**
@@ -101,7 +124,9 @@ class VectorFactoryTest extends TestCase
     public function testFromArrayWithNonFiniteElementThrows(float $value): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create Vector from array. Element at index 1 (');
+        $this->expectExceptionMessageMatches(
+            '/^Cannot create Vector from array\. Element at index 1 \((INF|-INF|NAN)\) must be finite\.$/'
+        );
         Vector::fromArray([1.0, $value]);
     }
 

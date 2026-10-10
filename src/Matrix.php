@@ -103,7 +103,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @param array<array-key, mixed> $arr Rectangular array of numbers.
      * @return self
-     * @throws DomainException If the array or a row isn't a list, or an element isn't a finite number.
+     * @throws InvalidArgumentException If a row isn't an array, or an element isn't an int or float.
+     * @throws DomainException If the array or a row isn't a list, or an element isn't finite.
      * @throws LengthException If the rows don't all have the same number of columns.
      */
     public static function fromArray(array $arr): self
@@ -124,8 +125,13 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
         // Validate data and ensure rectangular matrix.
         foreach ($arr as $i => $row) {
-            // Check each row is a list array.
-            if (!is_array($row) || !array_is_list($row)) {
+            // Check each row is an array.
+            if (!is_array($row)) {
+                throw new InvalidArgumentException("Cannot create Matrix from array. Row $i must be an array.");
+            }
+
+            // Check each row is a list.
+            if (!array_is_list($row)) {
                 throw new DomainException("Cannot create Matrix from array. Row $i must be a list.");
             }
 
@@ -143,11 +149,17 @@ final class Matrix implements Stringable, Countable, ArrayAccess
 
             // Check each row contains only finite numbers.
             foreach ($row as $j => $value) {
-                // Check if the value is a finite number, rejecting non-numeric types, ±INF, and NAN.
-                if (!Numbers::isFiniteNumber($value)) {
+                // Check the value is a number.
+                if (!Numbers::isNumber($value)) {
+                    throw new InvalidArgumentException(
+                        "Cannot create Matrix from array. Element at row $i, column $j must be an int or float."
+                    );
+                }
+
+                // Check the value is finite.
+                if (!is_finite($value)) {
                     throw new DomainException(Stringify::prepEx(
-                        "Cannot create Matrix from array. Element at row $i, column $j (?) must be a finite int or " .
-                        'float.',
+                        "Cannot create Matrix from array. Element at row $i, column $j (?) must be finite.",
                         $value
                     ));
                 }

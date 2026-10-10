@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
+use InvalidArgumentException;
 use LengthException;
 use OceanMoon\Math\Matrix;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -55,25 +56,50 @@ class MatrixFactoryTest extends TestCase
     }
 
     /**
-     * Test fromArray with a non-array row throws DomainException.
+     * Test fromArray with a non-array row throws InvalidArgumentException.
      */
     public function testFromArrayWithNonArrayRowThrows(): void
     {
-        $this->expectException(DomainException::class);
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Cannot create Matrix from array. Row 0 must be an array.');
         Matrix::fromArray([1, 2, 3]);
     }
 
     /**
-     * Test fromArray with non-numeric values throws DomainException.
+     * Data provider for non-numeric element values.
+     *
+     * @return array<string, list<mixed>>
      */
-    public function testFromArrayWithNonNumericValuesThrows(): void
+    public static function nonNumericElementProvider(): array
     {
-        $this->expectException(DomainException::class);
+        return [
+            'string'         => ['two'],
+            'numeric string' => ['2'],
+            'bool'           => [true],
+            'null'           => [null],
+            'array'          => [
+                [1, 2],
+            ],
+            'object'         => [
+                new Matrix(1, 1),
+            ],
+        ];
+    }
+
+    /**
+     * Test fromArray with a non-numeric element throws InvalidArgumentException, without the value in the message.
+     *
+     * @param mixed $value The non-numeric element value.
+     */
+    #[DataProvider('nonNumericElementProvider')]
+    public function testFromArrayWithNonNumericValuesThrows(mixed $value): void
+    {
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            "Cannot create Matrix from array. Element at row 0, column 1 ('two') must be a finite int or float."
+            'Cannot create Matrix from array. Element at row 0, column 1 must be an int or float.'
         );
         Matrix::fromArray([
-            [1, 'two', 3],
+            [1, $value, 3],
         ]);
     }
 
@@ -107,6 +133,7 @@ class MatrixFactoryTest extends TestCase
     public function testFromArrayWithNonListRowThrows(): void
     {
         $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Cannot create Matrix from array. Row 1 must be a list.');
         Matrix::fromArray([
             [1, 2],
             [
@@ -139,6 +166,9 @@ class MatrixFactoryTest extends TestCase
     public function testFromArrayWithNonFiniteElementThrows(float $value): void
     {
         $this->expectException(DomainException::class);
+        $this->expectExceptionMessageMatches(
+            '/^Cannot create Matrix from array\. Element at row 0, column 1 \((INF|-INF|NAN)\) must be finite\.$/'
+        );
         Matrix::fromArray([
             [1.0, $value],
         ]);
