@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Core\Floats;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Matrix;
 use OverflowException;
@@ -303,6 +304,69 @@ class MatrixUnaryArithmeticTest extends TestCase
         $this->assertSame(0.5, $inv->get(1, 1));
         $this->assertSame(0.25, $inv->get(2, 2));
         $this->assertApproxEqual(1e-300, $inv->get(3, 3));
+    }
+
+    /**
+     * Data provider for testInvHasNoNegativeZeros().
+     *
+     * @return array<string, array{list<list<int>>}>
+     */
+    public static function invNegativeZeroProvider(): array
+    {
+        return [
+            '2×2 identity'      => [
+                [
+                    [1, 0],
+                    [0, 1],
+                ],
+            ],
+            '3×3 identity'      => [
+                [
+                    [1, 0, 0],
+                    [0, 1, 0],
+                    [0, 0, 1],
+                ],
+            ],
+            '3×3 upper'         => [
+                [
+                    [1, 2, 0],
+                    [0, 1, 0],
+                    [0, 0, 1],
+                ],
+            ],
+            '4×4 diagonal (LU)' => [
+                [
+                    [2, 0, 0, 0],
+                    [0, -4, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, -1],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test inv() and pow(-1) give positive zeros, not negative zeros, on both the adjugate and LU paths.
+     *
+     * @param list<list<int>> $data The matrix to invert.
+     */
+    #[DataProvider('invNegativeZeroProvider')]
+    public function testInvHasNoNegativeZeros(array $data): void
+    {
+        $m = Matrix::fromArray($data);
+
+        foreach (
+            [
+                $m->inv(),
+                $m->pow(-1),
+            ] as $inverse
+        ) {
+            foreach ($inverse->toArray() as $row) {
+                foreach ($row as $element) {
+                    $this->assertFalse(Floats::isNegativeZero($element));
+                }
+            }
+        }
     }
 
     #endregion
