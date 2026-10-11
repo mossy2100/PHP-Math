@@ -326,34 +326,10 @@ final class Rational implements Stringable
      */
     public function toMixedNumber(): array
     {
-        // If the numerator is 0, the integer part is 0 and the remainder is 0/1.
-        if ($this->numerator === 0) {
-            return [
-                0,
-                new self(0),
-            ];
-        }
-
-        // If the denominator is 1, the integer part is the numerator and the remainder is 0.
-        if ($this->denominator === 1) {
-            return [
-                $this->numerator,
-                new self(0),
-            ];
-        }
-
-        // For proper fractions, the integer part is 0 and the remainder is the original fraction.
-        if (abs($this->numerator) < $this->denominator) {
-            return [0, $this];
-        }
-
-        // Calculate the integer part and the remainder. The remainder will have the same sign as
-        // the original fraction.
-        $int = $this->trunc();
-        $rem = $this->numerator % $this->denominator;
+        // The remainder has the same sign as this Rational.
         return [
-            $int,
-            new self($rem, $this->denominator),
+            $this->trunc(),
+            new self($this->numerator % $this->denominator, $this->denominator),
         ];
     }
 
@@ -436,17 +412,32 @@ final class Rational implements Stringable
             $other = new self($other);
         }
 
-        // If $other is a float, it's quicker to compare $this and $other as floats than it would be to convert the
-        // value to a Rational via fromFloat().
+        // Compare with a float exactly, rather than converting this Rational to a float, which can round.
         if (is_float($other)) {
             // Fail on NAN - no meaningful result.
             if (is_nan($other)) {
                 throw new DomainException('Cannot compare Rational with NAN.');
             }
 
-            // Use the spaceship operator to compare. Note, the spaceship operator only guarantees sign, not specific
-            // values, so we call sign to normalize the result to -1, 0, or 1 for predictable behavior.
-            return Numbers::sign($this->toFloat() <=> $other);
+            // Every Rational is strictly between -2^63 and 2^63, so a float outside that range decides the result.
+            $limit = -(float) PHP_INT_MIN;
+            if ($other >= $limit) {
+                return -1;
+            }
+            if ($other <= -$limit) {
+                return 1;
+            }
+
+            // Fast path: if the numerator and denominator are exactly representable as floats, toFloat() is correctly
+            // rounded. Rounding preserves order, so if the result differs from $other, it's on the same side.
+            if (abs($this->numerator) <= 2 ** 53 && $this->denominator <= 2 ** 53) {
+                $value = $this->toFloat();
+                if ($value !== $other) {
+                    return $value <=> $other;
+                }
+            }
+
+            return $this->compareExact($other);
         }
 
         // $other is a Rational.
@@ -461,11 +452,8 @@ final class Rational implements Stringable
             $bc = Integers::mul($this->denominator, $other->numerator);
             return Numbers::sign($ad <=> $bc);
         } catch (OverflowException) {
-            // In case of integer overflow, compare equivalent floating point values.
-            // NB: This could produce a result of 0 (equal) if two different rationals convert to the same float, which
-            // is possible for values with a magnitude greater than or equal to 2^53 (64-bit platforms only). But that
-            // should be ok.
-            return Numbers::sign($this->toFloat() <=> $other->toFloat());
+            // In case of integer overflow, use the slower exact comparison.
+            return $this->compareExact($other);
         }
     }
 
@@ -962,6 +950,101 @@ final class Rational implements Stringable
 
         // Add the integer part.
         return new self(Integers::add(Integers::mul($intPart, $den), $num), $den);
+    }
+
+    /**
+     * Compare this Rational with another Rational or a float exactly, without overflow.
+     *
+     * Compares the signs, then the whole number parts of the magnitudes, then their fractions with compareFractions().
+     *
+     * @param self|float $other The value to compare with. A float must be finite and strictly between -2^63 and 2^63.
+     * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
+     */
+    private function compareExact(self|float $other): int
+    {
+        // Compare the signs.
+        $sign = $this->numerator <=> 0;
+        $otherSign = $other instanceof self ? $other->numerator <=> 0 : $other <=> 0.0;
+        if ($sign !== $otherSign || $sign === 0) {
+            return $sign <=> $otherSign;
+        }
+
+        // The signs are the same, so compare the magnitudes, and flip the result if they're negative. A numerator is
+        // never PHP_INT_MIN, as it's in lowest terms, so abs() can't overflow.
+        [$whole, $frac] = $this->toMixedNumber();
+        if ($other instanceof self) {
+            [$otherWhole, $otherFrac] = $other->toMixedNumber();
+            $otherWhole = abs($otherWhole);
+            $otherRem = abs($otherFrac->numerator);
+            $otherDen = $otherFrac->denominator;
+        } else {
+            $abs = abs($other);
+            $otherWhole = (int) floor($abs);
+            // By Sterbenz's lemma, this subtraction is exact, as floor($abs) is either 0 or at least $abs / 2.
+            $otherRem = $abs - floor($abs);
+            $otherDen = 1;
+        }
+
+        $result = (abs($whole) <=> $otherWhole)
+            ?: self::compareFractions(abs($frac->numerator), $frac->denominator, $otherRem, $otherDen);
+        return $sign * $result;
+    }
+
+    /**
+     * Compare two fractions in the range [0, 1) exactly, one binary digit at a time.
+     *
+     * The first fraction is rem/den. The second is otherRem/otherDen, or, if otherRem is a float, otherRem itself.
+     *
+     * This always ends. Two different fractions with denominators below 2^63 differ within 127 binary digits, and a
+     * float fraction has at most 1074.
+     *
+     * @param int $rem The numerator of the first fraction.
+     * @param int $den The denominator of the first fraction.
+     * @param int|float $otherRem The numerator of the second fraction, or the second fraction as a float.
+     * @param int $otherDen The denominator of the second fraction. Ignored if otherRem is a float.
+     * @return int Returns -1 if the first fraction is less than the second, 0 if equal, 1 if greater.
+     */
+    private static function compareFractions(int $rem, int $den, int|float $otherRem, int $otherDen): int
+    {
+        while (true) {
+            // If either fraction has no more digits, the one with digits left is greater.
+            if ($rem === 0 || $otherRem == 0) {
+                return ($rem > 0) <=> ($otherRem > 0);
+            }
+
+            // Get the next digit of each.
+            $digit = self::nextBinaryDigit($rem, $den);
+            if (is_float($otherRem)) {
+                // Doubling a float is exact.
+                $otherRem *= 2;
+                $otherDigit = $otherRem >= 1 ? 1 : 0;
+                $otherRem -= $otherDigit;
+            } else {
+                $otherDigit = self::nextBinaryDigit($otherRem, $otherDen);
+            }
+
+            if ($digit !== $otherDigit) {
+                return $digit <=> $otherDigit;
+            }
+        }
+    }
+
+    /**
+     * Get the next binary digit of the fraction rem/den, which is less than 1, and update rem to the rest of it.
+     *
+     * @param int $rem The numerator, updated by reference. Must be non-negative and less than den.
+     * @param int $den The denominator.
+     * @return int The next binary digit, 0 or 1.
+     */
+    private static function nextBinaryDigit(int &$rem, int $den): int
+    {
+        // Double the fraction and take its whole number part, without calculating 2 * rem, which could overflow.
+        if ($rem >= $den - $rem) {
+            $rem -= $den - $rem;
+            return 1;
+        }
+        $rem += $rem;
+        return 0;
     }
 
     /**

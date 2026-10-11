@@ -8,6 +8,7 @@ use DomainException;
 use InvalidArgumentException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -219,6 +220,72 @@ class RationalComparisonTest extends TestCase
         $this->assertSame(-1, $r1->compare($r2));
         $this->assertSame(-1, $r2->compare($r3));
         $this->assertSame(-1, $r1->compare($r3));
+    }
+
+    /**
+     * Data provider for testCompareFloatExact().
+     *
+     * @return array<string, array{int, int, float, int}>
+     */
+    public static function compareFloatExactProvider(): array
+    {
+        return [
+            'one third vs its float'     => [
+                1,
+                3,
+                1 / 3,
+                1,
+            ],
+            'just above 2^53'            => [
+                2 ** 53 + 1,
+                1,
+                (float) 2 ** 53,
+                1,
+            ],
+            'dyadic equal'               => [5, 4, 1.25, 0],
+            'negative dyadic equal'      => [-5, 4, -1.25, 0],
+            'negative vs its float'      => [
+                -1,
+                3,
+                -1 / 3,
+                -1,
+            ],
+            'max int vs 2^63'            => [PHP_INT_MAX, 1, 9.2233720368547758e18, -1],
+            'min vs -2^63'               => [PHP_INT_MIN, 2, -9.2233720368547758e18, 1],
+            'zero vs smallest subnormal' => [0, 1, 5e-324, -1],
+            'zero vs negative zero'      => [0, 1, -0.0, 0],
+            'tiny vs smallest subnormal' => [1, PHP_INT_MAX, 5e-324, 1],
+            'tiny negative vs subnormal' => [-1, PHP_INT_MAX, -5e-324, -1],
+            'large denominator'          => [
+                PHP_INT_MAX - 1,
+                PHP_INT_MAX,
+                1.0,
+                -1,
+            ],
+        ];
+    }
+
+    /**
+     * Test compare() with a float is exact, rather than converting the Rational to a float first.
+     */
+    #[DataProvider('compareFloatExactProvider')]
+    public function testCompareFloatExact(int $num, int $den, float $other, int $expected): void
+    {
+        $this->assertSame($expected, new Rational($num, $den)->compare($other));
+    }
+
+    /**
+     * Test compare() of two Rationals is exact when cross-multiplying overflows.
+     */
+    public function testCompareRationalOverflowExact(): void
+    {
+        // These convert to floats in the opposite order.
+        $r1 = new Rational(PHP_INT_MAX, 5);
+        $r2 = new Rational(5534023222112865485, 3);
+
+        $this->assertSame(-1, $r1->compare($r2));
+        $this->assertSame(1, $r2->compare($r1));
+        $this->assertFalse($r1->equal($r2));
     }
 
     #endregion

@@ -339,6 +339,7 @@ var_dump($r1->equal($r2));  // true (both are 3/4)
 var_dump($r1->equal($r3));  // false
 var_dump($r1->equal(0.75)); // true (exact match)
 var_dump($r1->equal(0.7500000001)); // false (not exact)
+var_dump(new Rational(1, 3)->equal(1 / 3)); // false (the float isn't exactly 1/3)
 
 // Anything else throws, rather than silently returning false
 $r1->equal('3/4');  // throws InvalidArgumentException
@@ -424,10 +425,11 @@ Compare the rational number with another value using exact comparison.
 
 **Behavior:**
 
-- Optimizes comparison with integers and simple floats.
-- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c.
-- Falls back to float comparison if overflow occurs.
-- Returns 0 for exact equality (no epsilon is needed, since integers are exact).
+- Always exact, including with a `float`. The `Rational` isn't converted to a float, which could round, e.g. `1/3`
+  compared with `1 / 3` is 1, since the float is slightly less than 1/3.
+- Uses cross-multiplication for two Rationals: a/b vs c/d → compare a×d with b×c. If that overflows, the whole number
+  parts and then the fractions are compared, which is slower but still exact.
+- Returns 0 for exact equality (no epsilon is needed).
 - Works with ±INF: comparing against `INF` always returns -1, and against `-INF` always returns 1.
 
 **Examples:**
