@@ -113,6 +113,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - Example variables follow consistent naming: `$z`, `$r`, `$v` or `$m` for a single `Complex`, `Rational`, `Vector` or
   `Matrix`, numbered from 1 (`$z1`, `$z2`, ...) for several, and `$idMat` for an identity matrix.
+- `Comparison_Operators.md` said a math object never equals a string and always compares greater. In fact, PHP compares
+  it as a string, via `__toString()`, so `new Complex(5) == '5'` is `true`, and `new Rational(1, 2) <=> '1/3'` is `-1`.
 
 ### Tests
 

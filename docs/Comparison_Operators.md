@@ -38,11 +38,12 @@ triggering a notice; no type conversion is attempted, and no property values wil
 
 Behaviour depends on the operand type. There's no single rule:
 
-| Operand type              | Behaviour                                                                                                                                 |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
-| `int`, `float`            | PHP tries to convert the object to the scalar type, which emits a notice; the object converts to `1` regardless of its actual properties. |
-| `bool`                    | No conversion attempted, no notice. **Any object loosely equals `true`**, and never equals `false` - a silent, dangerous gotcha.          |
-| `null`, `string`, `array` | No conversion attempted, no notice. Always compares as **not equal**, even against a numeric string or an empty array.                    |
+| Operand type    | Behaviour                                                                                                                                             |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `int`, `float`  | PHP tries to convert the object to the scalar type, which emits a notice; the object converts to `1` regardless of its actual properties.             |
+| `bool`          | No conversion attempted, no notice. **Any object loosely equals `true`**, and never equals `false` - a silent, dangerous gotcha.                      |
+| `null`, `array` | No conversion attempted, no notice. Always compares as **not equal**, even against an empty array.                                                    |
+| `string`        | The object is converted with `__toString()`, and the two strings are compared, numerically if both are numeric. So `new Complex(5) == '5'` is `true`. |
 
 **Example** (the `int`/`float` case):
 
@@ -176,11 +177,14 @@ Behaviour depends on the scalar type, and does **not** follow a simple "object i
 | `null`         | Object casts to `bool` `true`, `null` to `false` - object always compares greater.                                                                          |
 | `bool`         | Same rule. An object always casts to `true`, so **`$obj <=> true` is always `0`** (equal), regardless of the object's value.                                |
 | `int`, `float` | PHP casts the object via `(int)`/`(float)`, which is always exactly `1` - unrelated to its properties - and triggers a notice. Effectively `1 <=> $scalar`. |
-| `string`       | No cast is attempted; the object always compares greater, even against numeric strings.                                                                     |
+| `string`       | Compared as strings via `__toString()`: numerically if both are numeric, else byte by byte. So `new Rational(1, 2) <=> '1/3'` is `-1`.                      |
 | `array`        | Also always compares greater - contradicting the commonly-cited "arrays beat everything" rule.                                                              |
 
 The `bool` and `int`/`float` rows are the most dangerous: `$complex <=> true` silently returns `0`, and ordering against
 a number is entirely divorced from the object's actual value.
+
+With the [Math extension](https://github.com/mossy2100/PHP-Math-extension) loaded, comparing a `Complex` or `Rational`
+with a `string` throws `InvalidArgumentException` instead. `Vector` and `Matrix` behave as described here either way.
 
 ---
 
