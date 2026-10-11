@@ -90,6 +90,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Complex::roots()` gave an inexact magnitude for degree 3 or more**, because 1/n is rounded, e.g. `64 ** (1/3)` is
   `3.9999999999999996`. One step of Newton's method now refines it, so the real cube root of -64 is exactly -4. It's
   never less accurate, and is within one unit in the last place.
+- **`Complex::tan()`/`tanh()` threw `OverflowException` for a large imaginary or real part**, where the result is
+  about ±i or ±1, because they computed `sin(z) / cos(z)` and `sinh(z) / cosh(z)`. They now use Kahan's algorithm,
+  which never overflows and is more accurate, e.g. the real part of `tan(1 + 20i)` was about 7 times too large.
 - **`Rational` comparison wasn't always exact**, although the docs said it was. Comparing with a `float` converted the
   `Rational` to a float first, so `(new Rational(1, 3))->equal(1 / 3)` was `true`, and `2^53 + 1` compared equal to
   `2.0 ** 53`. Comparing two Rationals fell back to floats when cross-multiplying overflowed. Both are now exact, for

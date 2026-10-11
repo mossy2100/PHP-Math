@@ -675,7 +675,9 @@ public function tan(): self;
 
 Calculate trigonometric functions.
 
-**Throws:** `OverflowException` if the result is too large to represent as a float.
+`tan()` never overflows. For a large imaginary part, where `sin()` and `cos()` overflow, the result is about ±i.
+
+**Throws:** `OverflowException` if the result of `sin()` or `cos()` is too large to represent as a float.
 
 **Examples:**
 
@@ -684,6 +686,8 @@ $z = new Complex(1, 1);
 $sin = $z->sin();
 $cos = $z->cos();
 $tan = $z->tan();
+
+$tan = new Complex(0, 1000)->tan();  // 0 + 1i
 ```
 
 ---
@@ -725,7 +729,9 @@ public function tanh(): self;
 
 Calculate hyperbolic functions.
 
-**Throws:** `OverflowException` if the result is too large to represent as a float.
+`tanh()` never overflows. For a large real part, where `sinh()` and `cosh()` overflow, the result is about ±1.
+
+**Throws:** `OverflowException` if the result of `sinh()` or `cosh()` is too large to represent as a float.
 
 **Examples:**
 
@@ -734,6 +740,8 @@ $z = new Complex(1, 1);
 $sinh = $z->sinh();
 $cosh = $z->cosh();
 $tanh = $z->tanh();
+
+$tanh = new Complex(1000, 1)->tanh();  // 1 + 0i
 ```
 
 ---

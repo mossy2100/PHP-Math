@@ -7,6 +7,7 @@ namespace OceanMoon\Math\Tests\Complex;
 use OceanMoon\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Complex::class)]
@@ -135,13 +136,49 @@ class ComplexHyperbolicTest extends TestCase
     }
 
     /**
-     * Test tanh() throws when sinh() and cosh() overflow, as it's computed as sinh(z) / cosh(z).
+     * Test tanh() gives about ±1 for a large real part, instead of overflowing.
      */
-    public function testTanhOverflowThrows(): void
+    public function testTanhLargeRealPart(): void
     {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute hyperbolic tangent of Complex. The result would overflow.');
-        new Complex(1000, 1)->tanh();
+        // tanh(z) → 1 as Re(z) → ∞, and → -1 as Re(z) → -∞, where sinh(z) and cosh(z) both overflow.
+        $result = new Complex(1000, 1)->tanh();
+        $this->assertSame(1.0, $result->real);
+        $this->assertEqualsWithDelta(0.0, $result->imaginary, EPSILON);
+
+        $result = new Complex(-1000)->tanh();
+        $this->assertSame(-1.0, $result->real);
+        $this->assertSame(0.0, $result->imaginary);
+    }
+
+    /**
+     * Data provider for testTanhMatchesSinhOverCosh().
+     *
+     * @return array<string, array{float, float}>
+     */
+    public static function tanhValuesProvider(): array
+    {
+        return [
+            'first quadrant'        => [0.3, 0.4],
+            'second quadrant'       => [-1.2, 2.5],
+            'fourth quadrant'       => [2.0, -0.7],
+            'third quadrant'        => [-3.0, -3.0],
+            'just below the cutoff' => [21.9, 1.0],
+            'just above the cutoff' => [22.1, 1.0],
+        ];
+    }
+
+    /**
+     * Test tanh() matches sinh() / cosh() for ordinary values, either side of the large real part cutoff.
+     */
+    #[DataProvider('tanhValuesProvider')]
+    public function testTanhMatchesSinhOverCosh(float $x, float $y): void
+    {
+        $z = new Complex($x, $y);
+        $result = $z->tanh();
+        $expected = $z->sinh()->div($z->cosh());
+
+        $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
     }
 
     #endregion

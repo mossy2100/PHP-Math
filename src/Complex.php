@@ -897,14 +897,16 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the tangent of this complex number.
      *
+     * Calculated as -i·tanh(iz), so it never overflows. For a large imaginary part, the result is about ±i.
+     *
      * @return self A new complex number representing the tangent of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
     public function tan(): self
     {
-        // tan(z) = sin(z) / cos(z)
-        return self::calcWithOverflowMessage('compute tangent of Complex', fn () => $this->sin()->div($this->cos()));
+        // tan(z) = -i·tanh(iz), where iz = -y + ix. If tanh(iz) = u + iv, then tan(z) = v - iu.
+        [$u, $v] = self::calcTanh(-$this->imaginary, $this->real);
+        return new self($v, -$u);
     }
 
     #endregion
@@ -1011,17 +1013,15 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the hyperbolic tangent of this complex number.
      *
+     * Uses Kahan's algorithm, so it never overflows. For a large real part, the result is about ±1.
+     *
      * @return self A new complex number representing the hyperbolic tangent of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
      */
     public function tanh(): self
     {
-        // tanh(z) = sinh(z) / cosh(z)
-        return self::calcWithOverflowMessage(
-            'compute hyperbolic tangent of Complex',
-            fn () => $this->sinh()->div($this->cosh())
-        );
+        [$real, $imag] = self::calcTanh($this->real, $this->imaginary);
+        return new self($real, $imag);
     }
 
     #endregion
@@ -1228,6 +1228,39 @@ final class Complex implements Stringable, ArrayAccess
 
         // General solution. Calculate z^w = e^(w * ln(z)).
         return $exp->mul($this->ln())->exp();
+    }
+
+    /**
+     * Calculate the hyperbolic tangent of x + iy, for tanh() and tan().
+     *
+     * Uses Kahan's algorithm, which is accurate and can't overflow, unlike sinh(z) / cosh(z).
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part.
+     * @return array{float, float} The real and imaginary parts of the result.
+     * @see https://people.freebsd.org/~das/kahan86branch.pdf W. Kahan, "Branch Cuts for Complex Elementary Functions".
+     */
+    private static function calcTanh(float $x, float $y): array
+    {
+        // For a large real part, tanh(z) = ±1 + i·4·sin(y)·cos(y)·e^(-2|x|), to within rounding. Multiplying by
+        // e^(-|x|) twice lets the imaginary part underflow gradually, instead of e^(-2|x|) underflowing to 0 first.
+        if (abs($x) >= 22) {
+            $expMinusX = exp(-abs($x));
+            $real = $x > 0 ? 1.0 : -1.0;
+            $imag = 4 * sin($y) * cos($y) * $expMinusX * $expMinusX;
+            return [$real, $imag];
+        }
+
+        // Otherwise, with t = tan(y), β = 1 + t², s = sinh(x) and ρ = √(1 + s²) = cosh(x):
+        // tanh(z) = (β·ρ·s + i·t) / (1 + β·s²).
+        $t = tan($y);
+        $beta = 1 + $t * $t;
+        $s = sinh($x);
+        $rho = sqrt(1 + $s * $s);
+        $denom = 1 + $beta * $s * $s;
+        $real = $beta * $rho * $s / $denom;
+        $imag = $t / $denom;
+        return [$real, $imag];
     }
 
     /**

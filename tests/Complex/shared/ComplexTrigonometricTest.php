@@ -7,6 +7,7 @@ namespace OceanMoon\Math\Tests\Complex;
 use OceanMoon\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Complex::class)]
@@ -150,13 +151,68 @@ class ComplexTrigonometricTest extends TestCase
     }
 
     /**
-     * Test tan() throws when sin() overflows, as it's computed as sin(z) / cos(z).
+     * Test tan() gives about ±i for a large imaginary part, instead of overflowing.
      */
-    public function testTanOverflowThrows(): void
+    public function testTanLargeImaginaryPart(): void
     {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute tangent of Complex. The result would overflow.');
-        new Complex(1, 1000)->tan();
+        // tan(z) → i as Im(z) → ∞, and → -i as Im(z) → -∞, where sin(z) and cos(z) both overflow.
+        $result = new Complex(0, 1000)->tan();
+        $this->assertSame(0.0, $result->real);
+        $this->assertSame(1.0, $result->imaginary);
+
+        $result = new Complex(0.5, -1000)->tan();
+        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
+        $this->assertSame(-1.0, $result->imaginary);
+    }
+
+    /**
+     * Test tan() is accurate where the real part is tiny compared with the imaginary part.
+     */
+    public function testTanSmallRealPart(): void
+    {
+        // Re(tan(1 + 20i)) = sin(2) / (cos(2) + cosh(40)).
+        $result = new Complex(1, 20)->tan();
+        $this->assertEqualsWithDelta(1.0, $result->real / (sin(2) / (cos(2) + cosh(40))), 1e-14);
+        $this->assertSame(1.0, $result->imaginary);
+    }
+
+    /**
+     * Test tan() near a pole, where cos(z) is close to 0.
+     */
+    public function testTanNearPole(): void
+    {
+        $result = new Complex(M_PI / 2)->tan();
+        $this->assertSame(tan(M_PI / 2), $result->real);
+        $this->assertSame(0.0, $result->imaginary);
+    }
+
+    /**
+     * Data provider for testTanMatchesSinOverCos().
+     *
+     * @return array<string, array{float, float}>
+     */
+    public static function tanValuesProvider(): array
+    {
+        return [
+            'first quadrant'  => [0.3, 0.4],
+            'second quadrant' => [-1.2, 2.5],
+            'fourth quadrant' => [2.0, -0.7],
+            'third quadrant'  => [-3.0, -3.0],
+        ];
+    }
+
+    /**
+     * Test tan() matches sin() / cos() for ordinary values.
+     */
+    #[DataProvider('tanValuesProvider')]
+    public function testTanMatchesSinOverCos(float $x, float $y): void
+    {
+        $z = new Complex($x, $y);
+        $result = $z->tan();
+        $expected = $z->sin()->div($z->cos());
+
+        $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
     }
 
     #endregion
