@@ -123,7 +123,7 @@ Immutable class for rational numbers (p/q) with support for:
 Mutable numeric vector with support for:
 
 - Element-wise arithmetic (add, subtract, scalar multiply, scalar divide)
-- Dot, cross, Hadamard, and outer product operations
+- Dot, cross, Hadamard, and outer product operations. `mul()` and `div()` with a `Vector` are element-wise (Hadamard).
 - Exact and approximate equality comparison
 - Conversion to arrays and matrices
 - Array-style element access via the `ArrayAccess` interface
@@ -134,6 +134,8 @@ Mutable numeric vector with support for:
 Mutable two-dimensional matrix with support for:
 
 - Matrix arithmetic (add, subtract, multiply, divide)
+- Element-wise (Hadamard) product and division via `hadamardMul()` and `hadamardDiv()`, since `mul()` with a `Matrix`
+  is the matrix product
 - Matrix-vector multiplication using column vector convention
 - Transpose, determinant, and inverse operations
 - Matrix power with binary exponentiation (including negative powers)

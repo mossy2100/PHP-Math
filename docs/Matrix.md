@@ -8,7 +8,9 @@ Mutable class representing a two-dimensional matrix of numbers with comprehensiv
 
 The `Matrix` class provides a complete implementation of matrix arithmetic with support for:
 
-- Basic arithmetic (addition, subtraction, scalar/matrix multiplication, division, Hadamard product)
+- Basic arithmetic (addition, subtraction, scalar/matrix multiplication, division)
+- Element-wise (Hadamard) product and division via `hadamardMul()` and `hadamardDiv()`, since `mul()` with a `Matrix`
+  is the matrix product
 - Matrix-vector multiplication using column vector convention
 - Matrix power with binary exponentiation (including negative powers via inverse)
 - Transpose, determinant, and inverse operations
@@ -727,7 +729,7 @@ Multiply the matrix by a scalar, a vector or another matrix.
 | `Matrix` | `Matrix` | Matrix multiplication. The column count must equal the other's row count            |
 
 The return type depends on the argument type, and PHPStan infers it: `mul($vector)` is a `Vector`, and otherwise a
-`Matrix`.
+`Matrix`. The extension's stub declares the same conditional return type, so this works with the extension too.
 
 To go the other way (_xA_), call [`Vector::mul()`](Vector.md#mul).
 

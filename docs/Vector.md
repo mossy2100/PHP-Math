@@ -8,7 +8,9 @@ Numeric vector with element-wise arithmetic, dot/cross/Hadamard products, aggreg
 
 The `Vector` class provides a general-purpose numeric vector with support for:
 
-- Element-wise arithmetic (addition, subtraction, scalar multiplication, scalar division, Hadamard product)
+- Element-wise arithmetic (addition, subtraction, scalar multiplication, scalar division)
+- Element-wise (Hadamard) product and division via `mul()` and `div()` with a `Vector`. Unlike `Matrix`, which uses
+  `hadamardMul()` and `hadamardDiv()`, there's no other vector product for `mul()` to mean.
 - Dot product, cross product, and normalization
 - Aggregation (sum, product)
 - Exact and approximate equality comparison
