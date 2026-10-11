@@ -67,13 +67,37 @@ class RationalBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test add() throws when cross-multiplication overflows an int.
+     * Test add() throws when the result overflows an int.
      */
     public function testAddOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
         $r = new Rational(PHP_INT_MAX, 2);
         $r->add(new Rational(1, 3));
+    }
+
+    /**
+     * Test add() doesn't overflow when the product of the denominators would, but the result fits.
+     */
+    public function testAddLargeDenominators(): void
+    {
+        $result = new Rational(1, 6000000000)->add(new Rational(1, 4000000000));
+
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(2400000000, $result->denominator);
+    }
+
+    /**
+     * Test add() doesn't overflow when the cross products would, but the integer parts cancel.
+     */
+    public function testAddLargeCancellingValues(): void
+    {
+        // PHP_INT_MAX/3 + -(PHP_INT_MAX - 1)/2 = (3 - PHP_INT_MAX)/6.
+        $result = new Rational(PHP_INT_MAX, 3)->add(new Rational(1 - PHP_INT_MAX, 2));
+        $expected = new Rational(3 - PHP_INT_MAX, 6);
+
+        $this->assertSame($expected->numerator, $result->numerator);
+        $this->assertSame($expected->denominator, $result->denominator);
     }
 
     #endregion
@@ -129,13 +153,37 @@ class RationalBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test sub() throws when cross-multiplication overflows an int.
+     * Test sub() throws when the result overflows an int.
      */
     public function testSubOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
         $r = new Rational(PHP_INT_MAX, 2);
         $r->sub(new Rational(1, 3));
+    }
+
+    /**
+     * Test sub() doesn't overflow when the product of the denominators would, but the result fits.
+     */
+    public function testSubLargeDenominators(): void
+    {
+        $result = new Rational(1, 4000000000)->sub(new Rational(1, 6000000000));
+
+        $this->assertSame(1, $result->numerator);
+        $this->assertSame(12000000000, $result->denominator);
+    }
+
+    /**
+     * Test sub() doesn't overflow when the cross products would, but the integer parts cancel.
+     */
+    public function testSubLargeCancellingValues(): void
+    {
+        // PHP_INT_MAX/3 - (PHP_INT_MAX - 1)/2 = (3 - PHP_INT_MAX)/6.
+        $result = new Rational(PHP_INT_MAX, 3)->sub(new Rational(PHP_INT_MAX - 1, 2));
+        $expected = new Rational(3 - PHP_INT_MAX, 6);
+
+        $this->assertSame($expected->numerator, $result->numerator);
+        $this->assertSame($expected->denominator, $result->denominator);
     }
 
     #endregion

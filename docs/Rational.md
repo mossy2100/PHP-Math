@@ -592,6 +592,10 @@ public function add(self|int $other): self
 
 Add another value to the rational number.
 
+The intermediate values are kept small, so this only overflows when the result does, except in rare cases where the
+denominators share a large common factor. For example, `1/6000000000 + 1/4000000000` is `1/2400000000`, although the
+product of the denominators would overflow.
+
 **Example:**
 
 ```php
@@ -614,7 +618,8 @@ $sum2 = $r3->add(2);       // 11/4
 public function sub(self|int $other): self
 ```
 
-Subtract another value from the rational number.
+Subtract another value from the rational number. Like `add()`, it only overflows when the result does, except in rare
+cases.
 
 **Example:**
 

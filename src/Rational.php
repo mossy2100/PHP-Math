@@ -575,13 +575,7 @@ final class Rational implements Stringable
     public function add(self|int $other): self
     {
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
-
-        // (a/b) + (c/d) = (ad + bc) / (bd)
-        $ad = Integers::mul($a, $d);
-        $bc = Integers::mul($b, $c);
-        $h = Integers::add($ad, $bc);
-        $k = Integers::mul($b, $d);
-        return new self($h, $k);
+        return self::calcAddSub($a, $b, $c, $d, false);
     }
 
     /**
@@ -595,13 +589,7 @@ final class Rational implements Stringable
     public function sub(self|int $other): self
     {
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
-
-        // (a/b) - (c/d) = (ad - bc) / (bd)
-        $ad = Integers::mul($a, $d);
-        $bc = Integers::mul($b, $c);
-        $h = Integers::sub($ad, $bc);
-        $k = Integers::mul($b, $d);
-        return new self($h, $k);
+        return self::calcAddSub($a, $b, $c, $d, true);
     }
 
     /**
@@ -932,6 +920,48 @@ final class Rational implements Stringable
         }
 
         return [$a, $b, $c, $d];
+    }
+
+    /**
+     * Calculate (a/b) + (c/d) or (a/b) - (c/d), for add() and sub().
+     *
+     * To keep the intermediate values small, the integer parts are added separately, and the fractions are added with
+     * Knuth's method (The Art of Computer Programming, Vol. 2, 4.5.1), which divides out the gcd of the denominators
+     * before multiplying. For example, 1/6000000000 + 1/4000000000 doesn't overflow, although 6000000000 × 4000000000
+     * would.
+     *
+     * @param int $a The numerator of the first value.
+     * @param int $b The denominator of the first value. Must be positive.
+     * @param int $c The numerator of the second value.
+     * @param int $d The denominator of the second value. Must be positive.
+     * @param bool $subtract True to subtract, false to add.
+     * @return self The result.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
+     */
+    private static function calcAddSub(int $a, int $b, int $c, int $d, bool $subtract): self
+    {
+        // Split each value into an integer part and a fraction, e.g. 7/2 = 3 + 1/2, and add them separately.
+        $intPart = $subtract
+            ? Integers::sub(intdiv($a, $b), intdiv($c, $d))
+            : Integers::add(intdiv($a, $b), intdiv($c, $d));
+        $a %= $b;
+        $c %= $d;
+
+        // Let g = gcd(b, d). Then (a/b) ± (c/d) = t / ((b/g)·d), where t = a·(d/g) ± c·(b/g).
+        $g = Integers::gcd($b, $d);
+        $bOverG = intdiv($b, $g);
+        $ad = Integers::mul($a, intdiv($d, $g));
+        $cb = Integers::mul($c, $bOverG);
+        $t = $subtract ? Integers::sub($ad, $cb) : Integers::add($ad, $cb);
+
+        // t has no common factor with b/g or d/g, so the only factor to cancel is gcd(t, g). The result is reduced.
+        $g2 = Integers::gcd($t, $g);
+        $num = intdiv($t, $g2);
+        $den = Integers::mul($bOverG, intdiv($d, $g2));
+
+        // Add the integer part.
+        return new self(Integers::add(Integers::mul($intPart, $den), $num), $den);
     }
 
     /**

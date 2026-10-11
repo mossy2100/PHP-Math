@@ -90,6 +90,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Complex::roots()` gave an inexact magnitude for degree 3 or more**, because 1/n is rounded, e.g. `64 ** (1/3)` is
   `3.9999999999999996`. One step of Newton's method now refines it, so the real cube root of -64 is exactly -4. It's
   never less accurate, and is within one unit in the last place.
+- **`Rational::add()`/`sub()` overflowed when the result fit**, because they multiplied the denominators before
+  reducing, e.g. `1/6000000000 + 1/4000000000` threw. They now add the integer parts separately and the fractions with
+  Knuth's gcd method, so they only overflow when the result does, except in rare cases where the denominators share a
+  large common factor.
 
 ### Documentation
 
