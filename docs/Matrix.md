@@ -1068,14 +1068,19 @@ echo $m->pInfNorm();  // 7.0 (max of |1|+|-2|=3, |3|+|4|=7)
 public function count(): int
 ```
 
-Get the total number of elements in the matrix (`rowCount * columnCount`), via the `Countable` interface.
+Get the number of rows, via the `Countable` interface. This matches the row indexes used by `$m[$i]` and `foreach`.
+For the number of elements, use `$m->rowCount * $m->columnCount`.
 
 **Examples:**
 
 ```php
 $m = new Matrix(2, 3);
-echo $m->count();  // 6
-echo count($m);    // 6 (via the global count() function)
+echo $m->count();  // 2
+echo count($m);    // 2 (via the global count() function)
+
+for ($i = 0; $i < count($m); $i++) {
+    echo $m[$i];  // Each row
+}
 ```
 
 ---

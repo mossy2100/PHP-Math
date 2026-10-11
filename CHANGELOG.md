@@ -32,6 +32,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `DomainException`, e.g. "Cannot create Vector from array. Element at index 1 (INF) must be finite." Likewise, a
   `Matrix::fromArray()` row that isn't an array now throws `InvalidArgumentException`; a row that's an array but not a
   list still throws `DomainException`.
+- **`Matrix::count()` returns the number of rows, instead of the number of elements (breaking).** It now matches the
+  row indexes used by `$m[$i]` and `foreach`, so `for ($i = 0; $i < count($m); $i++)` visits every row. For the number
+  of elements, use `$m->rowCount * $m->columnCount`.
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot divide
   by zero." The exception class (`ArithmeticException`) is unchanged.
 - **Overflow throws `OverflowException` everywhere (breaking).** A result, or an intermediate value, too large to

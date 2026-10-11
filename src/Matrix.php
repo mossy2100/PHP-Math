@@ -1198,14 +1198,17 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     #region Aggregation methods
 
     /**
-     * Get the number of elements in the Matrix.
+     * Get the number of rows in the Matrix.
      *
-     * @return int
+     * This matches the row indexes used by `$m[$i]` and foreach. For the number of elements, use
+     * `$m->rowCount * $m->columnCount`.
+     *
+     * @return int The number of rows.
      */
     #[Override] // Countable
     public function count(): int
     {
-        return $this->rowCount * $this->columnCount;
+        return $this->rowCount;
     }
 
     #endregion
