@@ -267,11 +267,11 @@ the default behaviour described above.
 Overloading comparison operators for `Complex` means that `Complex` values can be compared for equality with `int` and
 `float` values, producing the correct result for `==` and `!=` operations without triggering notices.
 
-See: [Complex Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Complex.md#comparison-operators).
+See: [Complex Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Reference/Complex.md#comparison-operators).
 
 ### Rational
 
 Overloading comparison operators for `Rational` means that `Rational` values can be compared with `Rational`, `int` and
 `float` values, including equality and ordering comparisons, producing the correct result without triggering notices.
 
-See: [Rational Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Rational.md#comparison-operators).
+See: [Rational Operators](https://github.com/mossy2100/PHP-Math-extension/blob/main/docs/Reference/Rational.md#comparison-operators).
