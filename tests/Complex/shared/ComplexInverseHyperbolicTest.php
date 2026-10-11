@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Complex::class)]
@@ -152,6 +154,30 @@ class ComplexInverseHyperbolicTest extends TestCase
             'Cannot compute inverse hyperbolic tangent of Complex. The result would overflow.'
         );
         new Complex(1, 1e-320)->atanh();
+    }
+
+    /**
+     * Data provider for testAtanhSingularityThrows().
+     *
+     * @return array<string, array{float, string}>
+     */
+    public static function atanhSingularityProvider(): array
+    {
+        return [
+            'one'       => [1.0, 'Cannot compute inverse hyperbolic tangent of 1.'],
+            'minus one' => [-1.0, 'Cannot compute inverse hyperbolic tangent of -1.'],
+        ];
+    }
+
+    /**
+     * Test atanh() throws at ±1, where it's undefined, with a message naming the function.
+     */
+    #[DataProvider('atanhSingularityProvider')]
+    public function testAtanhSingularityThrows(float $real, string $message): void
+    {
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage($message);
+        new Complex($real)->atanh();
     }
 
     #endregion

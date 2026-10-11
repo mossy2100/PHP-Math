@@ -704,7 +704,10 @@ public function atan(): self;
 
 Calculate inverse trigonometric functions.
 
-**Throws:** `OverflowException` if the result is too large to represent as a float.
+**Throws:**
+
+- `OverflowException` if the result is too large to represent as a float.
+- `ArithmeticException` from `atan()` at i or -i, where it's undefined.
 
 **Examples:**
 
@@ -758,7 +761,10 @@ public function atanh(): self;
 
 Calculate inverse hyperbolic functions.
 
-**Throws:** `OverflowException` if the result is too large to represent as a float.
+**Throws:**
+
+- `OverflowException` if the result is too large to represent as a float.
+- `ArithmeticException` from `atanh()` at 1 or -1, where it's undefined.
 
 **Examples:**
 

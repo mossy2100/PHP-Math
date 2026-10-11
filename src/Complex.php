@@ -958,11 +958,18 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse tangent of this complex number.
      *
      * @return self A new complex number representing the inverse tangent of this complex number.
+     * @throws ArithmeticException If this Complex is i or -i, where the inverse tangent is undefined.
      * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function atan(): self
     {
+        // atan(z) is undefined at z = ±i.
+        if ($this->real === 0.0 && abs($this->imaginary) === 1.0) {
+            $value = $this->imaginary > 0 ? 'i' : '-i';
+            throw new ArithmeticException("Cannot compute inverse tangent of $value.");
+        }
+
         return self::calcWithOverflowMessage('compute inverse tangent of Complex', function (): self {
             // atan(z) = (-i/2)·ln((i-z)/(i+z))
             // i - z = -x + (1-y)i (calculate directly)
@@ -1064,11 +1071,18 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse hyperbolic tangent of this complex number.
      *
      * @return self A new complex number representing the inverse hyperbolic tangent of this complex number.
+     * @throws ArithmeticException If this Complex is 1 or -1, where the inverse hyperbolic tangent is undefined.
      * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function atanh(): self
     {
+        // atanh(z) is undefined at z = ±1.
+        if ($this->imaginary === 0.0 && abs($this->real) === 1.0) {
+            $value = $this->real > 0 ? '1' : '-1';
+            throw new ArithmeticException("Cannot compute inverse hyperbolic tangent of $value.");
+        }
+
         return self::calcWithOverflowMessage('compute inverse hyperbolic tangent of Complex', function (): self {
             // atanh(z) = (1/2)·ln((1+z)/(1-z))
             $onePlusZ = new self(1)->add($this);

@@ -35,6 +35,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Matrix::count()` returns the number of rows, instead of the number of elements (breaking).** It now matches the
   row indexes used by `$m[$i]` and `foreach`, so `for ($i = 0; $i < count($m); $i++)` visits every row. For the number
   of elements, use `$m->rowCount * $m->columnCount`.
+- **`Complex::atan()`/`atanh()`** throw "Cannot compute inverse tangent of i." (or -i), and "Cannot compute inverse
+  hyperbolic tangent of 1." (or -1), at their singularities, instead of "Cannot divide by zero." or "Cannot compute
+  logarithm of zero.". The exception class (`ArithmeticException`) is unchanged.
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot divide
   by zero." The exception class (`ArithmeticException`) is unchanged.
 - **Overflow throws `OverflowException` everywhere (breaking).** A result, or an intermediate value, too large to
