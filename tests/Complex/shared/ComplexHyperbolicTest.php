@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -44,6 +45,16 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
 
+    /**
+     * Test sinh() throws when the result overflows.
+     */
+    public function testSinhOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute hyperbolic sine of Complex. The result would overflow.');
+        new Complex(1000, 1)->sinh();
+    }
+
     #endregion
 
     #region Method cosh() tests.
@@ -79,6 +90,16 @@ class ComplexHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
 
+    /**
+     * Test cosh() throws when the result overflows.
+     */
+    public function testCoshOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute hyperbolic cosine of Complex. The result would overflow.');
+        new Complex(1000, 1)->cosh();
+    }
+
     #endregion
 
     #region Method tanh() tests.
@@ -111,6 +132,16 @@ class ComplexHyperbolicTest extends TestCase
 
         $this->assertEqualsWithDelta($ratio->real, $tanh->real, EPSILON);
         $this->assertEqualsWithDelta($ratio->imaginary, $tanh->imaginary, EPSILON);
+    }
+
+    /**
+     * Test tanh() throws when sinh() and cosh() overflow, as it's computed as sinh(z) / cosh(z).
+     */
+    public function testTanhOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute hyperbolic tangent of Complex. The result would overflow.');
+        new Complex(1000, 1)->tanh();
     }
 
     #endregion

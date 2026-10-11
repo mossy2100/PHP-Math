@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -210,8 +211,8 @@ class ComplexPowerTest extends TestCase
      */
     public function testPowIntegerOverflowThrows(): void
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: NAN.');
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot raise Complex to a power. The result would overflow.');
         new Complex(10, 1)->pow(1000);
     }
 
@@ -279,6 +280,16 @@ class ComplexPowerTest extends TestCase
 
         $this->assertEqualsWithDelta($sqr->real, $pow2->real, EPSILON);
         $this->assertEqualsWithDelta($sqr->imaginary, $pow2->imaginary, EPSILON);
+    }
+
+    /**
+     * Test sqr() throws when the result overflows.
+     */
+    public function testSqrOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot square Complex. The result would overflow.');
+        new Complex(1e200)->sqr();
     }
 
     #endregion

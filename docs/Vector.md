@@ -35,6 +35,8 @@ isn't cached, so it's always up to date even after mutating the vector via `set(
 
 For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 
+**Throws:** `OverflowException` if the magnitude is too large to represent as a float.
+
 ### $count
 
 ```php
@@ -364,6 +366,7 @@ Calculate the element-wise reciprocal of the vector.
 **Throws:**
 
 - `ArithmeticException` if any element is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Example:**
 
@@ -393,6 +396,7 @@ Add one vector to another, element by element.
 **Throws:**
 
 - `LengthException` if vectors have different counts.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -419,6 +423,7 @@ Subtract one vector from another, element by element.
 **Throws:**
 
 - `LengthException` if vectors have different counts.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -447,8 +452,11 @@ To multiply a matrix by a vector in order to get a new vector, call [Matrix::mul
 
 **Returns:** `self` - New vector representing the product.
 
-**Throws:** `LengthException` if the vectors have different counts, or the matrix's row count doesn't equal the vector's
-count.
+**Throws:**
+
+- `LengthException` if the vectors have different counts, or the matrix's row count doesn't equal the vector's count.
+- `DomainException` if `$other` is a float that isn't finite (±INF or NAN).
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -487,6 +495,7 @@ must have the same count.
 - `DomainException` if `$other` is a float that isn't finite (±INF or NAN).
 - `ArithmeticException` if `$other` is zero, or a vector with a zero element.
 - `LengthException` if the vectors have different counts.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -519,6 +528,7 @@ Calculate the dot product of one vector with another vector.
 **Throws:**
 
 - `LengthException` if vectors have different counts.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -571,6 +581,8 @@ count.
 
 **Returns:** `Matrix` - New matrix representing the outer product.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -616,6 +628,8 @@ Calculate the sum of all elements in the vector.
 
 **Returns:** `float` - The sum. `0.0` for an empty vector (the additive identity).
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -632,6 +646,8 @@ public function prod(): float
 Calculate the product of all elements in the vector.
 
 **Returns:** `float` - The product. `1.0` for an empty vector (the multiplicative identity).
+
+**Throws:** `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 

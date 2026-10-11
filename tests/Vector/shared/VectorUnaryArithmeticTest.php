@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Vector;
 
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Vector;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -56,6 +57,16 @@ class VectorUnaryArithmeticTest extends TestCase
         $v = Vector::fromArray([1, 0, 2]);
         $this->expectException(ArithmeticException::class);
         $v->reciprocal();
+    }
+
+    /**
+     * Test reciprocal() throws when the result overflows.
+     */
+    public function testReciprocalOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute reciprocal of Vector. The result would overflow.');
+        Vector::fromArray([1e-320])->reciprocal();
     }
 
     #endregion

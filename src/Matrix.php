@@ -16,6 +16,7 @@ use OceanMoon\Core\Numbers;
 use OceanMoon\Core\Stringify;
 use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
+use OverflowException;
 use Override;
 use Stringable;
 
@@ -545,7 +546,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * Two matrices are equal if they have the same dimensions and all corresponding elements are exactly equal.
      *
      * @param mixed $other The Matrix to compare with.
-     * @return bool True if the Matrixes have the same dimensions and all elements are equal.
+     * @return bool True if the Matrices have the same dimensions and all elements are equal.
      * @throws InvalidArgumentException If $other is not a Matrix.
      */
     /** @disregard P1128 */
@@ -584,7 +585,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param mixed $other The Matrix to compare with.
      * @param float $relTol The relative tolerance.
      * @param float $absTol The absolute tolerance.
-     * @return bool True if the Matrixes have the same dimensions and all elements are approximately equal.
+     * @return bool True if the Matrices have the same dimensions and all elements are approximately equal.
      * @throws InvalidArgumentException If $other is not a Matrix.
      * @throws DomainException If either tolerance is negative.
      * @see Floats::approxEqual()
@@ -671,6 +672,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @return self A new matrix with each element replaced by its reciprocal.
      * @throws ArithmeticException If any element is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function reciprocal(): self
     {
@@ -681,7 +683,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 if ($value === 0.0) {
                     throw new ArithmeticException("Cannot compute reciprocal of zero at row $i, column $j.");
                 }
-                $result->set($i, $j, 1 / $value);
+                $result->set($i, $j, self::checkResult(1 / $value, 'compute reciprocal of Matrix'));
             }
         }
 
@@ -689,15 +691,21 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     }
 
     /**
-     * Calculate the inverse of this matrix using cofactor expansion with the adjugate matrix.
+     * Calculate the inverse of this matrix.
      *
-     * Warning: This algorithm has O(n! × n²) time complexity due to the underlying cofactor expansion used for
-     * determinant calculation. It is suitable for small matrices (up to ~10x10) but will be extremely slow for larger
-     * ones.
+     * A matrix up to 3×3 is inverted with the adjugate (cofactor) formula, which gives exact results where the
+     * arithmetic allows, e.g. the inverse of [[2, 1], [5, 3]] is exactly [[3, -1], [-5, 2]]. A larger one is inverted
+     * by LU decomposition with partial pivoting, which is O(n³).
+     *
+     * Either way, the matrix is first checked for singularity by LU decomposition. It's singular if a pivot is
+     * negligible relative to the elements of its row: no more than n × PHP_FLOAT_EPSILON times the largest of them.
+     * That also rejects a matrix that's singular in exact arithmetic, but whose determinant comes out tiny rather than
+     * zero in floating point, whose "inverse" would be meaningless.
      *
      * @return self New matrix representing the inverse.
      * @throws DomainException If matrix is not square.
-     * @throws ArithmeticException If matrix is not invertible (zero determinant).
+     * @throws ArithmeticException If matrix is singular.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function inv(): self
     {
@@ -706,28 +714,53 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot invert non-square Matrix.');
         }
 
-        // Scale so the largest element is in the range [1, 2), so the determinant and cofactors of a matrix with
-        // uniformly tiny or huge elements don't underflow or overflow. Scaling by a power of 2 is exact, so ordinary
-        // results are unchanged. inv(A) = inv(A / s) / s.
-        $elements = array_map(abs(...), array_merge(...$this->toArray()));
-        $max = $elements === [] ? 0.0 : max($elements);
-        $scale = $max === 0.0 ? 1.0 : 2 ** floor(log($max, 2));
-        $scaled = $this->div($scale);
-
-        // Calculate the inverse using cofactor expansion and the adjugate matrix.
-        $det = $scaled->det();
-        if ($det === 0.0) {
-            throw new ArithmeticException('Cannot invert Matrix with zero determinant.');
+        // Check the matrix isn't singular.
+        $decomposition = self::luDecompose($this->toArray());
+        if ($decomposition['singular']) {
+            throw new ArithmeticException('Cannot invert singular Matrix.');
         }
 
+        // Invert a matrix larger than 3×3 by LU decomposition.
         $n = $this->rowCount;
+        if ($n > 3) {
+            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
+        }
+
+        // Invert a matrix up to 3×3 with the adjugate formula. Try without scaling first, so ordinary results are
+        // unchanged, and a matrix whose elements span a wide range isn't harmed by scaling its smallest elements down
+        // to 0.
+        $scale = 1.0;
+        $scaled = $this;
+        $det = self::calcDet($this->toArray());
+
+        // If the determinant underflowed to 0 or overflowed, as it can for a matrix of uniformly tiny or huge
+        // elements, scale so the largest element is in the range [1, 2) and try again. Scaling by a power of 2 is
+        // exact. inv(A) = inv(A / s) / s.
+        if ($det === 0.0 || !is_finite($det)) {
+            $elements = array_map(abs(...), array_merge(...$this->toArray()));
+            $max = $elements === [] ? 0.0 : max($elements);
+            if ($max !== 0.0) {
+                $scale = 2 ** floor(log($max, 2));
+                $scaled = $this->div($scale);
+                $det = self::calcDet($scaled->toArray());
+            }
+        }
+
+        // The determinant is finite here: either it was already, or the matrix was scaled so every element is less than
+        // 2. It's non-zero unless it underflowed even after scaling, which the singularity check above makes unlikely.
+        if ($det === 0.0) {
+            throw new ArithmeticException('Cannot invert singular Matrix.');
+        }
+
+        // Calculate the inverse from the cofactors.
         $adjugate = new self($n, $n);
 
         for ($i = 0; $i < $n; $i++) {
             for ($j = 0; $j < $n; $j++) {
                 $minor = $scaled->getMinor($i, $j);
-                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * $this->calcDet($minor);
-                $adjugate->set($j, $i, $cofactor / $det / $scale); // Note: transposed
+                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * self::calcDet($minor);
+                // Note: transposed.
+                $adjugate->set($j, $i, self::checkResult($cofactor / $det / $scale, 'invert Matrix'));
             }
         }
 
@@ -744,6 +777,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param self $other Matrix to add.
      * @return self New matrix representing the sum.
      * @throws LengthException If matrices have different dimensions.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function add(self $other): self
     {
@@ -759,7 +793,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i]->get($j) + $other->data[$i]->get($j));
+                $sum = $this->data[$i]->get($j) + $other->data[$i]->get($j);
+                $result->set($i, $j, self::checkResult($sum, 'add Matrices'));
             }
         }
         return $result;
@@ -771,6 +806,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param self $other Matrix to subtract.
      * @return self New matrix representing the difference.
      * @throws LengthException If matrices have different dimensions.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sub(self $other): self
     {
@@ -786,7 +822,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i]->get($j) - $other->data[$i]->get($j));
+                $diff = $this->data[$i]->get($j) - $other->data[$i]->get($j);
+                $result->set($i, $j, self::checkResult($diff, 'subtract Matrices'));
             }
         }
         return $result;
@@ -800,17 +837,25 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @param float|Vector|self $other Number, vector, or matrix to multiply by.
      * @return ($other is Vector ? Vector : self) New vector for a Vector, otherwise a new matrix.
+     * @throws DomainException If $other is a float that isn't finite (±INF or NAN).
      * @throws LengthException If dimensions are incompatible for multiplication.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function mul(float|Vector|self $other): Vector|self
     {
         // Multiply matrix by a float.
         if (is_float($other)) {
+            // Check the scalar is finite.
+            if (!is_finite($other)) {
+                throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $other));
+            }
+
             // Multiply each element of the matrix by the float.
+            $operation = Stringify::prepEx('multiply Matrix by ?', $other);
             $scaled = new self($this->rowCount, $this->columnCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
                 for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->set($i, $j, $this->data[$i]->get($j) * $other);
+                    $scaled->set($i, $j, self::checkResult($this->data[$i]->get($j) * $other, $operation));
                 }
             }
             return $scaled;
@@ -828,7 +873,11 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             // Calculate each element of the result as the dot product of a row with the vector.
             $result = new Vector($this->rowCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
-                $result->set($i, $this->data[$i]->dot($other));
+                $sum = 0.0;
+                for ($j = 0; $j < $this->columnCount; $j++) {
+                    $sum += $this->data[$i]->get($j) * $other->get($j);
+                }
+                $result->set($i, self::checkResult($sum, 'multiply Matrix by Vector'));
             }
 
             return $result;
@@ -851,7 +900,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 for ($k = 0; $k < $this->columnCount; $k++) {
                     $sum += $this->data[$i]->get($k) * $other->data[$k]->get($j);
                 }
-                $result->set($i, $j, $sum);
+                $result->set($i, $j, self::checkResult($sum, 'multiply Matrices'));
             }
         }
 
@@ -865,6 +914,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @return self New matrix representing the quotient.
      * @throws DomainException If $scalar is not finite (±INF or NAN).
      * @throws ArithmeticException If $scalar is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function div(float $scalar): self
     {
@@ -879,10 +929,11 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         }
 
         // Divide each element of the matrix by the scalar.
+        $operation = Stringify::prepEx('divide Matrix by ?', $scalar);
         $scaled = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $scaled->set($i, $j, $this->data[$i]->get($j) / $scalar);
+                $scaled->set($i, $j, self::checkResult($this->data[$i]->get($j) / $scalar, $operation));
             }
         }
         return $scaled;
@@ -894,6 +945,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param self $other Matrix to multiply element-wise with.
      * @return self New matrix representing the Hadamard product.
      * @throws LengthException If matrices have different dimensions.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function hadamardMul(self $other): self
     {
@@ -909,7 +961,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
         $result = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, $this->data[$i]->get($j) * $other->data[$i]->get($j));
+                $product = $this->data[$i]->get($j) * $other->data[$i]->get($j);
+                $result->set($i, $j, self::checkResult($product, 'multiply Matrices element-wise'));
             }
         }
 
@@ -923,6 +976,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @return self New matrix representing the Hadamard quotient.
      * @throws LengthException If matrices have different dimensions.
      * @throws ArithmeticException If any element of $other is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function hadamardDiv(self $other): self
     {
@@ -942,7 +996,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 if ($divisor === 0.0) {
                     throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
                 }
-                $result->set($i, $j, $this->data[$i]->get($j) / $divisor);
+                $quotient = $this->data[$i]->get($j) / $divisor;
+                $result->set($i, $j, self::checkResult($quotient, 'divide Matrices element-wise'));
             }
         }
 
@@ -963,7 +1018,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * @param int $exp Power to raise to.
      * @return self New matrix representing the result.
      * @throws DomainException If matrix is not square.
-     * @throws ArithmeticException If not invertible (zero determinant) for negative powers.
+     * @throws ArithmeticException If the exponent is negative and the matrix is singular.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function pow(int $exp): self
     {
@@ -982,44 +1038,11 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             return clone $this;
         }
 
-        // Handle exponent = 2. Multiply directly rather than delegating to sqr(), whose isSquare() guard would be
-        // redundant here (already checked above).
-        if ($exp === 2) {
-            return $this->mul($this);
+        try {
+            return $this->calcPow($exp);
+        } catch (OverflowException $e) {
+            throw new OverflowException('Cannot raise Matrix to a power. The result would overflow.', 0, $e);
         }
-
-        // Handle exponent = -1. Delegate to inv().
-        if ($exp === -1) {
-            return $this->inv();
-        }
-
-        // Handle exponent = PHP_INT_MIN.
-        if ($exp === PHP_INT_MIN) {
-            $inv = $this->inv();
-            return $inv->pow(PHP_INT_MAX)->mul($inv);
-        }
-
-        // For other exponents, do exponentiation by squaring.
-        $result = self::identity($this->rowCount);
-        $x = clone $this;
-        // For negative exponents, invert the base.
-        if ($exp < 0) {
-            $x = $x->inv();
-        }
-        $y = abs($exp);
-        while ($y > 0) {
-            if ($y % 2 === 1) {
-                $result = $result->mul($x);
-            }
-            // Halve the exponent.
-            $y = (int) ($y / 2);
-            if ($y > 0) {
-                // Square the base.
-                $x = $x->mul($x);
-            }
-        }
-
-        return $result;
     }
 
     /**
@@ -1029,6 +1052,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @return self A new matrix representing the square of this matrix.
      * @throws DomainException If the matrix is not square.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sqr(): self
     {
@@ -1036,7 +1060,11 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot square non-square Matrix.');
         }
 
-        return $this->mul($this);
+        try {
+            return $this->mul($this);
+        } catch (OverflowException $e) {
+            throw new OverflowException('Cannot square Matrix. The result would overflow.', 0, $e);
+        }
     }
 
     #endregion
@@ -1065,6 +1093,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @return float The determinant.
      * @throws DomainException If matrix is not square.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function det(): float
     {
@@ -1073,7 +1102,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             throw new DomainException('Cannot compute determinant of non-square Matrix.');
         }
 
-        return $this->calcDet($this->toArray());
+        return self::checkResult(self::calcDet($this->toArray()), 'compute determinant of Matrix');
     }
 
     /**
@@ -1081,6 +1110,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      *
      * @return float The trace.
      * @throws DomainException If matrix is not square.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function trace(): float
     {
@@ -1093,7 +1123,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             $sum += $this->data[$i]->get($i);
         }
 
-        return $sum;
+        return self::checkResult($sum, 'compute trace of Matrix');
     }
 
     #endregion
@@ -1104,20 +1134,25 @@ final class Matrix implements Stringable, Countable, ArrayAccess
      * Calculate the Frobenius norm (square root of the sum of all squared elements).
      *
      * This is the matrix analogue of the Euclidean norm for vectors: the magnitude of all the elements, taken as one
-     * vector. So, like Vector's magnitude, it doesn't overflow or underflow when squaring the elements would. The
-     * result is only INF if the norm itself is too large to represent.
+     * vector. So, like Vector's magnitude, it doesn't overflow or underflow when squaring the elements would.
      *
      * @return float The Frobenius norm.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function norm(): float
     {
-        return Vector::fromArray(array_merge(...$this->toArray()))->magnitude;
+        try {
+            return Vector::fromArray(array_merge(...$this->toArray()))->magnitude;
+        } catch (OverflowException $e) {
+            throw new OverflowException('Cannot compute norm of Matrix. The result would overflow.', 0, $e);
+        }
     }
 
     /**
      * Calculate the P1 norm (maximum absolute column sum).
      *
      * @return float The P1 norm.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function p1Norm(): float
     {
@@ -1130,13 +1165,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             $max = max($max, $colSum);
         }
 
-        return $max;
+        return self::checkResult($max, 'compute P1 norm of Matrix');
     }
 
     /**
      * Calculate the P-infinity norm (maximum absolute row sum).
      *
      * @return float The P-infinity norm.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function pInfNorm(): float
     {
@@ -1149,7 +1185,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess
             $max = max($max, $rowSum);
         }
 
-        return $max;
+        return self::checkResult($max, 'compute P-infinity norm of Matrix');
     }
 
     #endregion
@@ -1261,22 +1297,89 @@ final class Matrix implements Stringable, Countable, ArrayAccess
     #region Helper methods
 
     /**
-     * Recursive helper method to calculate determinant using cofactor expansion.
+     * Calculate a power of this square matrix, for pow(), once the exponent 0 and 1 cases are handled.
      *
-     * Warning: This algorithm is suitable for small matrices (up to ~10x10) but will be slow for larger ones. For
-     * high-performance determinant calculation, consider LU decomposition (O(n³)). LU decomposition hasn't been
-     * implemented here because it's a bigger undertaking than the complexity numbers alone suggest, for a case that's
-     * unlikely to be needed in practice.
+     * @param int $exp Power to raise to.
+     * @return self The result.
+     * @throws ArithmeticException If the exponent is negative and the matrix is singular.
+     * @throws OverflowException If the result, or an intermediate value, is too large to represent as a float.
+     */
+    private function calcPow(int $exp): self
+    {
+        // Handle exponent = 2. Multiply directly rather than delegating to sqr(), whose isSquare() guard would be
+        // redundant here (already checked above).
+        if ($exp === 2) {
+            return $this->mul($this);
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($exp === -1) {
+            return $this->inv();
+        }
+
+        // Handle exponent = PHP_INT_MIN.
+        if ($exp === PHP_INT_MIN) {
+            $inv = $this->inv();
+            return $inv->calcPow(PHP_INT_MAX)->mul($inv);
+        }
+
+        // For other exponents, do exponentiation by squaring.
+        $result = self::identity($this->rowCount);
+        $x = clone $this;
+        // For negative exponents, invert the base.
+        if ($exp < 0) {
+            $x = $x->inv();
+        }
+        $y = abs($exp);
+        while ($y > 0) {
+            if ($y % 2 === 1) {
+                $result = $result->mul($x);
+            }
+            // Halve the exponent.
+            $y = intdiv($y, 2);
+            if ($y > 0) {
+                // Square the base.
+                $x = $x->mul($x);
+            }
+        }
+
+        return $result;
+    }
+
+    /**
+     * Check a calculated value is representable.
      *
-     * The 0x0, 1x1, 2x2, and 3x3 cases are handled directly via closed-form formulas rather than recursing, both
-     * because they're common (e.g. 3x3 minors arise from cofactor-expanding a 4x4 matrix, a common size for 3D
-     * transforms) and to skip the overhead of building submatrix arrays for cases that are cheap to compute directly.
-     * The 3x3 formula is Sarrus' Rule, a mnemonic specific to 3x3 matrices.
+     * With finite operands, a non-finite result means it overflowed. A NAN result means an intermediate value
+     * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
+     *
+     * @param float $value The calculated value.
+     * @param string $operation The operation, for the exception message, e.g. 'add Matrices'.
+     * @return float The value.
+     * @throws OverflowException If the value is not finite.
+     */
+    private static function checkResult(float $value, string $operation): float
+    {
+        if (!is_finite($value)) {
+            throw new OverflowException("Cannot $operation. The result would overflow.");
+        }
+
+        return $value;
+    }
+
+    /**
+     * Calculate the determinant of a square matrix.
+     *
+     * Matrices up to 3×3 use closed-form formulas, which give exact results where the arithmetic allows, e.g. 0 for
+     * [[1, 2, 3], [4, 5, 6], [7, 8, 9]]. The 3×3 formula is Sarrus' Rule. Larger matrices use LU decomposition, which
+     * is O(n³): the determinant is the product of the pivots, negated for an odd number of row swaps. A singular
+     * matrix that size can give a tiny non-zero result rather than exactly zero, due to rounding.
+     *
+     * The result may be non-finite. The caller checks it.
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return float Determinant of the matrix.
      */
-    private function calcDet(array $matrix): float
+    private static function calcDet(array $matrix): float
     {
         $n = count($matrix);
 
@@ -1306,26 +1409,146 @@ final class Matrix implements Stringable, Countable, ArrayAccess
                 - $matrix[0][1] * $matrix[1][0] * $matrix[2][2];
         }
 
-        // Cofactor expansion for matrix sizes 4x4 and greater.
-        // This can be a little slow for large matrices - computational complexity is O(n!).
-        $det = 0.0;
-        for ($j = 0; $j < $n; $j++) {
-            $submatrix = [];
-            for ($i = 1; $i < $n; $i++) {
-                $row = [];
-                for ($k = 0; $k < $n; $k++) {
-                    if ($k !== $j) {
-                        $row[] = $matrix[$i][$k];
-                    }
-                }
-                $submatrix[] = $row;
-            }
-
-            $cofactor = ($j % 2 === 0 ? 1 : -1) * $matrix[0][$j] * $this->calcDet($submatrix);
-            $det += $cofactor;
+        // LU decomposition for matrix sizes 4x4 and greater.
+        $decomposition = self::luDecompose($matrix);
+        $det = (float) $decomposition['sign'];
+        for ($i = 0; $i < $n; $i++) {
+            $det *= $decomposition['lu'][$i][$i];
         }
 
         return $det;
+    }
+
+    /**
+     * Decompose a square matrix into PA = LU by Gaussian elimination with partial pivoting.
+     *
+     * L is unit lower triangular and U is upper triangular. Both are returned packed into one array: U on and above
+     * the diagonal, and L's multipliers below it. Each step swaps in the row with the largest pivot candidate, which
+     * keeps every multiplier's magnitude at most 1.
+     *
+     * The matrix is reported as singular if a pivot is negligible relative to the elements of its original row: no
+     * more than n × PHP_FLOAT_EPSILON times the largest of them. Comparing with each row's own scale, rather than the
+     * whole matrix's, means a matrix whose rows differ widely in scale, e.g. [[1e-300, 0], [0, 1e300]], isn't
+     * mistaken for a singular one.
+     *
+     * @param list<list<float>> $matrix Matrix data.
+     * @return array{lu: array<int, array<int, float>>, perm: array<int, int>, sign: int, singular: bool} The packed
+     * LU, the row permutation (position to original row), the permutation's sign (1 or -1), and whether the matrix is
+     * singular.
+     */
+    private static function luDecompose(array $matrix): array
+    {
+        $n = count($matrix);
+        $lu = $matrix;
+        $perm = range(0, $n - 1);
+        $sign = 1;
+        $singular = false;
+
+        // Get the scale of each original row: its largest absolute element.
+        $rowScales = [];
+        foreach ($matrix as $row) {
+            $rowScale = 0.0;
+            foreach ($row as $value) {
+                $rowScale = max($rowScale, abs($value));
+            }
+            $rowScales[] = $rowScale;
+        }
+
+        for ($k = 0; $k < $n; $k++) {
+            // Find the row with the largest pivot candidate.
+            $pivotRow = $k;
+            $max = abs($lu[$k][$k]);
+            for ($i = $k + 1; $i < $n; $i++) {
+                if (abs($lu[$i][$k]) > $max) {
+                    $max = abs($lu[$i][$k]);
+                    $pivotRow = $i;
+                }
+            }
+
+            // Swap it into place.
+            if ($pivotRow !== $k) {
+                $row = $lu[$k];
+                $lu[$k] = $lu[$pivotRow];
+                $lu[$pivotRow] = $row;
+                $index = $perm[$k];
+                $perm[$k] = $perm[$pivotRow];
+                $perm[$pivotRow] = $index;
+                $sign = -$sign;
+            }
+
+            // Check for a negligible pivot.
+            $pivot = $lu[$k][$k];
+            if (abs($pivot) <= $n * PHP_FLOAT_EPSILON * $rowScales[$perm[$k]]) {
+                $singular = true;
+            }
+
+            // A zero pivot means the rest of the column is zero too, so there's nothing to eliminate.
+            if ($pivot === 0.0) {
+                continue;
+            }
+
+            // Eliminate the column below the pivot.
+            for ($i = $k + 1; $i < $n; $i++) {
+                $multiplier = $lu[$i][$k] / $pivot;
+                $lu[$i][$k] = $multiplier;
+                for ($j = $k + 1; $j < $n; $j++) {
+                    $lu[$i][$j] -= $multiplier * $lu[$k][$j];
+                }
+            }
+        }
+
+        return [
+            'lu'       => $lu,
+            'perm'     => $perm,
+            'sign'     => $sign,
+            'singular' => $singular,
+        ];
+    }
+
+    /**
+     * Calculate the inverse of a non-singular matrix from its LU decomposition.
+     *
+     * Each column of the inverse solves Ax = e (a column of the identity): first Ly = Pe by forward substitution, then
+     * Ux = y by back substitution.
+     *
+     * @param array<int, array<int, float>> $lu The packed LU, from luDecompose().
+     * @param array<int, int> $perm The row permutation, from luDecompose().
+     * @return self The inverse.
+     * @throws OverflowException If the result is too large to represent as a float.
+     */
+    private static function invFromLu(array $lu, array $perm): self
+    {
+        $n = count($lu);
+        $inverse = new self($n, $n);
+
+        for ($col = 0; $col < $n; $col++) {
+            // Solve Ly = Pe, where e is this column of the identity.
+            $y = [];
+            for ($i = 0; $i < $n; $i++) {
+                $sum = $perm[$i] === $col ? 1.0 : 0.0;
+                for ($j = 0; $j < $i; $j++) {
+                    $sum -= $lu[$i][$j] * $y[$j];
+                }
+                $y[$i] = $sum;
+            }
+
+            // Solve Ux = y.
+            $x = [];
+            for ($i = $n - 1; $i >= 0; $i--) {
+                $sum = $y[$i];
+                for ($j = $i + 1; $j < $n; $j++) {
+                    $sum -= $lu[$i][$j] * $x[$j];
+                }
+                $x[$i] = $sum / $lu[$i][$i];
+            }
+
+            // Store the column.
+            for ($i = 0; $i < $n; $i++) {
+                $inverse->set($i, $col, self::checkResult($x[$i], 'invert Matrix'));
+            }
+        }
+
+        return $inverse;
     }
 
     /**

@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
 use OceanMoon\Math\Matrix;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -140,6 +141,36 @@ class MatrixPowerTest extends TestCase
     }
 
     /**
+     * Test power with exponent PHP_INT_MAX gives the exact result.
+     *
+     * The matrix has order 3 (M³ = I) and integer elements, so every intermediate result is exact, and the result
+     * depends only on the exponent mod 3. PHP_INT_MAX ≡ 1 (mod 3), so the result is M. This catches any error in
+     * halving an exponent too large to represent exactly as a float.
+     */
+    public function testPowIntMaxExponentExact(): void
+    {
+        $m = Matrix::fromArray([
+            [0, -1],
+            [1, -1],
+        ]);
+        $this->assertTrue($m->pow(PHP_INT_MAX)->equal($m));
+    }
+
+    /**
+     * Test power with exponent PHP_INT_MIN gives the exact result.
+     *
+     * Uses the same order-3 matrix as testPowIntMaxExponentExact(). PHP_INT_MIN ≡ 1 (mod 3), so the result is M.
+     */
+    public function testPowIntMinExponentExact(): void
+    {
+        $m = Matrix::fromArray([
+            [0, -1],
+            [1, -1],
+        ]);
+        $this->assertTrue($m->pow(PHP_INT_MIN)->equal($m));
+    }
+
+    /**
      * Test power with a negative exponent whose magnitude is greater than 1, exercising the squaring loop's
      * negative-exponent branch (not just the dedicated pow(-1) case).
      */
@@ -167,6 +198,18 @@ class MatrixPowerTest extends TestCase
         $m = new Matrix(2, 3);
         $this->expectException(DomainException::class);
         $m->pow(2);
+    }
+
+    /**
+     * Test pow() throws when the result overflows.
+     */
+    public function testPowOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot raise Matrix to a power. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->pow(3);
     }
 
     #endregion
@@ -212,6 +255,18 @@ class MatrixPowerTest extends TestCase
         $m = new Matrix(2, 3);
         $this->expectException(DomainException::class);
         $m->sqr();
+    }
+
+    /**
+     * Test sqr() throws when the result overflows.
+     */
+    public function testSqrOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot square Matrix. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->sqr();
     }
 
     #endregion

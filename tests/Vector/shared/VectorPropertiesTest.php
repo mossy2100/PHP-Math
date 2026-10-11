@@ -7,6 +7,7 @@ namespace OceanMoon\Math\Tests\Vector;
 use Error;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Vector;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -88,11 +89,13 @@ class VectorPropertiesTest extends TestCase
     }
 
     /**
-     * Test magnitude is INF when the magnitude itself is too large to represent.
+     * Test magnitude throws when the magnitude itself is too large to represent.
      */
-    public function testMagnitudeOverflowGivesInf(): void
+    public function testMagnitudeOverflowThrows(): void
     {
-        $this->assertSame(INF, Vector::fromArray([1.5e308, 1.5e308])->magnitude);
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute magnitude of Vector. The result would overflow.');
+        $magnitude = Vector::fromArray([1.5e308, 1.5e308])->magnitude;
     }
 
     /**

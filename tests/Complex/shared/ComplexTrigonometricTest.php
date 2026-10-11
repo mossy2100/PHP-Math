@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use DomainException;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -51,6 +51,16 @@ class ComplexTrigonometricTest extends TestCase
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
     }
 
+    /**
+     * Test sin() throws when the result overflows.
+     */
+    public function testSinOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute sine of Complex. The result would overflow.');
+        new Complex(1, 1000)->sin();
+    }
+
     #endregion
 
     #region Method cos() tests.
@@ -90,6 +100,16 @@ class ComplexTrigonometricTest extends TestCase
 
         $this->assertEqualsWithDelta($expectedReal, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test cos() throws when the result overflows.
+     */
+    public function testCosOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute cosine of Complex. The result would overflow.');
+        new Complex(1, 1000)->cos();
     }
 
     #endregion
@@ -134,8 +154,8 @@ class ComplexTrigonometricTest extends TestCase
      */
     public function testTanOverflowThrows(): void
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: INF.');
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute tangent of Complex. The result would overflow.');
         new Complex(1, 1000)->tan();
     }
 

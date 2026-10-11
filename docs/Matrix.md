@@ -603,7 +603,10 @@ Calculate the element-wise reciprocal of the matrix. Not to be confused with `in
 
 **Returns:** `self` - A new matrix with each element replaced by its reciprocal.
 
-**Throws:** `ArithmeticException` if any element is zero.
+**Throws:**
+
+- `ArithmeticException` if any element is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Example:**
 
@@ -619,18 +622,24 @@ $result = $m->reciprocal();
 public function inv(): self
 ```
 
-Calculate the inverse of the matrix. Uses cofactor expansion with the adjugate matrix. The matrix must be square and
-invertible (non-zero determinant).
+Calculate the inverse of the matrix, which must be square and not singular.
 
-**Note:** The underlying algorithm has O(n! × n²) time complexity. It is suitable for small matrices (up to ~10×10) but
-will be extremely slow for larger ones.
+- **Up to 3×3:** uses the adjugate (cofactor) formula, which gives exact results where the arithmetic allows. For
+  example, the inverse of `[[2, 1], [5, 3]]` is exactly `[[3, -1], [-5, 2]]`.
+- **4×4 and larger:** uses LU decomposition with partial pivoting, which is O(n³). A 50×50 matrix takes a few hundredths
+  of a second.
+
+The matrix is singular if, during LU decomposition, a pivot is negligible relative to the elements of its row: at most
+`n * PHP_FLOAT_EPSILON` times the largest of them. That also catches a matrix that's singular in exact arithmetic, but
+whose determinant comes out tiny rather than zero due to rounding, e.g. `[[0.1, 0.3], [0.7, 2.1]]`.
 
 **Returns:** `self` - New matrix representing the inverse.
 
 **Throws:**
 
 - `DomainException` if the matrix is not square.
-- `ArithmeticException` if the matrix is not invertible (determinant is zero).
+- `ArithmeticException` if the matrix is singular.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -660,7 +669,10 @@ Add one matrix to another. Both matrices must have the same dimensions.
 
 **Returns:** `self` - New matrix representing the sum.
 
-**Throws:** `LengthException` if matrices have different dimensions.
+**Throws:**
+
+- `LengthException` if matrices have different dimensions.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -685,7 +697,10 @@ Subtract one matrix from another. Both matrices must have the same dimensions.
 
 **Returns:** `self` - New matrix representing the difference.
 
-**Throws:** `LengthException` if matrices have different dimensions.
+**Throws:**
+
+- `LengthException` if matrices have different dimensions.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -721,7 +736,11 @@ To go the other way (_xA_), call [`Vector::mul()`](Vector.md#mul).
 
 **Returns:** `Vector|self` - A new vector for a `Vector` argument, otherwise a new matrix.
 
-**Throws:** `LengthException` if dimensions are incompatible for matrix multiplication.
+**Throws:**
+
+- `LengthException` if dimensions are incompatible for matrix multiplication.
+- `DomainException` if `$other` is a float that isn't finite (±INF or NAN).
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -760,6 +779,7 @@ Divide the matrix by a scalar.
 
 - `DomainException` if `$scalar` is not finite (±INF or NAN).
 - `ArithmeticException` if `$scalar` is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -784,7 +804,10 @@ dimensions.
 
 **Returns:** `self` - New matrix representing the Hadamard product.
 
-**Throws:** `LengthException` if matrices have different dimensions.
+**Throws:**
+
+- `LengthException` if matrices have different dimensions.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -814,6 +837,7 @@ dimensions.
 
 - `LengthException` if matrices have different dimensions.
 - `ArithmeticException` if any element of `$other` is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -856,7 +880,8 @@ exponent.
 **Throws:**
 
 - `DomainException` if the matrix is not square.
-- `ArithmeticException` if the matrix is not invertible (zero determinant) for negative powers.
+- `ArithmeticException` if the exponent is negative and the matrix is singular.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -879,7 +904,10 @@ Square the matrix. Equivalent to `pow(2)`, but more readable as a standalone cal
 
 **Returns:** `self` - New matrix representing the square.
 
-**Throws:** `DomainException` if the matrix is not square.
+**Throws:**
+
+- `DomainException` if the matrix is not square.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Example:**
 
@@ -918,9 +946,16 @@ public function det(): float
 
 Calculate the determinant of a matrix, which must be square.
 
+Matrices up to 3×3 use closed-form formulas, which give exact results where the arithmetic allows. Larger matrices use
+LU decomposition, which is O(n³). At that size, a singular matrix can give a tiny non-zero determinant, such as
+`6.7e-16`, due to rounding. Use `inv()`, which detects that, to test whether a matrix is invertible.
+
 **Returns:** `float` - The determinant.
 
-**Throws:** `DomainException` if the matrix is not square.
+**Throws:**
+
+- `DomainException` if the matrix is not square.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -942,7 +977,10 @@ Calculate the trace of the matrix (sum of diagonal elements). The matrix must be
 
 **Returns:** `float` - The trace.
 
-**Throws:** `DomainException` if the matrix is not square.
+**Throws:**
+
+- `DomainException` if the matrix is not square.
+- `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -969,6 +1007,8 @@ Euclidean norm for vectors.
 
 **Returns:** `float` - The Frobenius norm.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -989,6 +1029,8 @@ Calculate the P1 norm (maximum absolute column sum).
 
 **Returns:** `float` - The P1 norm.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -1005,6 +1047,8 @@ public function pInfNorm(): float
 Calculate the P-infinity norm (maximum absolute row sum).
 
 **Returns:** `float` - The P-infinity norm.
+
+**Throws:** `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 

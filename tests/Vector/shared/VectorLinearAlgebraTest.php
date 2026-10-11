@@ -43,6 +43,16 @@ class VectorLinearAlgebraTest extends TestCase
         $v1->dot($v2);
     }
 
+    /**
+     * Test dot() throws when an intermediate product overflows, even though the true result (0) is representable.
+     */
+    public function testDotOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute dot product. The result would overflow.');
+        Vector::fromArray([1e200, 1e200])->dot(Vector::fromArray([1e200, -1e200]));
+    }
+
     #endregion
 
     #region Method cross() tests.
@@ -129,7 +139,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v1 = Vector::fromArray([1e200, 1e200, 0.0]);
         $v2 = Vector::fromArray([1e200, -1e200, 0.0]);
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessageMatches('/^Cannot compute cross product of .+\. The result would overflow\.$/');
+        $this->expectExceptionMessage('Cannot compute cross product. The result would overflow.');
         $v1->cross($v2);
     }
 
@@ -174,6 +184,16 @@ class VectorLinearAlgebraTest extends TestCase
             [8.0, 10.0],
             [12.0, 15.0],
         ], $result->toArray());
+    }
+
+    /**
+     * Test outer() throws when the result overflows.
+     */
+    public function testOuterOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute outer product. The result would overflow.');
+        Vector::fromArray([1e200])->outer(Vector::fromArray([1e200]));
     }
 
     #endregion

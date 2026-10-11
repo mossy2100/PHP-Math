@@ -32,9 +32,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   list still throws `DomainException`.
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot divide
   by zero." The exception class (`ArithmeticException`) is unchanged.
+- **Overflow throws `OverflowException` everywhere (breaking).** A result, or an intermediate value, too large to
+  represent now throws `OverflowException`, with a message naming the operation, e.g. "Cannot multiply Complex numbers.
+  The result would overflow." A `NAN` from finite operands comes from an intermediate overflow, so it's reported the
+  same way. Previously:
+  - `Complex` arithmetic, `pow()`, `exp()`, and the trigonometric and hyperbolic methods threw `DomainException`, e.g.
+    "Cannot create Complex with non-finite real part: INF."
+  - `Vector` and `Matrix` arithmetic threw `DomainException` "Cannot set element to non-finite value: INF."
+  - `Vector::dot()`, `sum()`, `prod()` and `$magnitude`, and `Matrix::det()`, `trace()`, `norm()`, `p1Norm()` and
+    `pInfNorm()`, returned `INF` or `NAN`.
+
+  A non-finite argument still throws `DomainException`. See the README's "Infinity, NAN and Overflow" section.
+- **`new Complex()`** throws `OverflowException` when both parts are finite but the magnitude isn't, e.g.
+  `new Complex(1.7e308, 1.7e308)`. Previously its `$magnitude` was `INF`.
+- **`Vector::mul()` and `Matrix::mul()`** throw `DomainException` for a non-finite scalar, like `div()`. Previously,
+  multiplying an empty or zero vector by `INF` succeeded.
+- **`Complex::fromString()` and `Rational::fromString()`** include the string in an invalid-format message, quoted and
+  abbreviated to 32 characters, e.g. "Cannot convert string '3+4x' to Complex. Invalid format." A string that isn't
+  valid UTF-8 is left out.
+- **Overflow messages no longer include the operands.** `Complex::div()` gives "Cannot divide Complex numbers. The
+  result would overflow.", and `Vector::cross()` gives "Cannot compute cross product. The result would overflow."
+- **`Matrix::inv()`, `det()` and `pow()` use LU decomposition for matrices larger than 3×3 (breaking),** instead of
+  cofactor expansion, which was O(n!): a 10×10 inverse took about 30 seconds, and now takes well under a millisecond.
+  Matrices up to 3×3 still use the closed-form formulas, which give exact results where the arithmetic allows.
+- **`Matrix::inv()` detects near-singular matrices (breaking).** It throws `ArithmeticException` "Cannot invert singular
+  Matrix." if a pivot is negligible relative to its row, instead of only for an exactly zero determinant. Previously, a
+  matrix such as `[[0.1, 0.3], [0.7, 2.1]]`, singular but with a determinant of about 3e-17 due to rounding, gave an
+  inverse with elements around 1e16. The message was "Cannot invert Matrix with zero determinant."
 
 ### Fixed
 
+- **`Matrix::pow()` gave the wrong result for an exponent above 2^53**, including `PHP_INT_MAX` and `PHP_INT_MIN`,
+  because it halved the exponent with float division.
 - **`Complex::div()`/`inv()` gave wrong results or threw for a very small or large divisor**, even when the result was
   representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to 1e154.
   Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and `1 / 1e200` gave
@@ -51,8 +80,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException` otherwise.
 
 - **`Matrix::inv()` threw "zero determinant" for a matrix of uniformly tiny elements**, e.g.
-  `[[1e-300, 0], [0, 1e-300]]`, because the determinant underflowed to 0, and overflowed for huge ones. The matrix is
-  now scaled by a power of 2 first, which is exact, so ordinary results are unchanged.
+  `[[1e-300, 0], [0, 1e-300]]`, because the determinant underflowed to 0, and overflowed for huge ones. In that case,
+  the matrix is now scaled by a power of 2, which is exact, and inverted again. Other matrices aren't scaled, so their
+  results are unchanged.
 
 ### Documentation
 

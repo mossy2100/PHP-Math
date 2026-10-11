@@ -7,6 +7,7 @@ namespace OceanMoon\Math\Tests\Complex;
 use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -69,8 +70,8 @@ class ComplexTranscendentalTest extends TestCase
      */
     public function testExpOverflowThrows(): void
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create Complex with non-finite magnitude: INF.');
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute exponential of Complex. The result would overflow.');
         new Complex(1000, 1)->exp();
     }
 
@@ -270,6 +271,16 @@ class ComplexTranscendentalTest extends TestCase
     {
         $this->expectException(ArithmeticException::class);
         new Complex(0)->log(new Complex(2, 1));
+    }
+
+    /**
+     * Test log() throws when the result overflows, for a base whose logarithm is tiny.
+     */
+    public function testLogOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute logarithm of Complex. The result would overflow.');
+        new Complex(1e300)->log(new Complex(1, 1e-310));
     }
 
     #endregion

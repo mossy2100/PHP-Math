@@ -103,6 +103,38 @@ class RationalFactoryTest extends TestCase
         Rational::fromString('5/0');
     }
 
+    /**
+     * Test the invalid-format message includes the string, quoted and escaped.
+     */
+    public function testFromStringInvalidMessageIncludesString(): void
+    {
+        $this->expectException(FormatException::class);
+        $this->expectExceptionMessage("Cannot convert string 'it\\'s 3x' to Rational. Invalid format.");
+        Rational::fromString("it's 3x");
+    }
+
+    /**
+     * Test the invalid-format message abbreviates a long string to 32 characters.
+     */
+    public function testFromStringInvalidMessageAbbreviatesLongString(): void
+    {
+        $this->expectException(FormatException::class);
+        $this->expectExceptionMessage(
+            "Cannot convert string '" . str_repeat('x', 29) . "…' to Rational. Invalid format."
+        );
+        Rational::fromString(str_repeat('x', 40));
+    }
+
+    /**
+     * Test the invalid-format message leaves out a string that isn't valid UTF-8.
+     */
+    public function testFromStringInvalidUtf8MessageOmitsString(): void
+    {
+        $this->expectException(FormatException::class);
+        $this->expectExceptionMessage('Cannot convert string to Rational. Invalid format.');
+        Rational::fromString("\xff\xfe");
+    }
+
     #endregion
 
     #region Method fromFloat() tests.

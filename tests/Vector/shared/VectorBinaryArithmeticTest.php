@@ -9,6 +9,7 @@ use LengthException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -39,6 +40,16 @@ class VectorBinaryArithmeticTest extends TestCase
         $v1->add($v2);
     }
 
+    /**
+     * Test add() throws when the result overflows.
+     */
+    public function testAddOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot add Vectors. The result would overflow.');
+        Vector::fromArray([1e308])->add(Vector::fromArray([1e308]));
+    }
+
     #endregion
 
     #region Method sub() tests.
@@ -63,6 +74,16 @@ class VectorBinaryArithmeticTest extends TestCase
         $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
         $v1->sub($v2);
+    }
+
+    /**
+     * Test sub() throws when the result overflows.
+     */
+    public function testSubOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot subtract Vectors. The result would overflow.');
+        Vector::fromArray([1e308])->sub(Vector::fromArray([-1e308]));
     }
 
     #endregion
@@ -189,6 +210,48 @@ class VectorBinaryArithmeticTest extends TestCase
         $v1->mul($v2);
     }
 
+    /**
+     * Test mul() by a scalar throws when the result overflows.
+     */
+    public function testMulByScalarOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Vector by 1.0E+200. The result would overflow.');
+        Vector::fromArray([1e200])->mul(1e200);
+    }
+
+    /**
+     * Test mul() by a non-finite scalar throws, even for an empty vector.
+     */
+    public function testMulByNonFiniteScalarThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Invalid scalar: INF. Must be finite.');
+        new Vector(0)->mul(INF);
+    }
+
+    /**
+     * Test mul() by a vector throws when the result overflows.
+     */
+    public function testMulByVectorOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Vectors. The result would overflow.');
+        Vector::fromArray([1e200])->mul(Vector::fromArray([1e200]));
+    }
+
+    /**
+     * Test mul() by a matrix throws when the result overflows.
+     */
+    public function testMulByMatrixOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Vector by Matrix. The result would overflow.');
+        Vector::fromArray([1e200])->mul(Matrix::fromArray([
+            [1e200],
+        ]));
+    }
+
     #endregion
 
     #region Method div() tests.
@@ -261,6 +324,26 @@ class VectorBinaryArithmeticTest extends TestCase
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage('Cannot divide by zero at index 1.');
         $v1->div($v2);
+    }
+
+    /**
+     * Test div() by a scalar throws when the result overflows.
+     */
+    public function testDivByScalarOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide Vector by 1.0E-200. The result would overflow.');
+        Vector::fromArray([1e200])->div(1e-200);
+    }
+
+    /**
+     * Test div() by a vector throws when the result overflows.
+     */
+    public function testDivByVectorOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide Vectors. The result would overflow.');
+        Vector::fromArray([1e200])->div(Vector::fromArray([1e-200]));
     }
 
     #endregion

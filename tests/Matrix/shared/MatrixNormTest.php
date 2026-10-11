@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Matrix;
 
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Matrix;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -89,15 +90,16 @@ class MatrixNormTest extends TestCase
     }
 
     /**
-     * Test Frobenius norm is INF when the norm itself is too large to represent.
+     * Test Frobenius norm throws when the norm itself is too large to represent.
      */
-    public function testNormFrobeniusOverflowGivesInf(): void
+    public function testNormFrobeniusOverflowThrows(): void
     {
-        $m = Matrix::fromArray([
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute norm of Matrix. The result would overflow.');
+        Matrix::fromArray([
             [1.5e308],
             [1.5e308],
-        ]);
-        $this->assertSame(INF, $m->norm());
+        ])->norm();
     }
 
     #endregion
@@ -117,6 +119,19 @@ class MatrixNormTest extends TestCase
         $this->assertSame(6.0, $m->p1Norm());
     }
 
+    /**
+     * Test p1Norm() throws when the result overflows.
+     */
+    public function testP1NormOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute P1 norm of Matrix. The result would overflow.');
+        Matrix::fromArray([
+            [1e308],
+            [1e308],
+        ])->p1Norm();
+    }
+
     #endregion
 
     #region Method pInfNorm() tests.
@@ -132,6 +147,18 @@ class MatrixNormTest extends TestCase
             [3, 4],
         ]);
         $this->assertSame(7.0, $m->pInfNorm());
+    }
+
+    /**
+     * Test pInfNorm() throws when the result overflows.
+     */
+    public function testPInfNormOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute P-infinity norm of Matrix. The result would overflow.');
+        Matrix::fromArray([
+            [1e308, 1e308],
+        ])->pInfNorm();
     }
 
     #endregion

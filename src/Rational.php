@@ -287,8 +287,13 @@ final class Rational implements Stringable
             }
         }
 
-        // Invalid format.
-        throw new FormatException('Cannot convert string to Rational. Invalid format.');
+        // Invalid format. Include the string in the message, abbreviated, unless it isn't valid UTF-8, which Stringify
+        // can't show.
+        throw new FormatException(
+            mb_check_encoding($str, 'UTF-8')
+                ? Stringify::prepEx('Cannot convert string ? to Rational. Invalid format.', $str)
+                : 'Cannot convert string to Rational. Invalid format.'
+        );
     }
 
     #endregion

@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -100,6 +101,16 @@ class ComplexUnaryArithmeticTest extends TestCase
 
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
+    }
+
+    /**
+     * Test inv() throws when the result overflows.
+     */
+    public function testInvOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot invert Complex. The result would overflow.');
+        new Complex(1e-320)->inv();
     }
 
     #endregion

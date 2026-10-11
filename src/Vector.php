@@ -47,7 +47,9 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * Calculate the magnitude (norm) of the vector.
      *
      * The elements are scaled by a power of 2 before squaring, so the squares don't overflow to INF for a huge vector
-     * or underflow to 0 for a tiny one. The result is only INF if the magnitude itself is too large to represent.
+     * or underflow to 0 for a tiny one.
+     *
+     * @throws OverflowException If the magnitude is too large to represent as a float.
      */
     public float $magnitude {
         get {
@@ -58,7 +60,10 @@ final class Vector implements Stringable, Countable, ArrayAccess
             }
 
             // Calculate the magnitude of the scaled vector, then undo the scaling.
-            return $scale * sqrt(array_sum(array_map(static fn ($x) => ($x / $scale) ** 2, $this->data)));
+            return self::checkResult(
+                $scale * sqrt(array_sum(array_map(static fn ($x) => ($x / $scale) ** 2, $this->data))),
+                'compute magnitude of Vector'
+            );
         }
     }
 
@@ -348,18 +353,19 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @return self A new vector with each element replaced by its reciprocal.
      * @throws ArithmeticException If any element is zero.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function reciprocal(): self
     {
-        $result = new self($this->count);
+        $data = [];
         for ($i = 0; $i < $this->count; $i++) {
             if ($this->data[$i] === 0.0) {
                 throw new ArithmeticException("Cannot compute reciprocal of zero at index $i.");
             }
-            $result->set($i, 1 / $this->data[$i]);
+            $data[] = self::checkResult(1 / $this->data[$i], 'compute reciprocal of Vector');
         }
 
-        return $result;
+        return self::fromList($data);
     }
 
     #endregion
@@ -372,6 +378,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @param self $other Vector to add.
      * @return self New vector representing the sum.
      * @throws LengthException If vectors have different counts.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function add(self $other): self
     {
@@ -383,12 +390,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Add the vectors element-wise.
-        $result = new self($this->count);
+        $data = [];
         for ($i = 0; $i < $this->count; $i++) {
-            $result->set($i, $this->data[$i] + $other->data[$i]);
+            $data[] = self::checkResult($this->data[$i] + $other->data[$i], 'add Vectors');
         }
 
-        return $result;
+        return self::fromList($data);
     }
 
     /**
@@ -397,6 +404,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @param self $other Vector to subtract.
      * @return self New vector representing the difference.
      * @throws LengthException If vectors have different counts.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sub(self $other): self
     {
@@ -408,12 +416,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Subtract the vectors element-wise.
-        $result = new self($this->count);
+        $data = [];
         for ($i = 0; $i < $this->count; $i++) {
-            $result->set($i, $this->data[$i] - $other->data[$i]);
+            $data[] = self::checkResult($this->data[$i] - $other->data[$i], 'subtract Vectors');
         }
 
-        return $result;
+        return self::fromList($data);
     }
 
     /**
@@ -426,20 +434,28 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param float|self|Matrix $other Number, vector, or matrix to multiply by.
      * @return self New vector representing the product.
+     * @throws DomainException If $other is a float that isn't finite (±INF or NAN).
      * @throws LengthException If the vectors have different counts, or the matrix's row count doesn't equal this
      * vector's count.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function mul(float|self|Matrix $other): self
     {
         // Multiply vector by a float.
         if (is_float($other)) {
-            // Multiply each element by the scalar.
-            $result = new self($this->count);
-            for ($i = 0; $i < $this->count; $i++) {
-                $result->set($i, $this->data[$i] * $other);
+            // Check the scalar is finite.
+            if (!is_finite($other)) {
+                throw new DomainException(Stringify::prepEx('Invalid scalar: ?. Must be finite.', $other));
             }
 
-            return $result;
+            // Multiply each element by the scalar.
+            $operation = Stringify::prepEx('multiply Vector by ?', $other);
+            $data = [];
+            for ($i = 0; $i < $this->count; $i++) {
+                $data[] = self::checkResult($this->data[$i] * $other, $operation);
+            }
+
+            return self::fromList($data);
         }
 
         // Multiply vector by a vector, element-wise.
@@ -450,12 +466,12 @@ final class Vector implements Stringable, Countable, ArrayAccess
                 );
             }
 
-            $result = new self($this->count);
+            $data = [];
             for ($i = 0; $i < $this->count; $i++) {
-                $result->set($i, $this->data[$i] * $other->data[$i]);
+                $data[] = self::checkResult($this->data[$i] * $other->data[$i], 'multiply Vectors');
             }
 
-            return $result;
+            return self::fromList($data);
         }
 
         // Multiply vector by a matrix: xA, treating this vector as a row vector.
@@ -466,16 +482,16 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Calculate each element of the result as the dot product of this vector with a column of the matrix.
-        $result = new self($other->columnCount);
+        $data = [];
         for ($j = 0; $j < $other->columnCount; $j++) {
             $sum = 0.0;
             for ($i = 0; $i < $this->count; $i++) {
                 $sum += $this->data[$i] * $other->get($i, $j);
             }
-            $result->set($j, $sum);
+            $data[] = self::checkResult($sum, 'multiply Vector by Matrix');
         }
 
-        return $result;
+        return self::fromList($data);
     }
 
     /**
@@ -488,6 +504,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @throws DomainException If $other is a float that isn't finite (±INF or NAN).
      * @throws ArithmeticException If $other is zero, or a vector with a zero element.
      * @throws LengthException If the vectors have different counts.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function div(float|self $other): self
     {
@@ -499,15 +516,15 @@ final class Vector implements Stringable, Countable, ArrayAccess
                 );
             }
 
-            $result = new self($this->count);
+            $data = [];
             for ($i = 0; $i < $this->count; $i++) {
                 if ($other->data[$i] === 0.0) {
                     throw new ArithmeticException("Cannot divide by zero at index $i.");
                 }
-                $result->set($i, $this->data[$i] / $other->data[$i]);
+                $data[] = self::checkResult($this->data[$i] / $other->data[$i], 'divide Vectors');
             }
 
-            return $result;
+            return self::fromList($data);
         }
 
         // Check the scalar is finite. Dividing by ±INF would otherwise silently give a zero vector.
@@ -521,12 +538,13 @@ final class Vector implements Stringable, Countable, ArrayAccess
         }
 
         // Divide each element by the scalar.
-        $result = new self($this->count);
+        $operation = Stringify::prepEx('divide Vector by ?', $other);
+        $data = [];
         for ($i = 0; $i < $this->count; $i++) {
-            $result->set($i, $this->data[$i] / $other);
+            $data[] = self::checkResult($this->data[$i] / $other, $operation);
         }
 
-        return $result;
+        return self::fromList($data);
     }
 
     #endregion
@@ -539,6 +557,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * @param self $other Vector to calculate dot product with.
      * @return float The dot product.
      * @throws LengthException If vectors have different counts.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function dot(self $other): float
     {
@@ -555,7 +574,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
             $result += $this->data[$i] * $other->data[$i];
         }
 
-        return $result;
+        return self::checkResult($result, 'compute dot product');
     }
 
     /**
@@ -604,9 +623,7 @@ final class Vector implements Stringable, Countable, ArrayAccess
             $maxScale = max($scaleA, $scaleB);
             $result = array_map(static fn ($x) => $x * $minScale * $maxScale, $result);
             if (!self::allFinite($result)) {
-                throw new OverflowException(
-                    "Cannot compute cross product of $this and $other. The result would overflow."
-                );
+                throw new OverflowException('Cannot compute cross product. The result would overflow.');
             }
         }
 
@@ -623,11 +640,16 @@ final class Vector implements Stringable, Countable, ArrayAccess
      *
      * @param self $other Vector to calculate outer product with.
      * @return Matrix New matrix representing the outer product.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function outer(self $other): Matrix
     {
         // Treat $this vector as a column matrix and $other as a row matrix, then multiply.
-        return $this->toColumnMatrix()->mul($other->toRowMatrix());
+        try {
+            return $this->toColumnMatrix()->mul($other->toRowMatrix());
+        } catch (OverflowException $e) {
+            throw new OverflowException('Cannot compute outer product. The result would overflow.', 0, $e);
+        }
     }
 
     /**
@@ -660,20 +682,22 @@ final class Vector implements Stringable, Countable, ArrayAccess
      * Calculate the sum of all elements in the vector.
      *
      * @return float The sum. 0.0 for an empty vector (the additive identity).
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sum(): float
     {
-        return array_sum($this->data);
+        return self::checkResult(array_sum($this->data), 'compute sum of Vector');
     }
 
     /**
      * Calculate the product of all elements in the vector.
      *
      * @return float The product. 1.0 for an empty vector (the multiplicative identity).
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function prod(): float
     {
-        return array_product($this->data);
+        return self::checkResult(array_product($this->data), 'compute product of Vector');
     }
 
     /**
@@ -763,6 +787,39 @@ final class Vector implements Stringable, Countable, ArrayAccess
     #endregion
 
     #region Helper methods
+
+    /**
+     * Create a vector from a list of finite floats, without validating them.
+     *
+     * @param list<float> $data The elements.
+     * @return self The new vector.
+     */
+    private static function fromList(array $data): self
+    {
+        $vector = new self(count($data));
+        $vector->data = $data;
+        return $vector;
+    }
+
+    /**
+     * Check a calculated value is representable.
+     *
+     * With finite operands, a non-finite result means it overflowed. A NAN result means an intermediate value
+     * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
+     *
+     * @param float $value The calculated value.
+     * @param string $operation The operation, for the exception message, e.g. 'add Vectors'.
+     * @return float The value.
+     * @throws OverflowException If the value is not finite.
+     */
+    private static function checkResult(float $value, string $operation): float
+    {
+        if (!is_finite($value)) {
+            throw new OverflowException("Cannot $operation. The result would overflow.");
+        }
+
+        return $value;
+    }
 
     /**
      * Get the power of 2 that scales the largest absolute value into the range [1, 2).

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
-use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
@@ -69,8 +68,8 @@ class ComplexBinaryArithmeticTest extends TestCase
      */
     public function testAddOverflowThrows(): void
     {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Cannot create Complex with non-finite real part: INF.');
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot add Complex numbers. The result would overflow.');
         new Complex(1e308)->add(new Complex(1e308));
     }
 
@@ -118,6 +117,16 @@ class ComplexBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
+    }
+
+    /**
+     * Test sub() throws when the result overflows.
+     */
+    public function testSubOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot subtract Complex numbers. The result would overflow.');
+        new Complex(1e308)->sub(new Complex(-1e308));
     }
 
     #endregion
@@ -178,6 +187,16 @@ class ComplexBinaryArithmeticTest extends TestCase
 
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
+    }
+
+    /**
+     * Test mul() throws when the result overflows.
+     */
+    public function testMulOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Complex numbers. The result would overflow.');
+        new Complex(1e200)->mul(1e200);
     }
 
     #endregion
@@ -274,7 +293,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide 1 by 9.9998886718268E-321. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide Complex numbers. The result would overflow.');
         new Complex(1)->div(new Complex(1e-320));
     }
 

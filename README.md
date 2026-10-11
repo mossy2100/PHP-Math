@@ -78,6 +78,22 @@ See the "Strict typing" section of the [PHP manual's Type Declarations page](htt
 
 ---
 
+## Infinity, NAN and Overflow
+
+Unlike PHP's own float arithmetic, these classes never accept or return `INF`, `-INF` or `NAN`. Instead, they throw:
+
+| Case                                                                | Exception             |
+| ------------------------------------------------------------------- | --------------------- |
+| A non-finite argument                                               | `DomainException`     |
+| A result, or an intermediate value, too large to represent          | `OverflowException`   |
+| An undefined operation, such as division by zero or the log of zero | `ArithmeticException` |
+
+A `NAN` result from finite operands always comes from an intermediate value overflowing (e.g. `INF - INF`), so it's
+reported as an overflow too. An overflow message names the operation you called, e.g. "Cannot raise Complex to a power.
+The result would overflow."
+
+---
+
 ## Classes
 
 ### [Complex](docs/Complex.md)

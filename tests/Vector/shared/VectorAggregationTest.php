@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Vector;
 
 use OceanMoon\Math\Vector;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -29,6 +30,16 @@ class VectorAggregationTest extends TestCase
     {
         $v = new Vector(0);
         $this->assertSame(0.0, $v->sum());
+    }
+
+    /**
+     * Test sum() throws when the result overflows.
+     */
+    public function testSumOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute sum of Vector. The result would overflow.');
+        Vector::fromArray([1e308, 1e308])->sum();
     }
 
     #endregion
@@ -60,6 +71,16 @@ class VectorAggregationTest extends TestCase
     {
         $v = new Vector(0);
         $this->assertSame(1.0, $v->prod());
+    }
+
+    /**
+     * Test prod() throws when the result overflows.
+     */
+    public function testProdOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute product of Vector. The result would overflow.');
+        Vector::fromArray([1e200, 1e200])->prod();
     }
 
     #endregion

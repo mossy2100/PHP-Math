@@ -83,7 +83,10 @@ $z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
 $z4 = new Complex();            // 0 + 0i (zero)
 ```
 
-**Throws:** `DomainException` if either part is not finite (±INF or NAN).
+**Throws:**
+
+- `DomainException` if either part is not finite (±INF or NAN).
+- `OverflowException` if both parts are finite, but the magnitude is too large to represent as a float.
 
 **Note:**
 
@@ -130,6 +133,7 @@ $z4 = Complex::fromString("4i+3");
 
 - `FormatException` if the string is empty or does not match a supported format.
 - `DomainException` if an out-of-range exponent makes a part non-finite (e.g. `'1e400'`).
+- `OverflowException` if the magnitude is too large to represent as a float (e.g. `'1.7e308+1.7e308i'`).
 
 ### fromPolar()
 
@@ -403,7 +407,10 @@ $z2 = new Complex(1, 2);
 $sum = $z1->add($z2);  // 4 + 6i
 ```
 
-**Throws:** `DomainException` if `$other` is a non-finite float (±INF or NAN).
+**Throws:**
+
+- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `OverflowException` if the result is too large to represent as a float.
 
 ### sub()
 
@@ -421,7 +428,10 @@ $z2 = new Complex(2, 3);
 $diff = $z1->sub($z2);  // 3 + 4i
 ```
 
-**Throws:** `DomainException` if `$other` is a non-finite float (±INF or NAN).
+**Throws:**
+
+- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `OverflowException` if the result is too large to represent as a float.
 
 ### mul()
 
@@ -442,7 +452,10 @@ $z3 = new Complex(3, 4);
 $product = $z2->mul($z3);  // -5 + 10i
 ```
 
-**Throws:** `DomainException` if `$other` is a non-finite float (±INF or NAN).
+**Throws:**
+
+- `DomainException` if `$other` is a non-finite float (±INF or NAN).
+- `OverflowException` if the result is too large to represent as a float.
 
 ### div()
 
@@ -503,6 +516,7 @@ $result = M_I->pow(2);  // -1 + 0i, using the imaginary unit constant - see Glob
 
 - `DomainException` if `$exp` is a non-finite float (±INF or NAN).
 - `ArithmeticException` if attempting 0 raised to a negative or complex power.
+- `OverflowException` if the result is too large to represent as a float.
 
 ### sqr()
 
@@ -511,6 +525,8 @@ public function sqr(): self
 ```
 
 Calculate the square of the complex number.
+
+**Throws:** `OverflowException` if the result is too large to represent as a float.
 
 **Example:**
 
@@ -578,6 +594,8 @@ public function exp(): self
 
 Calculate e raised to the power of the complex number.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Example:**
 
 ```php
@@ -625,6 +643,7 @@ $negBase = (new Complex(8))->log(-2);  // ln 8 / (ln 2 + iπ)
 
 - `DomainException` if `$base` is a non-finite float (±INF or NAN).
 - `ArithmeticException` if the base is 0 or 1, or if the number is zero.
+- `OverflowException` if the result is too large to represent as a float.
 
 ---
 
@@ -639,6 +658,8 @@ public function tan(): self;
 ```
 
 Calculate trigonometric functions.
+
+**Throws:** `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 
@@ -663,6 +684,8 @@ public function atan(): self;
 
 Calculate inverse trigonometric functions.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -686,6 +709,8 @@ public function tanh(): self;
 
 Calculate hyperbolic functions.
 
+**Throws:** `OverflowException` if the result is too large to represent as a float.
+
 **Examples:**
 
 ```php
@@ -708,6 +733,8 @@ public function atanh(): self;
 ```
 
 Calculate inverse hyperbolic functions.
+
+**Throws:** `OverflowException` if the result is too large to represent as a float.
 
 **Examples:**
 

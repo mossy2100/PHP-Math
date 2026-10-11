@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Complex;
 
 use DomainException;
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use TypeError;
@@ -103,6 +104,18 @@ class ComplexConstructorTest extends TestCase
     {
         $this->expectException(TypeError::class);
         new Complex('3', '4'); // @phpstan-ignore argument.type, argument.type
+    }
+
+    /**
+     * Test the constructor throws when both parts are finite, but the magnitude overflows.
+     */
+    public function testConstructorMagnitudeOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot create Complex with real part 1.7E+308 and imaginary part 1.7E+308. Its magnitude would overflow.'
+        );
+        new Complex(1.7e308, 1.7e308);
     }
 
     #endregion

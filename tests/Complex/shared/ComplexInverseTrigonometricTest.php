@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -41,6 +42,16 @@ class ComplexInverseTrigonometricTest extends TestCase
 
         $this->assertEqualsWithDelta($z->real, $asin->real, EPSILON);
         $this->assertEqualsWithDelta($z->imaginary, $asin->imaginary, EPSILON);
+    }
+
+    /**
+     * Test asin() throws when squaring the argument overflows.
+     */
+    public function testAsinOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute inverse sine of Complex. The result would overflow.');
+        new Complex(1e200, 1e200)->asin();
     }
 
     #endregion
@@ -82,6 +93,16 @@ class ComplexInverseTrigonometricTest extends TestCase
         $this->assertEqualsWithDelta($z->imaginary, $acos->imaginary, EPSILON);
     }
 
+    /**
+     * Test acos() throws when squaring the argument overflows.
+     */
+    public function testAcosOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute inverse cosine of Complex. The result would overflow.');
+        new Complex(1e200, 1e200)->acos();
+    }
+
     #endregion
 
     #region Method atan() tests.
@@ -114,6 +135,16 @@ class ComplexInverseTrigonometricTest extends TestCase
 
         $this->assertEqualsWithDelta($z->real, $atan->real, EPSILON);
         $this->assertEqualsWithDelta($z->imaginary, $atan->imaginary, EPSILON);
+    }
+
+    /**
+     * Test atan() throws when (i - z) / (i + z) overflows, for z very close to -i.
+     */
+    public function testAtanOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute inverse tangent of Complex. The result would overflow.');
+        new Complex(1e-320, -1)->atan();
     }
 
     #endregion

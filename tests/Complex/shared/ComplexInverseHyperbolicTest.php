@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Math\Complex;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -42,6 +43,16 @@ class ComplexInverseHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
     }
 
+    /**
+     * Test asinh() throws when squaring the argument overflows.
+     */
+    public function testAsinhOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute inverse hyperbolic sine of Complex. The result would overflow.');
+        new Complex(1e200, 1e200)->asinh();
+    }
+
     #endregion
 
     #region Method acosh() tests.
@@ -75,6 +86,18 @@ class ComplexInverseHyperbolicTest extends TestCase
         $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
     }
 
+    /**
+     * Test acosh() throws when squaring the argument overflows.
+     */
+    public function testAcoshOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot compute inverse hyperbolic cosine of Complex. The result would overflow.'
+        );
+        new Complex(1e200, 1e200)->acosh();
+    }
+
     #endregion
 
     #region Method atanh() tests.
@@ -106,6 +129,18 @@ class ComplexInverseHyperbolicTest extends TestCase
 
         $this->assertEqualsWithDelta($z->real, $result->real, EPSILON);
         $this->assertEqualsWithDelta($z->imaginary, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test atanh() throws when (1 + z) / (1 - z) overflows, for z very close to 1.
+     */
+    public function testAtanhOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot compute inverse hyperbolic tangent of Complex. The result would overflow.'
+        );
+        new Complex(1, 1e-320)->atanh();
     }
 
     #endregion

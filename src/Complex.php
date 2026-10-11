@@ -66,6 +66,7 @@ final class Complex implements Stringable, ArrayAccess
      * @param float $real The real part.
      * @param float $imag The imaginary part.
      * @throws DomainException If either part is not finite (±INF or NAN).
+     * @throws OverflowException If the magnitude is too large to represent as a float.
      */
     public function __construct(float $real = 0, float $imag = 0)
     {
@@ -88,6 +89,14 @@ final class Complex implements Stringable, ArrayAccess
             $this->phase = $real < 0 ? M_PI : 0.0;
         } else {
             $this->magnitude = hypot($real, $imag);
+            // Both parts are finite, but the magnitude can still overflow when both are close to the float limit.
+            if (!is_finite($this->magnitude)) {
+                throw new OverflowException(Stringify::prepEx(
+                    'Cannot create Complex with real part ? and imaginary part ?. Its magnitude would overflow.',
+                    $real,
+                    $imag
+                ));
+            }
             // The phase must be in the range (-π, π].
             // In this branch, we know the imaginary part is not 0, so the result of atan2() should theoretically never
             // equal π or -π. In practice it can be, however, it can be, if the imaginary part is very close to 0.
@@ -143,7 +152,13 @@ final class Complex implements Stringable, ArrayAccess
             // Pattern: ±bi ± a (imag + real)
             [$entire, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
-            throw new FormatException('Cannot convert string to Complex. Invalid format.');
+            // Include the string in the message, abbreviated, unless it isn't valid UTF-8, which Stringify can't
+            // show.
+            throw new FormatException(
+                mb_check_encoding($str, 'UTF-8')
+                    ? Stringify::prepEx('Cannot convert string ? to Complex. Invalid format.', $str)
+                    : 'Cannot convert string to Complex. Invalid format.'
+            );
         }
 
         // Get the real part.
@@ -350,7 +365,12 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function inv(): self
     {
-        return new self(1)->div($this);
+        // Check for division by zero.
+        if ($this->equal(0)) {
+            throw new ArithmeticException('Cannot divide by zero.');
+        }
+
+        return self::calcWithOverflowMessage('invert Complex', fn () => new self(1)->div($this));
     }
 
     /**
@@ -373,6 +393,7 @@ final class Complex implements Stringable, ArrayAccess
      * @param self|float $other The real or complex number to add.
      * @return self A new complex number representing the sum.
      * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function add(self|float $other): self
     {
@@ -382,7 +403,11 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Do the addition.
-        return new self($this->real + $other->real, $this->imaginary + $other->imaginary);
+        return self::fromResult(
+            $this->real + $other->real,
+            $this->imaginary + $other->imaginary,
+            'add Complex numbers'
+        );
     }
 
     /**
@@ -391,6 +416,7 @@ final class Complex implements Stringable, ArrayAccess
      * @param self|float $other The real or complex number to subtract.
      * @return self A new complex number representing the difference.
      * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sub(self|float $other): self
     {
@@ -400,7 +426,11 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Do the subtraction.
-        return new self($this->real - $other->real, $this->imaginary - $other->imaginary);
+        return self::fromResult(
+            $this->real - $other->real,
+            $this->imaginary - $other->imaginary,
+            'subtract Complex numbers'
+        );
     }
 
     /**
@@ -410,6 +440,7 @@ final class Complex implements Stringable, ArrayAccess
      * @param self|float $other The real or complex number to multiply by.
      * @return self A new complex number representing the product.
      * @throws DomainException If $other is a non-finite float (±INF or NAN).
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function mul(self|float $other): self
     {
@@ -423,7 +454,7 @@ final class Complex implements Stringable, ArrayAccess
         $b = $this->imaginary;
         $c = $other->real;
         $d = $other->imaginary;
-        return new self($a * $c - $b * $d, $a * $d + $b * $c);
+        return self::fromResult($a * $c - $b * $d, $a * $d + $b * $c, 'multiply Complex numbers');
     }
 
     /**
@@ -469,12 +500,7 @@ final class Complex implements Stringable, ArrayAccess
             $imag = ($b * $r - $a) / $den;
         }
 
-        // Check for overflow. With finite operands and a non-zero divisor, a non-finite part can only be ±INF.
-        if (!is_finite($real) || !is_finite($imag)) {
-            throw new OverflowException("Cannot divide $this by $other. The result would overflow.");
-        }
-
-        return new self($real, $imag);
+        return self::fromResult($real, $imag, 'divide Complex numbers');
     }
 
     #endregion
@@ -502,6 +528,7 @@ final class Complex implements Stringable, ArrayAccess
      * @return self A new complex number representing the result.
      * @throws DomainException If $exp is a non-finite float (±INF or NAN).
      * @throws ArithmeticException If attempting to raise 0 to a negative or complex power.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function pow(self|float $exp): self
     {
@@ -539,47 +566,7 @@ final class Complex implements Stringable, ArrayAccess
             return clone $this;
         }
 
-        // Handle exponent = 2.
-        if ($exp->equal(2)) {
-            return $this->mul($this);
-        }
-
-        // Handle exponent = -1. Delegate to inv().
-        if ($exp->equal(-1)) {
-            return $this->inv();
-        }
-
-        // Handle base = e. This saves unnecessary calls to ln() and mul().
-        if ($this->equal(M_E)) {
-            return $exp->exp();
-        }
-
-        // For integer exponents, do exponentiation by squaring.
-        if ($exp->isReal() && Floats::isInt($exp->real)) {
-            $result = new self(1);
-            $x = clone $this;
-            // For negative exponents, invert the base. This works better than inverting the result at the end, because
-            // it avoids a possible overflow for large negative exponents.
-            if ($exp->real < 0) {
-                $x = $x->inv();
-            }
-            $y = abs($exp->real);
-            while ($y > 0) {
-                if (fmod($y, 2) === 1.0) {
-                    $result = $result->mul($x);
-                }
-                // Halve the exponent.
-                $y = floor($y / 2);
-                if ($y > 0) {
-                    // Square the base.
-                    $x = $x->mul($x);
-                }
-            }
-            return $result;
-        }
-
-        // General solution. Calculate z^w = e^(w * ln(z)).
-        return $exp->mul($this->ln())->exp();
+        return self::calcWithOverflowMessage('raise Complex to a power', fn () => $this->calcPow($exp));
     }
 
     /**
@@ -588,10 +575,11 @@ final class Complex implements Stringable, ArrayAccess
      * Equivalent to pow(2), but more readable as a standalone call.
      *
      * @return self A new complex number representing the square of this number.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sqr(): self
     {
-        return $this->mul($this);
+        return self::calcWithOverflowMessage('square Complex', fn () => $this->mul($this));
     }
 
     #endregion
@@ -653,6 +641,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate e^z where z is this complex number.
      *
      * @return self A new complex number representing e^z.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function exp(): self
     {
@@ -690,7 +679,11 @@ final class Complex implements Stringable, ArrayAccess
         // General solution. Uses Euler's formula: e^(a + bi) = e^a * (cos(b) + i*sin(b)).
         // Calling fromPolar(mag, phase) builds a new Complex via mag * (cos(phase) + i*sin(phase)), so passing
         // magnitude = e^a and phase = b implements the formula above.
-        return self::fromPolar(exp($this->real), $this->imaginary);
+        $mag = exp($this->real);
+        if (!is_finite($mag)) {
+            throw new OverflowException('Cannot compute exponential of Complex. The result would overflow.');
+        }
+        return self::fromPolar($mag, $this->imaginary);
     }
 
     /**
@@ -741,6 +734,7 @@ final class Complex implements Stringable, ArrayAccess
      * @return self A new complex number representing log_b(z).
      * @throws DomainException If the base is a non-finite float (±INF or NAN).
      * @throws ArithmeticException If the base equals 0 or 1, or if this number is 0.
+     * @throws OverflowException If the result is too large to represent as a float.
      */
     public function log(self|float $base): self
     {
@@ -787,7 +781,10 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // General solution. Compute log_b(z) = ln(z) / ln(b)
-        return $this->ln()->div($base->ln());
+        return self::calcWithOverflowMessage(
+            'compute logarithm of Complex',
+            fn () => $this->ln()->div($base->ln())
+        );
     }
 
     #endregion
@@ -798,6 +795,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the sine of this complex number.
      *
      * @return self A new complex number representing the sine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
     public function sin(): self
@@ -806,13 +804,14 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return new self(sin($x) * cosh($y), cos($x) * sinh($y));
+        return self::fromResult(sin($x) * cosh($y), cos($x) * sinh($y), 'compute sine of Complex');
     }
 
     /**
      * Calculate the cosine of this complex number.
      *
      * @return self A new complex number representing the cosine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
     public function cos(): self
@@ -821,19 +820,20 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return new self(cos($x) * cosh($y), -sin($x) * sinh($y));
+        return self::fromResult(cos($x) * cosh($y), -sin($x) * sinh($y), 'compute cosine of Complex');
     }
 
     /**
      * Calculate the tangent of this complex number.
      *
      * @return self A new complex number representing the tangent of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Trigonometric_functions#In_the_complex_plane
      */
     public function tan(): self
     {
         // tan(z) = sin(z) / cos(z)
-        return $this->sin()->div($this->cos());
+        return self::calcWithOverflowMessage('compute tangent of Complex', fn () => $this->sin()->div($this->cos()));
     }
 
     #endregion
@@ -844,52 +844,61 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse sine of this complex number.
      *
      * @return self A new complex number representing the inverse sine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function asin(): self
     {
-        // asin(z) = -i·ln(iz + √(1-z²))
-        // iz = -y + ix (multiply by i directly)
-        $iz = new self(-$this->imaginary, $this->real);
-        // 1 - z²
-        $oneMinusZ2 = new self(1)->sub($this->mul($this));
-        // -i·ln(iz + √(1-z²))
-        return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
+        return self::calcWithOverflowMessage('compute inverse sine of Complex', function (): self {
+            // asin(z) = -i·ln(iz + √(1-z²))
+            // iz = -y + ix (multiply by i directly)
+            $iz = new self(-$this->imaginary, $this->real);
+            // 1 - z²
+            $oneMinusZ2 = new self(1)->sub($this->mul($this));
+            // -i·ln(iz + √(1-z²))
+            return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
+        });
     }
 
     /**
      * Calculate the inverse cosine of this complex number.
      *
      * @return self A new complex number representing the inverse cosine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function acos(): self
     {
-        // acos(z) = -i·ln(z + i·√(1-z²))
-        // 1 - z²
-        $oneMinusZ2 = new self(1)->sub($this->mul($this));
-        // i·√(1-z²) - multiply √(1-z²) by i directly
-        $sqrt = $oneMinusZ2->sqrt();
-        $iSqrt = new self(-$sqrt->imaginary, $sqrt->real);
-        // -i·ln(z + i·√(1-z²))
-        return $this->add($iSqrt)->ln()->mul(new self(0, -1));
+        return self::calcWithOverflowMessage('compute inverse cosine of Complex', function (): self {
+            // acos(z) = -i·ln(z + i·√(1-z²))
+            // 1 - z²
+            $oneMinusZ2 = new self(1)->sub($this->mul($this));
+            // i·√(1-z²) - multiply √(1-z²) by i directly
+            $sqrt = $oneMinusZ2->sqrt();
+            $iSqrt = new self(-$sqrt->imaginary, $sqrt->real);
+            // -i·ln(z + i·√(1-z²))
+            return $this->add($iSqrt)->ln()->mul(new self(0, -1));
+        });
     }
 
     /**
      * Calculate the inverse tangent of this complex number.
      *
      * @return self A new complex number representing the inverse tangent of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function atan(): self
     {
-        // atan(z) = (-i/2)·ln((i-z)/(i+z))
-        // i - z = -x + (1-y)i (calculate directly)
-        $iMinusZ = new self(-$this->real, 1 - $this->imaginary);
-        // i + z = x + (1+y)i (calculate directly)
-        $iPlusZ = new self($this->real, 1 + $this->imaginary);
-        // (-i/2)·ln((i-z)/(i+z))
-        return $iMinusZ->div($iPlusZ)->ln()->mul(new self(0, -0.5));
+        return self::calcWithOverflowMessage('compute inverse tangent of Complex', function (): self {
+            // atan(z) = (-i/2)·ln((i-z)/(i+z))
+            // i - z = -x + (1-y)i (calculate directly)
+            $iMinusZ = new self(-$this->real, 1 - $this->imaginary);
+            // i + z = x + (1+y)i (calculate directly)
+            $iPlusZ = new self($this->real, 1 + $this->imaginary);
+            // (-i/2)·ln((i-z)/(i+z))
+            return $iMinusZ->div($iPlusZ)->ln()->mul(new self(0, -0.5));
+        });
     }
 
     #endregion
@@ -900,6 +909,7 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the hyperbolic sine of this complex number.
      *
      * @return self A new complex number representing the hyperbolic sine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
      */
     public function sinh(): self
@@ -908,13 +918,14 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return new self(sinh($x) * cos($y), cosh($x) * sin($y));
+        return self::fromResult(sinh($x) * cos($y), cosh($x) * sin($y), 'compute hyperbolic sine of Complex');
     }
 
     /**
      * Calculate the hyperbolic cosine of this complex number.
      *
      * @return self A new complex number representing the hyperbolic cosine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
      */
     public function cosh(): self
@@ -923,19 +934,23 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return new self(cosh($x) * cos($y), sinh($x) * sin($y));
+        return self::fromResult(cosh($x) * cos($y), sinh($x) * sin($y), 'compute hyperbolic cosine of Complex');
     }
 
     /**
      * Calculate the hyperbolic tangent of this complex number.
      *
      * @return self A new complex number representing the hyperbolic tangent of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Hyperbolic_functions#Complex_arguments
      */
     public function tanh(): self
     {
         // tanh(z) = sinh(z) / cosh(z)
-        return $this->sinh()->div($this->cosh());
+        return self::calcWithOverflowMessage(
+            'compute hyperbolic tangent of Complex',
+            fn () => $this->sinh()->div($this->cosh())
+        );
     }
 
     #endregion
@@ -946,40 +961,49 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the inverse hyperbolic sine of this complex number.
      *
      * @return self A new complex number representing the inverse hyperbolic sine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function asinh(): self
     {
-        // asinh(z) = ln(z + √(z² + 1))
-        $z2Plus1 = $this->mul($this)->add(new self(1));
-        return $this->add($z2Plus1->sqrt())->ln();
+        return self::calcWithOverflowMessage('compute inverse hyperbolic sine of Complex', function (): self {
+            // asinh(z) = ln(z + √(z² + 1))
+            $z2Plus1 = $this->mul($this)->add(new self(1));
+            return $this->add($z2Plus1->sqrt())->ln();
+        });
     }
 
     /**
      * Calculate the inverse hyperbolic cosine of this complex number.
      *
      * @return self A new complex number representing the inverse hyperbolic cosine of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function acosh(): self
     {
-        // acosh(z) = ln(z + √(z² - 1))
-        $z2Minus1 = $this->mul($this)->sub(new self(1));
-        return $this->add($z2Minus1->sqrt())->ln();
+        return self::calcWithOverflowMessage('compute inverse hyperbolic cosine of Complex', function (): self {
+            // acosh(z) = ln(z + √(z² - 1))
+            $z2Minus1 = $this->mul($this)->sub(new self(1));
+            return $this->add($z2Minus1->sqrt())->ln();
+        });
     }
 
     /**
      * Calculate the inverse hyperbolic tangent of this complex number.
      *
      * @return self A new complex number representing the inverse hyperbolic tangent of this complex number.
+     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function atanh(): self
     {
-        // atanh(z) = (1/2)·ln((1+z)/(1-z))
-        $onePlusZ = new self(1)->add($this);
-        $oneMinusZ = new self(1)->sub($this);
-        return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
+        return self::calcWithOverflowMessage('compute inverse hyperbolic tangent of Complex', function (): self {
+            // atanh(z) = (1/2)·ln((1+z)/(1-z))
+            $onePlusZ = new self(1)->add($this);
+            $oneMinusZ = new self(1)->sub($this);
+            return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
+        });
     }
 
     #endregion
@@ -1072,6 +1096,102 @@ final class Complex implements Stringable, ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         throw new LogicException('Complex values are immutable.');
+    }
+
+    #endregion
+
+    #region Helper methods
+
+    /**
+     * Calculate a power of this complex number, for pow(), once the exponent 0 and 1 and zero base cases are handled.
+     *
+     * @param self $exp The exponent.
+     * @return self The result.
+     * @throws OverflowException If the result, or an intermediate value, is too large to represent as a float.
+     */
+    private function calcPow(self $exp): self
+    {
+        // Handle exponent = 2.
+        if ($exp->equal(2)) {
+            return $this->mul($this);
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($exp->equal(-1)) {
+            return $this->inv();
+        }
+
+        // Handle base = e. This saves unnecessary calls to ln() and mul().
+        if ($this->equal(M_E)) {
+            return $exp->exp();
+        }
+
+        // For integer exponents, do exponentiation by squaring.
+        if ($exp->isReal() && Floats::isInt($exp->real)) {
+            $result = new self(1);
+            $x = clone $this;
+            // For negative exponents, invert the base. This works better than inverting the result at the end, because
+            // it avoids a possible overflow for large negative exponents.
+            if ($exp->real < 0) {
+                $x = $x->inv();
+            }
+            $y = abs($exp->real);
+            while ($y > 0) {
+                if (fmod($y, 2) === 1.0) {
+                    $result = $result->mul($x);
+                }
+                // Halve the exponent.
+                $y = floor($y / 2);
+                if ($y > 0) {
+                    // Square the base.
+                    $x = $x->mul($x);
+                }
+            }
+            return $result;
+        }
+
+        // General solution. Calculate z^w = e^(w * ln(z)).
+        return $exp->mul($this->ln())->exp();
+    }
+
+    /**
+     * Create a Complex from the parts of a calculated result, checking the result is representable.
+     *
+     * With finite operands, a non-finite part means the result overflowed. A NAN part means an intermediate value
+     * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
+     *
+     * @param float $real The real part.
+     * @param float $imag The imaginary part.
+     * @param string $operation The operation, for the exception message, e.g. 'add Complex numbers'.
+     * @return self The new Complex.
+     * @throws OverflowException If either part, or the magnitude, is not finite.
+     */
+    private static function fromResult(float $real, float $imag, string $operation): self
+    {
+        if (!is_finite($real) || !is_finite($imag)) {
+            throw new OverflowException("Cannot $operation. The result would overflow.");
+        }
+
+        // The constructor throws if the magnitude overflows.
+        return self::calcWithOverflowMessage($operation, static fn () => new self($real, $imag));
+    }
+
+    /**
+     * Run a calculation, replacing the message of an OverflowException from any step with one that names the
+     * operation the caller ran.
+     *
+     * @param string $operation The operation, for the exception message, e.g. 'compute tangent of Complex'.
+     * @param callable(): self $calc The calculation.
+     * @return self The result.
+     * @throws OverflowException If the result, or an intermediate value, is too large to represent as a float.
+     */
+    private static function calcWithOverflowMessage(string $operation, callable $calc): self
+    {
+        try {
+            return $calc();
+        } catch (OverflowException $e) {
+            throw new OverflowException("Cannot $operation. The result would overflow.", 0, $e);
+        }
     }
 
     #endregion

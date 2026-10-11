@@ -6,6 +6,7 @@ namespace OceanMoon\Math\Tests\Matrix;
 
 use DomainException;
 use OceanMoon\Math\Matrix;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -115,6 +116,75 @@ class MatrixLinearAlgebraTest extends TestCase
         $m->det();
     }
 
+    /**
+     * Test det() throws when an intermediate product overflows, even though the true result (0) is representable.
+     */
+    public function testDetOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute determinant of Matrix. The result would overflow.');
+        Matrix::fromArray([
+            [1e200, 1e200],
+            [1e200, 1e200],
+        ])->det();
+    }
+
+    /**
+     * Test det() of a matrix larger than 3×3, calculated by LU decomposition.
+     */
+    public function testDetLarge(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 2, 3, 4],
+            [5, 6, 7, 8],
+            [2, 6, 4, 8],
+            [3, 1, 1, 2],
+        ]);
+
+        $this->assertEqualsWithDelta(72.0, $m->det(), 1e-12);
+    }
+
+    /**
+     * Test det() of a matrix larger than 3×3 gets the sign right when LU decomposition swaps rows.
+     */
+    public function testDetLargeRowSwaps(): void
+    {
+        // Two swaps of pairs of rows of the identity, so the determinant is 1.
+        $m1 = Matrix::fromArray([
+            [0, 1, 0, 0],
+            [1, 0, 0, 0],
+            [0, 0, 0, 1],
+            [0, 0, 1, 0],
+        ]);
+        $this->assertSame(1.0, $m1->det());
+
+        // A 4-cycle of rows of the identity, so the determinant is -1.
+        $m2 = Matrix::fromArray([
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+            [1, 0, 0, 0],
+        ]);
+        $this->assertSame(-1.0, $m2->det());
+    }
+
+    /**
+     * Test det() of a matrix larger than 3×3 throws when the result overflows.
+     */
+    public function testDetLargeOverflowThrows(): void
+    {
+        $m = Matrix::fromArray([
+            [1e100, 0, 0, 0],
+            [0, 1e100, 0, 0],
+            [0, 0, 1e100, 0],
+            [0, 0, 0, 1e100],
+        ]);
+
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute determinant of Matrix. The result would overflow.');
+        $m->det();
+    }
+
     #endregion
 
     #region Method trace() tests.
@@ -180,6 +250,19 @@ class MatrixLinearAlgebraTest extends TestCase
         $m = new Matrix(2, 3);
         $this->expectException(DomainException::class);
         $m->trace();
+    }
+
+    /**
+     * Test trace() throws when the result overflows.
+     */
+    public function testTraceOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot compute trace of Matrix. The result would overflow.');
+        Matrix::fromArray([
+            [1e308, 0],
+            [0, 1e308],
+        ])->trace();
     }
 
     #endregion

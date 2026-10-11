@@ -9,6 +9,7 @@ use LengthException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
+use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 
@@ -48,6 +49,20 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m1->add($m2);
     }
 
+    /**
+     * Test add() throws when the result overflows.
+     */
+    public function testAddOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot add Matrices. The result would overflow.');
+        Matrix::fromArray([
+            [1e308],
+        ])->add(Matrix::fromArray([
+            [1e308],
+        ]));
+    }
+
     #endregion
 
     #region Method sub() tests.
@@ -81,6 +96,20 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m2 = new Matrix(3, 2);
         $this->expectException(LengthException::class);
         $m1->sub($m2);
+    }
+
+    /**
+     * Test sub() throws when the result overflows.
+     */
+    public function testSubOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot subtract Matrices. The result would overflow.');
+        Matrix::fromArray([
+            [1e308],
+        ])->sub(Matrix::fromArray([
+            [-1e308],
+        ]));
     }
 
     #endregion
@@ -211,6 +240,54 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m->mul(new Vector(0));
     }
 
+    /**
+     * Test mul() by a scalar throws when the result overflows.
+     */
+    public function testMulByScalarOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Matrix by 1.0E+200. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->mul(1e200);
+    }
+
+    /**
+     * Test mul() by a non-finite scalar throws, even for an empty matrix.
+     */
+    public function testMulByNonFiniteScalarThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Invalid scalar: NAN. Must be finite.');
+        new Matrix(0, 0)->mul(NAN);
+    }
+
+    /**
+     * Test mul() by a vector throws when the result overflows.
+     */
+    public function testMulByVectorOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Matrix by Vector. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->mul(Vector::fromArray([1e200]));
+    }
+
+    /**
+     * Test mul() by a matrix throws when the result overflows.
+     */
+    public function testMulByMatrixOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Matrices. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->mul(Matrix::fromArray([
+            [1e200],
+        ]));
+    }
+
     #endregion
 
     #region Method div() tests.
@@ -257,6 +334,18 @@ class MatrixBinaryArithmeticTest extends TestCase
         }
     }
 
+    /**
+     * Test div() throws when the result overflows.
+     */
+    public function testDivOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide Matrix by 1.0E-200. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->div(1e-200);
+    }
+
     #endregion
 
     #region Method hadamardMul() tests.
@@ -290,6 +379,20 @@ class MatrixBinaryArithmeticTest extends TestCase
         $m2 = new Matrix(3, 3);
         $this->expectException(LengthException::class);
         $m1->hadamardMul($m2);
+    }
+
+    /**
+     * Test hadamardMul() throws when the result overflows.
+     */
+    public function testHadamardMulOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply Matrices element-wise. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->hadamardMul(Matrix::fromArray([
+            [1e200],
+        ]));
     }
 
     #endregion
@@ -342,6 +445,20 @@ class MatrixBinaryArithmeticTest extends TestCase
         ]);
         $this->expectException(ArithmeticException::class);
         $m1->hadamardDiv($m2);
+    }
+
+    /**
+     * Test hadamardDiv() throws when the result overflows.
+     */
+    public function testHadamardDivOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide Matrices element-wise. The result would overflow.');
+        Matrix::fromArray([
+            [1e200],
+        ])->hadamardDiv(Matrix::fromArray([
+            [1e-200],
+        ]));
     }
 
     #endregion
