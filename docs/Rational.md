@@ -918,10 +918,9 @@ try {
 ### Float Conversion
 
 ```php
-// Convert problematic float calculations to exact rationals
-$f = 0.1 + 0.2;  // 0.30000000000000004 (float error)
-$r = Rational::fromFloat($f);
-echo $r;  // "3/10" (exact)
+// Convert a float to the simplest equivalent rational
+$r = Rational::fromFloat(0.3);
+echo $r;  // "3/10"
 ```
 
 ### Comparing Rationals

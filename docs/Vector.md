@@ -209,8 +209,8 @@ Get a vector element by index.
 
 ```php
 $v = Vector::fromArray([10, 20, 30]);
-echo $v->get(0);  // 10.0
-echo $v->get(2);  // 30.0
+echo $v->get(0);  // 10
+echo $v->get(2);  // 30
 ```
 
 ---
@@ -240,7 +240,7 @@ Set a vector element by index. Integer values are cast to float.
 ```php
 $v = Vector::fromArray([1, 2, 3]);
 $v->set(1, 99);
-echo $v->get(1);  // 99.0
+echo $v->get(1);  // 99
 ```
 
 ---
@@ -637,7 +637,7 @@ Calculate the sum of all elements in the vector.
 
 ```php
 $v = Vector::fromArray([1, 2, 3, 4]);
-echo $v->sum();  // 10.0
+echo $v->sum();  // 10
 ```
 
 ### prod()
@@ -656,7 +656,7 @@ Calculate the product of all elements in the vector.
 
 ```php
 $v = Vector::fromArray([1, 2, 3, 4]);
-echo $v->prod();  // 24.0
+echo $v->prod();  // 24
 ```
 
 ### count()

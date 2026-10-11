@@ -135,11 +135,11 @@ Create an identity matrix of the specified size. The identity matrix has 1s on t
 
 ```php
 $idMat = Matrix::identity(3);
-// ┌               ┐
-// │ 1.0  0.0  0.0 │
-// │ 0.0  1.0  0.0 │
-// │ 0.0  0.0  1.0 │
-// └               ┘
+// ┌         ┐
+// │ 1  0  0 │
+// │ 0  1  0 │
+// │ 0  0  1 │
+// └         ┘
 ```
 
 ---
@@ -176,10 +176,10 @@ Convert the matrix to a string representation using box-drawing characters. Valu
 ```php
 $m1 = Matrix::fromArray([[1, 2], [3, 4]]);
 echo $m1;
-// ┌          ┐
-// │ 1.0  2.0 │
-// │ 3.0  4.0 │
-// └          ┘
+// ┌      ┐
+// │ 1  2 │
+// │ 3  4 │
+// └      ┘
 
 // Empty matrices
 $m2 = new Matrix(0, 0);
@@ -964,10 +964,10 @@ LU decomposition, which is O(n³). At that size, a singular matrix can give a ti
 
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $m->det();  // -2.0
+echo $m->det();  // -2
 
 $idMat = Matrix::identity(3);
-echo $idMat->det();  // 1.0
+echo $idMat->det();  // 1
 ```
 
 ### trace()
@@ -989,10 +989,10 @@ Calculate the trace of the matrix (sum of diagonal elements). The matrix must be
 
 ```php
 $m = Matrix::fromArray([[1, 2], [3, 4]]);
-echo $m->trace();  // 5.0
+echo $m->trace();  // 5
 
 $idMat = Matrix::identity(3);
-echo $idMat->trace();  // 3.0
+echo $idMat->trace();  // 3
 ```
 
 ---
@@ -1038,7 +1038,7 @@ Calculate the P1 norm (maximum absolute column sum).
 
 ```php
 $m = Matrix::fromArray([[1, -2], [3, 4]]);
-echo $m->p1Norm();  // 6.0 (max of |1|+|3|=4, |-2|+|4|=6)
+echo $m->p1Norm();  // 6 (max of |1|+|3|=4, |-2|+|4|=6)
 ```
 
 ### pInfNorm()
@@ -1057,7 +1057,7 @@ Calculate the P-infinity norm (maximum absolute row sum).
 
 ```php
 $m = Matrix::fromArray([[1, -2], [3, 4]]);
-echo $m->pInfNorm();  // 7.0 (max of |1|+|-2|=3, |3|+|4|=7)
+echo $m->pInfNorm();  // 7 (max of |1|+|-2|=3, |3|+|4|=7)
 ```
 
 ---
@@ -1282,7 +1282,7 @@ $result = $combined->mul($point);  // Vector(0, 2, 0)
 // Fibonacci via matrix exponentiation
 $fib = Matrix::fromArray([[1, 1], [1, 0]]);
 $f10 = $fib->pow(10);
-echo $f10->get(0, 0);  // 89 (the 10th Fibonacci number)
+echo $f10->get(0, 0);  // 89 (A^n[0][0] is F(n+1), so this is F(11))
 ```
 
 ### Embedding a Sub-Matrix (copy/paste)

@@ -828,8 +828,8 @@ Complex numbers can be accessed as arrays:
 $z = new Complex(3, 4);
 
 // Read access
-echo $z[0];  // 3.0 (real part)
-echo $z[1];  // 4.0 (imaginary part)
+echo $z[0];  // 3 (real part)
+echo $z[1];  // 4 (imaginary part)
 
 // Check existence
 var_dump(isset($z[0]));  // true
@@ -867,7 +867,7 @@ $quotient = $z1->div($z2);    // 2.2 - 0.4i
 $z = Complex::fromPolar(5, M_PI / 4);
 
 // Access polar properties
-echo $z->magnitude;  // 5.0
+echo $z->magnitude;  // 5
 echo $z->phase;      // 0.785... (π/4)
 ```
 
@@ -896,8 +896,8 @@ echo $roots[0];  // "2"                      (the real cube root)
 echo $roots[1];  // "-1 + 1.7320508075689i"  (-1 + √3 i)
 echo $roots[2];  // "-1 - 1.7320508075689i"  (-1 - √3 i)
 
-// Verify: each root cubed equals 8
-$roots[1]->pow(3)->approxEqual(8);  // true
+// Verify: each root cubed equals 8, within floating-point error (√3 isn't exact as a float)
+$roots[1]->pow(3)->approxEqual(8, absTol: 1e-12);  // true
 ```
 
 ### Complex Trigonometry
