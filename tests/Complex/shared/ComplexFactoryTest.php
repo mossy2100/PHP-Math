@@ -542,5 +542,59 @@ class ComplexFactoryTest extends TestCase
         );
     }
 
+    /**
+     * Data provider for testFromPolarMatchesCosAndSin().
+     *
+     * @return array<string, array{float, float}>
+     */
+    public static function fromPolarCosSinProvider(): array
+    {
+        return [
+            'phase above π'  => [
+                2.0,
+                3 * M_PI,
+            ],
+            'phase above 2π' => [1.0, 10.0],
+            'tiny magnitude' => [1.825884099502994e-13, -0.38795732096208135],
+            'huge magnitude' => [3.602413106058919e+279, 0.4972875853987818],
+        ];
+    }
+
+    /**
+     * Test fromPolar() calculates the parts from the phase as given, without wrapping it first.
+     */
+    #[DataProvider('fromPolarCosSinProvider')]
+    public function testFromPolarMatchesCosAndSin(float $mag, float $phase): void
+    {
+        $z = Complex::fromPolar($mag, $phase);
+
+        $this->assertSame($mag * cos($phase), $z->real);
+        $this->assertSame($mag * sin($phase), $z->imaginary);
+    }
+
+    /**
+     * Test fromPolar() computes the magnitude and phase from the parts, as the constructor does.
+     */
+    #[DataProvider('fromPolarCosSinProvider')]
+    public function testFromPolarPropertiesMatchConstructor(float $mag, float $phase): void
+    {
+        $z = Complex::fromPolar($mag, $phase);
+        $expected = new Complex($z->real, $z->imaginary);
+
+        $this->assertSame($expected->magnitude, $z->magnitude);
+        $this->assertSame($expected->phase, $z->phase);
+    }
+
+    /**
+     * Test fromPolar() with a zero magnitude gives a phase of 0, whatever phase is passed.
+     */
+    public function testFromPolarZeroMagnitudePhase(): void
+    {
+        $z = Complex::fromPolar(0, 1);
+
+        $this->assertSame(0.0, $z->magnitude);
+        $this->assertSame(0.0, $z->phase);
+    }
+
     #endregion
 }

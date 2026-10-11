@@ -78,11 +78,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `magnitude`.
 - **`Vector::cross()`** threw a misleading `fromArray()` message on overflow, and threw for huge parallel vectors, whose
   cross product is zero. It now gives the right result whenever it fits, and throws `OverflowException` otherwise.
-
 - **`Matrix::inv()` threw "zero determinant" for a matrix of uniformly tiny elements**, e.g.
   `[[1e-300, 0], [0, 1e-300]]`, because the determinant underflowed to 0, and overflowed for huge ones. In that case,
   the matrix is now scaled by a power of 2, which is exact, and inverted again. Other matrices aren't scaled, so their
   results are unchanged.
+- **`Complex::sqrt()` and `roots()` weren't exact on the axes**, because they used the polar form, e.g. `sqrt(-1)` was
+  `6.1e-17 + i`. `sqrt()` now uses a numerically stable formula, so `sqrt(-4)` is exactly `2i` and `sqrt(3 + 4i)` is
+  exactly `2 + i`. It also no longer loses precision for a subnormal number. Roots that lie on an axis are exact, e.g.
+  the 4th roots of 1 are exactly 1, i, -1 and -i, and `roots(2)` gives `sqrt()` and its negative. `pow(0.5)` uses
+  `sqrt()`.
+- **`Complex::roots()` gave an inexact magnitude for degree 3 or more**, because 1/n is rounded, e.g. `64 ** (1/3)` is
+  `3.9999999999999996`. One step of Newton's method now refines it, so the real cube root of -64 is exactly -4. It's
+  never less accurate, and is within one unit in the last place.
 
 ### Documentation
 

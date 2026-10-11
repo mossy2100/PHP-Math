@@ -510,6 +510,7 @@ $result = M_I->pow(2);  // -1 + 0i, using the imaginary unit constant - see Glob
 
 - z^0 = 1 for any z (including 0 by convention)
 - z^1 = z (equivalent to `clone`; returns a new, distinct object that's equal to but not the same instance as `$this`)
+- z^0.5 = `sqrt()`, so it's exact on the axes
 - 0^(positive real number) = 0
 
 **Throws:**
@@ -547,6 +548,9 @@ public function roots(int $degree): array
 
 Calculate all nth roots of the complex number.
 
+Roots that lie on an axis are exact, e.g. the 4th roots of 1 are exactly 1, i, -1 and -i, and the real cube root of -64
+is exactly -4. The square roots are `sqrt()` and its negative.
+
 **Parameters:**
 
 - `$degree` (int) - The degree of the root, e.g. 2 for square root, 3 for cube root, etc. Must be positive.
@@ -563,6 +567,10 @@ $roots = $z->roots(3);  // Returns 3 roots
 // Square roots of -1
 $z = new Complex(-1);
 $roots = $z->roots(2);  // Returns [i, -i]
+
+// 4th roots of 16
+$z = new Complex(16);
+$roots = $z->roots(4);  // Returns [2, 2i, -2, -2i]
 ```
 
 **Throws:** `DomainException` if `$degree` is not a positive integer.
@@ -573,13 +581,21 @@ $roots = $z->roots(2);  // Returns [i, -i]
 public function sqrt(): self
 ```
 
-Calculate the principal square root.
+Calculate the principal square root. For both square roots, call `roots(2)`.
 
-**Example:**
+Uses a numerically stable formula rather than the polar form, so the result is exact on the axes.
+
+**Examples:**
 
 ```php
 $z = new Complex(-1);
 $result = $z->sqrt();  // 0 + 1i
+
+$z = new Complex(0, 2);
+$result = $z->sqrt();  // 1 + 1i
+
+$z = new Complex(3, 4);
+$result = $z->sqrt();  // 2 + 1i
 ```
 
 ---

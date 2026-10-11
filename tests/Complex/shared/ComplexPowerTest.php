@@ -166,6 +166,20 @@ class ComplexPowerTest extends TestCase
     }
 
     /**
+     * Test an exponent of 0.5 uses sqrt(), so it's exact on the axes.
+     */
+    public function testPowHalfUsesSqrt(): void
+    {
+        $result = new Complex(-4)->pow(0.5);
+        $this->assertSame(0.0, $result->real);
+        $this->assertSame(2.0, $result->imaginary);
+
+        $result = new Complex(3, 4)->pow(0.5);
+        $this->assertSame(2.0, $result->real);
+        $this->assertSame(1.0, $result->imaginary);
+    }
+
+    /**
      * Test 0^0 returns 1 (conventional).
      */
     public function testZeroPowerZero(): void
@@ -290,6 +304,18 @@ class ComplexPowerTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot square Complex. The result would overflow.');
         new Complex(1e200)->sqr();
+    }
+
+    /**
+     * Test sqr() matches mul() exactly when the product of the parts is subnormal.
+     */
+    public function testSqrMatchesMulForSubnormalProduct(): void
+    {
+        $z = new Complex(8.848e-158, 6.487e-158);
+        $product = $z->mul($z);
+
+        $this->assertSame($product->imaginary, $z->sqr()->imaginary);
+        $this->assertSame($product->imaginary, $z->pow(2)->imaginary);
     }
 
     #endregion

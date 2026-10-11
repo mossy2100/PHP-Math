@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -51,6 +52,16 @@ class ComplexInverseHyperbolicTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute inverse hyperbolic sine of Complex. The result would overflow.');
         new Complex(1e200, 1e200)->asinh();
+    }
+
+    /**
+     * Test asinh() gives a positive zero imaginary part when the phase underflows, as the phase is wrapped.
+     */
+    public function testAsinhUnderflowedPhaseIsPositiveZero(): void
+    {
+        $result = new Complex(1e75, -1e-300)->asinh();
+
+        $this->assertTrue(Floats::isPositiveZero($result->imaginary));
     }
 
     #endregion

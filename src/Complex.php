@@ -589,6 +589,9 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate roots of this complex number using De Moivre's theorem.
      *
+     * Roots that lie on an axis are exact, e.g. the 4th roots of 1 are exactly 1, i, -1 and -i. The square roots are
+     * sqrt() and its negative.
+     *
      * @param int $degree The degree of the root to calculate (e.g. 2 for square root, 3 for cube root).
      * @return list<self> An array of $degree Complex numbers representing the roots.
      * @throws DomainException If the degree is not a positive integer.
@@ -607,14 +610,55 @@ final class Complex implements Stringable, ArrayAccess
             ];
         }
 
-        // Calculate the magnitude of the roots.
+        // Handle degree 1.
+        if ($degree === 1) {
+            return [
+                clone $this,
+            ];
+        }
+
+        // Handle degree 2. Use sqrt(), so the results agree. Adding 0.0 turns a negative zero into a positive zero.
+        if ($degree === 2) {
+            $root = $this->sqrt();
+            return [
+                $root,
+                new self(-$root->real + 0.0, -$root->imaginary + 0.0),
+            ];
+        }
+
+        // Calculate the magnitude of the roots. Raising to the power 1/n is inexact, as 1/n is rounded, e.g.
+        // 64 ** (1/3) is 3.9999999999999996. So, refine it with one step of Newton's method, keeping whichever is
+        // closer.
         $rootMag = $this->magnitude ** (1.0 / $degree);
+        $refined = $rootMag - ($rootMag ** $degree - $this->magnitude) / ($degree * $rootMag ** ($degree - 1));
+        if (abs($refined ** $degree - $this->magnitude) < abs($rootMag ** $degree - $this->magnitude)) {
+            $rootMag = $refined;
+        }
+
+        // If this number lies on an axis, get its phase as a whole number of quarter turns.
+        $quarterTurns = null;
+        if ($this->imaginary === 0.0) {
+            $quarterTurns = $this->real > 0 ? 0 : 2;
+        } elseif ($this->real === 0.0) {
+            $quarterTurns = $this->imaginary > 0 ? 1 : -1;
+        }
 
         // Calculate all n roots.
         $roots = [];
         $theta = $this->phase / $degree;
         $delta = M_TAU / $degree;
         for ($k = 0; $k < $degree; $k++) {
+            // A root that lies on an axis is the root magnitude times 1, i, -1 or -i, so calculate it exactly.
+            if ($quarterTurns !== null && ($quarterTurns + 4 * $k) % $degree === 0) {
+                $roots[] = match (intdiv($quarterTurns + 4 * $k, $degree) % 4) {
+                    0       => new self($rootMag),
+                    1       => new self(0, $rootMag),
+                    2       => new self(-$rootMag),
+                    default => new self(0, -$rootMag),
+                };
+                continue;
+            }
+
             $rootPhase = $theta + $k * $delta;
             $roots[] = self::fromPolar($rootMag, $rootPhase);
         }
@@ -626,11 +670,38 @@ final class Complex implements Stringable, ArrayAccess
      * Calculate the square root of this complex number.
      * Only the principal value is returned. For both square roots, call roots(2).
      *
+     * Uses a numerically stable formula rather than the polar form, so the result is exact on the axes, e.g. the
+     * square root of -4 is exactly 2i.
+     *
      * @return self A new complex number representing the square root of this number.
      */
     public function sqrt(): self
     {
-        return self::fromPolar(sqrt($this->magnitude), $this->phase / 2);
+        // Handle special case of 0.
+        if ($this->equal(0)) {
+            return new self();
+        }
+
+        // With z = a + bi, calculate t = √((|z| + |a|) / 2).
+        $absReal = abs($this->real);
+        $sum = $this->magnitude + $absReal;
+        if (is_infinite($sum)) {
+            // Scale down to avoid overflow.
+            $t = 2 * sqrt($this->magnitude / 8 + $absReal / 8);
+        } elseif ($sum < 2 * PHP_FLOAT_MIN) {
+            // Scale up, as halving a subnormal number loses precision.
+            $t = sqrt(2 * $sum) / 2;
+        } else {
+            $t = sqrt($sum / 2);
+        }
+
+        // If a ≥ 0, √z = t + (b / 2t)i.
+        if ($this->real >= 0) {
+            return new self($t, $this->imaginary === 0.0 ? 0.0 : $this->imaginary / (2 * $t));
+        }
+
+        // If a < 0, √z = |b| / 2t ± ti, taking the sign of b. As with the phase, a zero b counts as positive.
+        return new self(abs($this->imaginary) / (2 * $t), $this->imaginary < 0 ? -$t : $t);
     }
 
     #endregion
@@ -1114,6 +1185,11 @@ final class Complex implements Stringable, ArrayAccess
         // Handle exponent = 2.
         if ($exp->equal(2)) {
             return $this->mul($this);
+        }
+
+        // Handle exponent = 0.5. Delegate to sqrt(), which is more accurate.
+        if ($exp->equal(0.5)) {
+            return $this->sqrt();
         }
 
         // Handle exponent = -1. Delegate to inv().
