@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace OceanMoon\Math;
 
 use ArrayAccess;
+use ArrayIterator;
 use Countable;
 use DomainException;
 use InvalidArgumentException;
+use IteratorAggregate;
 use LengthException;
 use LogicException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
@@ -19,13 +21,15 @@ use OutOfRangeException;
 use OverflowException;
 use Override;
 use Stringable;
+use Traversable;
 
 /**
  * Encapsulates a vector and provides a number of useful methods.
  *
  * @implements ArrayAccess<int, float>
+ * @implements IteratorAggregate<int, float>
  */
-final class Vector implements Stringable, Countable, ArrayAccess
+final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggregate
 {
     use ApproxEquatable;
 
@@ -782,6 +786,23 @@ final class Vector implements Stringable, Countable, ArrayAccess
     public function offsetUnset(mixed $offset): void
     {
         throw new LogicException('Cannot unset Vector elements.');
+    }
+
+    #endregion
+
+    #region IteratorAggregate implementation
+
+    /**
+     * Get an iterator over the elements, for foreach loops.
+     *
+     * The elements are a snapshot: changing the Vector during the loop doesn't change the values still to come.
+     *
+     * @return Traversable<int, float> The iterator.
+     */
+    #[Override]
+    public function getIterator(): Traversable
+    {
+        return new ArrayIterator($this->data);
     }
 
     #endregion

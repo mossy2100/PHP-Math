@@ -14,6 +14,7 @@ The `Vector` class provides a general-purpose numeric vector with support for:
 - Exact and approximate equality comparison
 - Conversion to arrays and to row/column matrices
 - Array-style element access via the `ArrayAccess` interface, and element counting via `Countable`
+- Iteration over the elements with `foreach`, via `IteratorAggregate`
 
 Vectors are directionless (neither row nor column). When converted to a `Matrix`, use `toColumnMatrix()` or
 `toRowMatrix()` to pick the orientation explicitly.
@@ -760,6 +761,35 @@ Unsetting elements is not supported.
 **Throws:**
 
 - `LogicException` - Always throws.
+
+---
+
+## IteratorAggregate Implementation
+
+### getIterator()
+
+```php
+public function getIterator(): Traversable
+```
+
+Get an iterator over the elements, for `foreach` loops. It yields each index and element.
+
+The elements are a snapshot: changing the Vector during the loop doesn't change the values still to come. Assigning to
+the loop variable, even by reference, doesn't change the Vector either. Use `$v[$i] = ...` instead.
+
+**Returns:** `Traversable<int, float>` - An `ArrayIterator` over the elements.
+
+**Example:**
+
+```php
+$v = Vector::fromArray([1, 2, 3]);
+
+foreach ($v as $i => $x) {
+    echo "$i: $x\n";  // 0: 1, 1: 2, 2: 3
+}
+
+iterator_to_array($v);  // [1.0, 2.0, 3.0], the same as toArray()
+```
 
 ---
 

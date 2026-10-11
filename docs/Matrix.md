@@ -14,6 +14,7 @@ The `Matrix` class provides a complete implementation of matrix arithmetic with 
 - Transpose, determinant, and inverse operations
 - Sub-matrix extraction, in-place pasting, and resizing
 - Element and row/column access with bounds checking
+- Iteration over the rows with `foreach`, via `IteratorAggregate`
 - String representation using box-drawing characters
 - Support for n⨉0 and 0⨉n empty matrices
 
@@ -1176,6 +1177,34 @@ Unsetting rows is not supported.
 **Throws:**
 
 - `LogicException` - Always throws.
+
+---
+
+## IteratorAggregate Implementation
+
+### getIterator()
+
+```php
+public function getIterator(): Traversable
+```
+
+Get an iterator over the rows, for `foreach` loops. It yields each row index and row `Vector`.
+
+Like `$m[$i]`, the rows are the Matrix's actual row Vectors, so changing a row in the loop changes the Matrix.
+
+**Returns:** `Traversable<int, Vector>` - An `ArrayIterator` over the rows.
+
+**Example:**
+
+```php
+$m = Matrix::fromArray([[1, 2], [3, 4]]);
+
+foreach ($m as $i => $row) {
+    $row[0] = 0;  // Changes the Matrix
+}
+
+$m->toArray();  // [[0.0, 2.0], [0.0, 4.0]]
+```
 
 ---
 

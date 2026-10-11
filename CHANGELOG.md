@@ -16,6 +16,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - An irrational result, e.g. `2 ** (1/2)`, or an even root of a negative base throws.
   - Whether there's an exact root is determined with integer arithmetic only.
 - **`Rational::trunc()`** gives the integer part, truncating toward zero, like `round(RoundingMode::TowardsZero)`.
+- **`Vector` and `Matrix` implement `IteratorAggregate`**, so `foreach` yields a Vector's elements and a Matrix's rows.
+  Previously it silently yielded their public properties. A Matrix's rows are live, like `$m[$i]`.
 
 ### Changed
 
