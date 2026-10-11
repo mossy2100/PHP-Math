@@ -12,6 +12,9 @@ Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 
 This package provides classes for working with complex numbers, rational numbers, vectors, and matrices in PHP.
 
+For arithmetic and comparison operators (`$z1 + $z2`, `$r1 < $r2`), install the [Math extension](https://github.com/mossy2100/PHP-Math-extension), which provides the same
+classes in C, with operators.
+
 **Key Features:**
 
 - **Complex numbers** - Complex arithmetic, trigonometry, transcendental functions, polar/rectangular conversions, and
@@ -104,7 +107,7 @@ Immutable class for complex numbers (a + bi) with support for:
 - Transcendental functions (exp, ln, log, pow, roots)
 - Trigonometric and hyperbolic functions (sin, cos, tan, asin, acos, atan, etc.)
 - Polar and rectangular form conversions
-- Epsilon-based equality comparison
+- Exact and approximate equality comparison
 - String parsing and formatting
 
 ### [Rational](docs/Rational.md)
@@ -115,31 +118,33 @@ Immutable class for rational numbers (p/q) with support for:
 - Automatic reduction to simplest form (e.g., 6/8 → 3/4)
 - A dedicated `fromFloat()` method for approximate conversion from floats using continued fractions
 - Overflow-safe integer operations
-- Comparison operations with mixed types
+- Exact comparison with `Rational`, `int` and `float` values
 - String parsing and formatting
 
 ### [Vector](docs/Vector.md)
 
 Mutable numeric vector with support for:
 
-- Element-wise arithmetic (add, subtract, scalar multiply, scalar divide)
-- Dot, cross, Hadamard, and outer product operations. `mul()` and `div()` with a `Vector` are element-wise (Hadamard).
+- Arithmetic: add, subtract, and multiply or divide by a scalar, or element-wise by a `Vector` (Hadamard)
+- Dot, cross and outer products
 - Exact and approximate equality comparison
 - Conversion to arrays and matrices
 - Array-style element access via the `ArrayAccess` interface
+- Iteration over the elements with `foreach`
 - String representation using mathematical angle brackets
 
 ### [Matrix](docs/Matrix.md)
 
 Mutable two-dimensional matrix with support for:
 
-- Matrix arithmetic (add, subtract, multiply, divide)
+- Matrix arithmetic (add, subtract, multiply, divide by a scalar)
 - Element-wise (Hadamard) product and division via `hadamardMul()` and `hadamardDiv()`, since `mul()` with a `Matrix`
   is the matrix product
 - Matrix-vector multiplication using column vector convention
 - Transpose, determinant, and inverse operations
 - Matrix power with binary exponentiation (including negative powers)
 - Row-level `ArrayAccess` interface (get/set rows as Vectors)
+- Iteration over the rows with `foreach`
 - String representation using box-drawing characters
 
 ---
@@ -153,17 +158,18 @@ class member.
 
 ## Testing
 
-The library includes comprehensive test coverage:
+The library includes comprehensive test coverage. `PHP_INI_SCAN_DIR=` stops PHP loading extra ini files, so the tests
+run against this package even if the Math extension is enabled.
 
 ```bash
 # Run all tests
-vendor/bin/phpunit
+PHP_INI_SCAN_DIR= vendor/bin/phpunit
 
 # Run tests for specific class
-vendor/bin/phpunit tests/Complex
-vendor/bin/phpunit tests/Rational
-vendor/bin/phpunit tests/Vector
-vendor/bin/phpunit tests/Matrix
+PHP_INI_SCAN_DIR= vendor/bin/phpunit tests/Complex
+PHP_INI_SCAN_DIR= vendor/bin/phpunit tests/Rational
+PHP_INI_SCAN_DIR= vendor/bin/phpunit tests/Vector
+PHP_INI_SCAN_DIR= vendor/bin/phpunit tests/Matrix
 
 # Run with coverage (generates HTML report and clover.xml)
 composer test

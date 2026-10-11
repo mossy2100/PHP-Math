@@ -12,7 +12,7 @@ The `Complex` class provides a complete implementation of complex number arithme
 - Transcendental functions (exponential, logarithm, power, roots).
 - Trigonometric and hyperbolic functions.
 - Conversion between rectangular (a + bi) and polar (r∠θ) forms.
-- Epsilon-based equality comparison for floating-point precision.
+- Exact and approximate equality comparison.
 
 All operations return new instances, maintaining immutability.
 
