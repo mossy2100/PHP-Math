@@ -72,6 +72,7 @@ class RationalBinaryArithmeticTest extends TestCase
     public function testAddOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot add the given Rational numbers. The result would overflow.');
         $r = new Rational(PHP_INT_MAX, 2);
         $r->add(new Rational(1, 3));
     }
@@ -158,6 +159,8 @@ class RationalBinaryArithmeticTest extends TestCase
     public function testSubOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot multiply the given Rational numbers. The result would overflow.');
+        $this->expectExceptionMessage('Cannot subtract the given Rational numbers. The result would overflow.');
         $r = new Rational(PHP_INT_MAX, 2);
         $r->sub(new Rational(1, 3));
     }
@@ -368,6 +371,7 @@ class RationalBinaryArithmeticTest extends TestCase
     public function testDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot divide the given Rational numbers. The result would overflow.');
         $r = new Rational(PHP_INT_MAX);
         $r->div(new Rational(1, 2));
     }

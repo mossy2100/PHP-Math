@@ -226,7 +226,7 @@ class ComplexPowerTest extends TestCase
     public function testPowIntegerOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot raise Complex to a power. The result would overflow.');
+        $this->expectExceptionMessage('Cannot raise the given Complex to the given power. The result would overflow.');
         new Complex(10, 1)->pow(1000);
     }
 
@@ -302,7 +302,7 @@ class ComplexPowerTest extends TestCase
     public function testSqrOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot square Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot square the given Complex. The result would overflow.');
         new Complex(1e200)->sqr();
     }
 

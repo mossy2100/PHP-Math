@@ -46,7 +46,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testAddOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot add Vectors. The result would overflow.');
+        $this->expectExceptionMessage('Cannot add the given Vectors. The result would overflow.');
         Vector::fromArray([1e308])->add(Vector::fromArray([1e308]));
     }
 
@@ -82,7 +82,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testSubOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot subtract Vectors. The result would overflow.');
+        $this->expectExceptionMessage('Cannot subtract the given Vectors. The result would overflow.');
         Vector::fromArray([1e308])->sub(Vector::fromArray([-1e308]));
     }
 
@@ -216,7 +216,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulByScalarOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Vector by 1.0E+200. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Vector by 1.0E+200. The result would overflow.');
         Vector::fromArray([1e200])->mul(1e200);
     }
 
@@ -236,7 +236,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulByVectorOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Vectors. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Vectors. The result would overflow.');
         Vector::fromArray([1e200])->mul(Vector::fromArray([1e200]));
     }
 
@@ -246,7 +246,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulByMatrixOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Vector by Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Vector and Matrix. The result would overflow.');
         Vector::fromArray([1e200])->mul(Matrix::fromArray([
             [1e200],
         ]));
@@ -332,7 +332,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testDivByScalarOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide Vector by 1.0E-200. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide the given Vector by 1.0E-200. The result would overflow.');
         Vector::fromArray([1e200])->div(1e-200);
     }
 
@@ -342,7 +342,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testDivByVectorOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide Vectors. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide the given Vectors. The result would overflow.');
         Vector::fromArray([1e200])->div(Vector::fromArray([1e-200]));
     }
 

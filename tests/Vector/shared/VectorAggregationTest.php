@@ -38,7 +38,7 @@ class VectorAggregationTest extends TestCase
     public function testSumOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute sum of Vector. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute sum of the given Vector. The result would overflow.');
         Vector::fromArray([1e308, 1e308])->sum();
     }
 
@@ -79,7 +79,7 @@ class VectorAggregationTest extends TestCase
     public function testProdOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute product of Vector. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute product of the given Vector. The result would overflow.');
         Vector::fromArray([1e200, 1e200])->prod();
     }
 

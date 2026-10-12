@@ -370,7 +370,7 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        return self::calcWithOverflowMessage('invert Complex', fn () => new self(1)->div($this));
+        return self::calcWithOverflowMessage('invert the given Complex', fn () => new self(1)->div($this));
     }
 
     /**
@@ -406,7 +406,7 @@ final class Complex implements Stringable, ArrayAccess
         return self::fromResult(
             $this->real + $other->real,
             $this->imaginary + $other->imaginary,
-            'add Complex numbers'
+            'add the given Complex numbers'
         );
     }
 
@@ -429,7 +429,7 @@ final class Complex implements Stringable, ArrayAccess
         return self::fromResult(
             $this->real - $other->real,
             $this->imaginary - $other->imaginary,
-            'subtract Complex numbers'
+            'subtract the given Complex numbers'
         );
     }
 
@@ -454,7 +454,7 @@ final class Complex implements Stringable, ArrayAccess
         $b = $this->imaginary;
         $c = $other->real;
         $d = $other->imaginary;
-        return self::fromResult($a * $c - $b * $d, $a * $d + $b * $c, 'multiply Complex numbers');
+        return self::fromResult($a * $c - $b * $d, $a * $d + $b * $c, 'multiply the given Complex numbers');
     }
 
     /**
@@ -500,7 +500,7 @@ final class Complex implements Stringable, ArrayAccess
             $imag = ($b * $r - $a) / $den;
         }
 
-        return self::fromResult($real, $imag, 'divide Complex numbers');
+        return self::fromResult($real, $imag, 'divide the given Complex numbers');
     }
 
     #endregion
@@ -566,7 +566,10 @@ final class Complex implements Stringable, ArrayAccess
             return clone $this;
         }
 
-        return self::calcWithOverflowMessage('raise Complex to a power', fn () => $this->calcPow($exp));
+        return self::calcWithOverflowMessage(
+            'raise the given Complex to the given power',
+            fn () => $this->calcPow($exp)
+        );
     }
 
     /**
@@ -579,7 +582,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function sqr(): self
     {
-        return self::calcWithOverflowMessage('square Complex', fn () => $this->mul($this));
+        return self::calcWithOverflowMessage('square the given Complex', fn () => $this->mul($this));
     }
 
     #endregion
@@ -752,7 +755,7 @@ final class Complex implements Stringable, ArrayAccess
         // magnitude = e^a and phase = b implements the formula above.
         $mag = exp($this->real);
         if (!is_finite($mag)) {
-            throw new OverflowException('Cannot compute exponential of Complex. The result would overflow.');
+            throw new OverflowException('Cannot compute exponential of the given Complex. The result would overflow.');
         }
         return self::fromPolar($mag, $this->imaginary);
     }
@@ -853,7 +856,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // General solution. Compute log_b(z) = ln(z) / ln(b)
         return self::calcWithOverflowMessage(
-            'compute logarithm of Complex',
+            'compute logarithm of the given Complex',
             fn () => $this->ln()->div($base->ln())
         );
     }
@@ -875,7 +878,7 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return self::fromResult(sin($x) * cosh($y), cos($x) * sinh($y), 'compute sine of Complex');
+        return self::fromResult(sin($x) * cosh($y), cos($x) * sinh($y), 'compute sine of the given Complex');
     }
 
     /**
@@ -891,7 +894,7 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return self::fromResult(cos($x) * cosh($y), -sin($x) * sinh($y), 'compute cosine of Complex');
+        return self::fromResult(cos($x) * cosh($y), -sin($x) * sinh($y), 'compute cosine of the given Complex');
     }
 
     /**
@@ -922,7 +925,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function asin(): self
     {
-        return self::calcWithOverflowMessage('compute inverse sine of Complex', function (): self {
+        return self::calcWithOverflowMessage('compute inverse sine of the given Complex', function (): self {
             // asin(z) = -i·ln(iz + √(1-z²))
             // iz = -y + ix (multiply by i directly)
             $iz = new self(-$this->imaginary, $this->real);
@@ -942,7 +945,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function acos(): self
     {
-        return self::calcWithOverflowMessage('compute inverse cosine of Complex', function (): self {
+        return self::calcWithOverflowMessage('compute inverse cosine of the given Complex', function (): self {
             // acos(z) = -i·ln(z + i·√(1-z²))
             // 1 - z²
             $oneMinusZ2 = new self(1)->sub($this->mul($this));
@@ -970,7 +973,7 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException("Cannot compute inverse tangent of $value.");
         }
 
-        return self::calcWithOverflowMessage('compute inverse tangent of Complex', function (): self {
+        return self::calcWithOverflowMessage('compute inverse tangent of the given Complex', function (): self {
             // atan(z) = (-i/2)·ln((i-z)/(i+z))
             // i - z = -x + (1-y)i (calculate directly)
             $iMinusZ = new self(-$this->real, 1 - $this->imaginary);
@@ -998,7 +1001,7 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return self::fromResult(sinh($x) * cos($y), cosh($x) * sin($y), 'compute hyperbolic sine of Complex');
+        return self::fromResult(sinh($x) * cos($y), cosh($x) * sin($y), 'compute hyperbolic sine of the given Complex');
     }
 
     /**
@@ -1014,7 +1017,11 @@ final class Complex implements Stringable, ArrayAccess
         // where z = x + iy
         $x = $this->real;
         $y = $this->imaginary;
-        return self::fromResult(cosh($x) * cos($y), sinh($x) * sin($y), 'compute hyperbolic cosine of Complex');
+        return self::fromResult(
+            cosh($x) * cos($y),
+            sinh($x) * sin($y),
+            'compute hyperbolic cosine of the given Complex'
+        );
     }
 
     /**
@@ -1044,7 +1051,7 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function asinh(): self
     {
-        return self::calcWithOverflowMessage('compute inverse hyperbolic sine of Complex', function (): self {
+        return self::calcWithOverflowMessage('compute inverse hyperbolic sine of the given Complex', function (): self {
             // asinh(z) = ln(z + √(z² + 1))
             $z2Plus1 = $this->mul($this)->add(new self(1));
             return $this->add($z2Plus1->sqrt())->ln();
@@ -1060,11 +1067,14 @@ final class Complex implements Stringable, ArrayAccess
      */
     public function acosh(): self
     {
-        return self::calcWithOverflowMessage('compute inverse hyperbolic cosine of Complex', function (): self {
-            // acosh(z) = ln(z + √(z² - 1))
-            $z2Minus1 = $this->mul($this)->sub(new self(1));
-            return $this->add($z2Minus1->sqrt())->ln();
-        });
+        return self::calcWithOverflowMessage(
+            'compute inverse hyperbolic cosine of the given Complex',
+            function (): self {
+                // acosh(z) = ln(z + √(z² - 1))
+                $z2Minus1 = $this->mul($this)->sub(new self(1));
+                return $this->add($z2Minus1->sqrt())->ln();
+            }
+        );
     }
 
     /**
@@ -1083,12 +1093,15 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException("Cannot compute inverse hyperbolic tangent of $value.");
         }
 
-        return self::calcWithOverflowMessage('compute inverse hyperbolic tangent of Complex', function (): self {
-            // atanh(z) = (1/2)·ln((1+z)/(1-z))
-            $onePlusZ = new self(1)->add($this);
-            $oneMinusZ = new self(1)->sub($this);
-            return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
-        });
+        return self::calcWithOverflowMessage(
+            'compute inverse hyperbolic tangent of the given Complex',
+            function (): self {
+                // atanh(z) = (1/2)·ln((1+z)/(1-z))
+                $onePlusZ = new self(1)->add($this);
+                $oneMinusZ = new self(1)->sub($this);
+                return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
+            }
+        );
     }
 
     #endregion
@@ -1283,7 +1296,7 @@ final class Complex implements Stringable, ArrayAccess
      *
      * @param float $real The real part.
      * @param float $imag The imaginary part.
-     * @param string $operation The operation, for the exception message, e.g. 'add Complex numbers'.
+     * @param string $operation The operation, for the exception message, e.g. 'add the given Complex numbers'.
      * @return self The new Complex.
      * @throws OverflowException If either part, or the magnitude, is not finite.
      */
@@ -1301,7 +1314,7 @@ final class Complex implements Stringable, ArrayAccess
      * Run a calculation, replacing the message of an OverflowException from any step with one that names the
      * operation the caller ran.
      *
-     * @param string $operation The operation, for the exception message, e.g. 'compute tangent of Complex'.
+     * @param string $operation The operation, for the exception message, e.g. 'compute tangent of the given Complex'.
      * @param callable(): self $calc The calculation.
      * @return self The result.
      * @throws OverflowException If the result, or an intermediate value, is too large to represent as a float.

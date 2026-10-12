@@ -687,7 +687,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 if ($value === 0.0) {
                     throw new ArithmeticException("Cannot compute reciprocal of zero at row $i, column $j.");
                 }
-                $result->set($i, $j, self::checkResult(1 / $value, 'compute reciprocal of Matrix'));
+                $result->set($i, $j, self::checkResult(1 / $value, 'compute reciprocal of the given Matrix'));
             }
         }
 
@@ -764,7 +764,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 $minor = $scaled->getMinor($i, $j);
                 $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * self::calcDet($minor);
                 // Note: transposed. Normalize, as negating a zero cofactor gives -0.0.
-                $element = self::checkResult($cofactor / $det / $scale, 'invert Matrix');
+                $element = self::checkResult($cofactor / $det / $scale, 'invert the given Matrix');
                 $adjugate->set($j, $i, Floats::normalizeZero($element));
             }
         }
@@ -799,7 +799,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
                 $sum = $this->data[$i]->get($j) + $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($sum, 'add Matrices'));
+                $result->set($i, $j, self::checkResult($sum, 'add the given Matrices'));
             }
         }
         return $result;
@@ -828,7 +828,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
                 $diff = $this->data[$i]->get($j) - $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($diff, 'subtract Matrices'));
+                $result->set($i, $j, self::checkResult($diff, 'subtract the given Matrices'));
             }
         }
         return $result;
@@ -856,7 +856,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             }
 
             // Multiply each element of the matrix by the float.
-            $operation = Stringify::prepEx('multiply Matrix by ?', $other);
+            $operation = Stringify::prepEx('multiply the given Matrix by ?', $other);
             $scaled = new self($this->rowCount, $this->columnCount);
             for ($i = 0; $i < $this->rowCount; $i++) {
                 for ($j = 0; $j < $this->columnCount; $j++) {
@@ -882,7 +882,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 for ($j = 0; $j < $this->columnCount; $j++) {
                     $sum += $this->data[$i]->get($j) * $other->get($j);
                 }
-                $result->set($i, self::checkResult($sum, 'multiply Matrix by Vector'));
+                $result->set($i, self::checkResult($sum, 'multiply the given Matrix and Vector'));
             }
 
             return $result;
@@ -905,7 +905,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 for ($k = 0; $k < $this->columnCount; $k++) {
                     $sum += $this->data[$i]->get($k) * $other->data[$k]->get($j);
                 }
-                $result->set($i, $j, self::checkResult($sum, 'multiply Matrices'));
+                $result->set($i, $j, self::checkResult($sum, 'multiply the given Matrices'));
             }
         }
 
@@ -934,7 +934,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Divide each element of the matrix by the scalar.
-        $operation = Stringify::prepEx('divide Matrix by ?', $scalar);
+        $operation = Stringify::prepEx('divide the given Matrix by ?', $scalar);
         $scaled = new self($this->rowCount, $this->columnCount);
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
@@ -967,7 +967,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         for ($i = 0; $i < $this->rowCount; $i++) {
             for ($j = 0; $j < $this->columnCount; $j++) {
                 $product = $this->data[$i]->get($j) * $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($product, 'multiply Matrices element-wise'));
+                $result->set($i, $j, self::checkResult($product, 'multiply the given Matrices element-wise'));
             }
         }
 
@@ -1002,7 +1002,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                     throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
                 }
                 $quotient = $this->data[$i]->get($j) / $divisor;
-                $result->set($i, $j, self::checkResult($quotient, 'divide Matrices element-wise'));
+                $result->set($i, $j, self::checkResult($quotient, 'divide the given Matrices element-wise'));
             }
         }
 
@@ -1046,7 +1046,11 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         try {
             return $this->calcPow($exp);
         } catch (OverflowException $e) {
-            throw new OverflowException('Cannot raise Matrix to a power. The result would overflow.', 0, $e);
+            throw new OverflowException(
+                'Cannot raise the given Matrix to the given power. The result would overflow.',
+                0,
+                $e
+            );
         }
     }
 
@@ -1068,7 +1072,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         try {
             return $this->mul($this);
         } catch (OverflowException $e) {
-            throw new OverflowException('Cannot square Matrix. The result would overflow.', 0, $e);
+            throw new OverflowException('Cannot square the given Matrix. The result would overflow.', 0, $e);
         }
     }
 
@@ -1107,7 +1111,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new DomainException('Cannot compute determinant of non-square Matrix.');
         }
 
-        return self::checkResult(self::calcDet($this->toArray()), 'compute determinant of Matrix');
+        return self::checkResult(self::calcDet($this->toArray()), 'compute determinant of the given Matrix');
     }
 
     /**
@@ -1128,7 +1132,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $sum += $this->data[$i]->get($i);
         }
 
-        return self::checkResult($sum, 'compute trace of Matrix');
+        return self::checkResult($sum, 'compute trace of the given Matrix');
     }
 
     #endregion
@@ -1149,7 +1153,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         try {
             return Vector::fromArray(array_merge(...$this->toArray()))->magnitude;
         } catch (OverflowException $e) {
-            throw new OverflowException('Cannot compute norm of Matrix. The result would overflow.', 0, $e);
+            throw new OverflowException('Cannot compute norm of the given Matrix. The result would overflow.', 0, $e);
         }
     }
 
@@ -1170,7 +1174,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $max = max($max, $colSum);
         }
 
-        return self::checkResult($max, 'compute P1 norm of Matrix');
+        return self::checkResult($max, 'compute P1 norm of the given Matrix');
     }
 
     /**
@@ -1190,7 +1194,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $max = max($max, $rowSum);
         }
 
-        return self::checkResult($max, 'compute P-infinity norm of Matrix');
+        return self::checkResult($max, 'compute P-infinity norm of the given Matrix');
     }
 
     #endregion
@@ -1378,7 +1382,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
      *
      * @param float $value The calculated value.
-     * @param string $operation The operation, for the exception message, e.g. 'add Matrices'.
+     * @param string $operation The operation, for the exception message, e.g. 'add the given Matrices'.
      * @return float The value.
      * @throws OverflowException If the value is not finite.
      */
@@ -1569,7 +1573,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
             // Store the column. Normalize, as the substitutions can give -0.0.
             for ($i = 0; $i < $n; $i++) {
-                $inverse->set($i, $col, Floats::normalizeZero(self::checkResult($x[$i], 'invert Matrix')));
+                $inverse->set($i, $col, Floats::normalizeZero(self::checkResult($x[$i], 'invert the given Matrix')));
             }
         }
 

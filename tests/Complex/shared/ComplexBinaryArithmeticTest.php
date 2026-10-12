@@ -69,7 +69,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testAddOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot add Complex numbers. The result would overflow.');
+        $this->expectExceptionMessage('Cannot add the given Complex numbers. The result would overflow.');
         new Complex(1e308)->add(new Complex(1e308));
     }
 
@@ -125,7 +125,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testSubOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot subtract Complex numbers. The result would overflow.');
+        $this->expectExceptionMessage('Cannot subtract the given Complex numbers. The result would overflow.');
         new Complex(1e308)->sub(new Complex(-1e308));
     }
 
@@ -195,7 +195,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testMulOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Complex numbers. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Complex numbers. The result would overflow.');
         new Complex(1e200)->mul(1e200);
     }
 
@@ -293,7 +293,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide Complex numbers. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide the given Complex numbers. The result would overflow.');
         new Complex(1)->div(new Complex(1e-320));
     }
 

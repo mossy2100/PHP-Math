@@ -52,7 +52,9 @@ class ComplexInverseHyperbolicTest extends TestCase
     public function testAsinhOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute inverse hyperbolic sine of Complex. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute inverse hyperbolic sine of the given Complex. The result would overflow.'
+        );
         new Complex(1e200, 1e200)->asinh();
     }
 
@@ -106,7 +108,7 @@ class ComplexInverseHyperbolicTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute inverse hyperbolic cosine of Complex. The result would overflow.'
+            'Cannot compute inverse hyperbolic cosine of the given Complex. The result would overflow.'
         );
         new Complex(1e200, 1e200)->acosh();
     }
@@ -151,7 +153,7 @@ class ComplexInverseHyperbolicTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute inverse hyperbolic tangent of Complex. The result would overflow.'
+            'Cannot compute inverse hyperbolic tangent of the given Complex. The result would overflow.'
         );
         new Complex(1, 1e-320)->atanh();
     }

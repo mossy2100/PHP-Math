@@ -89,7 +89,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     public function testReciprocalOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute reciprocal of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute reciprocal of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e-320],
         ])->reciprocal();
@@ -216,7 +216,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     public function testInvOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot invert Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot invert the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e-310],
         ])->inv();

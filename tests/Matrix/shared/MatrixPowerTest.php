@@ -206,7 +206,7 @@ class MatrixPowerTest extends TestCase
     public function testPowOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot raise Matrix to a power. The result would overflow.');
+        $this->expectExceptionMessage('Cannot raise the given Matrix to the given power. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->pow(3);
@@ -263,7 +263,7 @@ class MatrixPowerTest extends TestCase
     public function testSqrOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot square Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot square the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->sqr();

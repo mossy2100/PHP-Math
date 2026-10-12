@@ -49,7 +49,7 @@ class VectorLinearAlgebraTest extends TestCase
     public function testDotOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute dot product. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute dot product of the given Vectors. The result would overflow.');
         Vector::fromArray([1e200, 1e200])->dot(Vector::fromArray([1e200, -1e200]));
     }
 
@@ -139,7 +139,7 @@ class VectorLinearAlgebraTest extends TestCase
         $v1 = Vector::fromArray([1e200, 1e200, 0.0]);
         $v2 = Vector::fromArray([1e200, -1e200, 0.0]);
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute cross product. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute cross product of the given Vectors. The result would overflow.');
         $v1->cross($v2);
     }
 
@@ -192,7 +192,7 @@ class VectorLinearAlgebraTest extends TestCase
     public function testOuterOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute outer product. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute outer product of the given Vectors. The result would overflow.');
         Vector::fromArray([1e200])->outer(Vector::fromArray([1e200]));
     }
 

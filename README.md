@@ -92,8 +92,11 @@ Unlike PHP's own float arithmetic, these classes never accept or return `INF`, `
 | An undefined operation, such as division by zero or the log of zero | `ArithmeticException` |
 
 A `NAN` result from finite operands always comes from an intermediate value overflowing (e.g. `INF - INF`), so it's
-reported as an overflow too. An overflow message names the operation you called, e.g. "Cannot raise Complex to a power.
-The result would overflow."
+reported as an overflow too. An overflow message names the operation you called, e.g. "Cannot raise the given Complex to
+the given power. The result would overflow."
+
+Unlike PHP's `int` arithmetic, a `Rational` result that overflows isn't widened to a float. It throws
+`OverflowException`.
 
 ---
 

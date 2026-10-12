@@ -55,7 +55,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testAddOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot add Matrices. The result would overflow.');
+        $this->expectExceptionMessage('Cannot add the given Matrices. The result would overflow.');
         Matrix::fromArray([
             [1e308],
         ])->add(Matrix::fromArray([
@@ -104,7 +104,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testSubOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot subtract Matrices. The result would overflow.');
+        $this->expectExceptionMessage('Cannot subtract the given Matrices. The result would overflow.');
         Matrix::fromArray([
             [1e308],
         ])->sub(Matrix::fromArray([
@@ -246,7 +246,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testMulByScalarOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Matrix by 1.0E+200. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Matrix by 1.0E+200. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->mul(1e200);
@@ -268,7 +268,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testMulByVectorOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Matrix by Vector. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Matrix and Vector. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->mul(Vector::fromArray([1e200]));
@@ -280,7 +280,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testMulByMatrixOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Matrices. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Matrices. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->mul(Matrix::fromArray([
@@ -340,7 +340,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide Matrix by 1.0E-200. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide the given Matrix by 1.0E-200. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->div(1e-200);
@@ -387,7 +387,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testHadamardMulOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply Matrices element-wise. The result would overflow.');
+        $this->expectExceptionMessage('Cannot multiply the given Matrices element-wise. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->hadamardMul(Matrix::fromArray([
@@ -453,7 +453,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testHadamardDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide Matrices element-wise. The result would overflow.');
+        $this->expectExceptionMessage('Cannot divide the given Matrices element-wise. The result would overflow.');
         Matrix::fromArray([
             [1e200],
         ])->hadamardDiv(Matrix::fromArray([

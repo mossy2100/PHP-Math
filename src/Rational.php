@@ -563,7 +563,10 @@ final class Rational implements Stringable
     public function add(self|int $other): self
     {
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
-        return self::calcAddSub($a, $b, $c, $d, false);
+        return self::calcWithOverflowMessage(
+            'add the given Rational numbers',
+            static fn () => self::calcAddSub($a, $b, $c, $d, false)
+        );
     }
 
     /**
@@ -577,7 +580,10 @@ final class Rational implements Stringable
     public function sub(self|int $other): self
     {
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
-        return self::calcAddSub($a, $b, $c, $d, true);
+        return self::calcWithOverflowMessage(
+            'subtract the given Rational numbers',
+            static fn () => self::calcAddSub($a, $b, $c, $d, true)
+        );
     }
 
     /**
@@ -607,9 +613,10 @@ final class Rational implements Stringable
         }
 
         // Multiply reduced terms: (a/b) * (c/d) = ac/bd
-        $h = Integers::mul($a, $c);
-        $k = Integers::mul($b, $d);
-        return new self($h, $k);
+        return self::calcWithOverflowMessage(
+            'multiply the given Rational numbers',
+            static fn () => new self(Integers::mul($a, $c), Integers::mul($b, $d))
+        );
     }
 
     /**
@@ -651,9 +658,10 @@ final class Rational implements Stringable
         }
 
         // Multiply reduced terms: (a/b) / (c/d) = ad/bc
-        $h = Integers::mul($a, $d);
-        $k = Integers::mul($b, $c);
-        return new self($h, $k);
+        return self::calcWithOverflowMessage(
+            'divide the given Rational numbers',
+            static fn () => new self(Integers::mul($a, $d), Integers::mul($b, $c))
+        );
     }
 
     #endregion
@@ -685,75 +693,9 @@ final class Rational implements Stringable
      */
     public function pow(int|self $exp): self
     {
-        // Handle a Rational exponent.
-        if ($exp instanceof self) {
-            $p = $exp->numerator;
-            $q = $exp->denominator;
-
-            // A whole-number exponent is handled the same as an int.
-            if ($q === 1) {
-                return $this->pow($p);
-            }
-
-            // The result is the q-th root, raised to the power p. It's rational only if the numerator and denominator
-            // both have exact q-th roots.
-            $rootNum = self::exactRoot($this->numerator, $q);
-            $rootDen = self::exactRoot($this->denominator, $q);
-            if ($rootNum === null || $rootDen === null) {
-                $notReal = $this->numerator < 0 && $q % 2 === 0;
-                $reason = $notReal ? 'The result is not real.' : 'The result is irrational.';
-                throw new DomainException("Cannot raise $this to power $exp. $reason");
-            }
-            return new self($rootNum, $rootDen)->pow($p);
-        }
-
-        // $exp is an integer.
-        // Any number to the power of 0 is 1, including 0.
-        // 0^0 can be considered undefined, but many programming languages (including PHP) return 1.
-        if ($exp === 0) {
-            return new self(1);
-        }
-
-        // Handle 0 base.
-        if ($this->numerator === 0) {
-            // 0 to the power of a negative exponent is invalid (effectively division by zero).
-            if ($exp < 0) {
-                throw new ArithmeticException('Cannot raise zero to negative power.');
-            }
-
-            // 0 to the power of a positive exponent is 0.
-            return new self(0);
-        }
-
-        // Handle exponent = 1. Any number to power 1 is itself.
-        if ($exp === 1) {
-            return clone $this;
-        }
-
-        // Handle exponent = 2.
-        if ($exp === 2) {
-            return $this->mul($this);
-        }
-
-        // Handle exponent = -1. Delegate to inv().
-        if ($exp === -1) {
-            return $this->inv();
-        }
-
-        // Handle exponent = PHP_INT_MIN.
-        if ($exp === PHP_INT_MIN) {
-            return $this->pow(PHP_INT_MAX)->mul($this)->inv();
-        }
-
-        // Handle negative exponents by taking reciprocal.
-        if ($exp < 0) {
-            return $this->inv()->pow(-$exp);
-        }
-
-        // General solution. Calculate the new numerator and denominator with overflow checks.
-        return new self(
-            Integers::pow($this->numerator, $exp),
-            Integers::pow($this->denominator, $exp)
+        return self::calcWithOverflowMessage(
+            'raise the given Rational to the given power',
+            fn () => $this->calcPow($exp)
         );
     }
 
@@ -766,7 +708,7 @@ final class Rational implements Stringable
      */
     public function sqr(): self
     {
-        return $this->mul($this);
+        return self::calcWithOverflowMessage('square the given Rational', fn () => $this->mul($this));
     }
 
     #endregion
@@ -908,6 +850,108 @@ final class Rational implements Stringable
         }
 
         return [$a, $b, $c, $d];
+    }
+
+    /**
+     * Calculate the result for pow().
+     *
+     * @param int|self $exp The exponent.
+     * @return self The result.
+     * @throws ArithmeticException If raising zero to a negative power.
+     * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
+     */
+    private function calcPow(int|self $exp): self
+    {
+        // Handle a Rational exponent.
+        if ($exp instanceof self) {
+            $p = $exp->numerator;
+            $q = $exp->denominator;
+
+            // A whole-number exponent is handled the same as an int.
+            if ($q === 1) {
+                return $this->calcPow($p);
+            }
+
+            // The result is the q-th root, raised to the power p. It's rational only if the numerator and denominator
+            // both have exact q-th roots.
+            $rootNum = self::exactRoot($this->numerator, $q);
+            $rootDen = self::exactRoot($this->denominator, $q);
+            if ($rootNum === null || $rootDen === null) {
+                $notReal = $this->numerator < 0 && $q % 2 === 0;
+                $reason = $notReal ? 'The result is not real.' : 'The result is irrational.';
+                throw new DomainException("Cannot raise $this to power $exp. $reason");
+            }
+            return new self($rootNum, $rootDen)->calcPow($p);
+        }
+
+        // $exp is an integer.
+        // Any number to the power of 0 is 1, including 0.
+        // 0^0 can be considered undefined, but many programming languages (including PHP) return 1.
+        if ($exp === 0) {
+            return new self(1);
+        }
+
+        // Handle 0 base.
+        if ($this->numerator === 0) {
+            // 0 to the power of a negative exponent is invalid (effectively division by zero).
+            if ($exp < 0) {
+                throw new ArithmeticException('Cannot raise zero to negative power.');
+            }
+
+            // 0 to the power of a positive exponent is 0.
+            return new self(0);
+        }
+
+        // Handle exponent = 1. Any number to power 1 is itself.
+        if ($exp === 1) {
+            return clone $this;
+        }
+
+        // Handle exponent = 2.
+        if ($exp === 2) {
+            return $this->mul($this);
+        }
+
+        // Handle exponent = -1. Delegate to inv().
+        if ($exp === -1) {
+            return $this->inv();
+        }
+
+        // Handle exponent = PHP_INT_MIN.
+        if ($exp === PHP_INT_MIN) {
+            return $this->calcPow(PHP_INT_MAX)->mul($this)->inv();
+        }
+
+        // Handle negative exponents by taking reciprocal.
+        if ($exp < 0) {
+            return $this->inv()->calcPow(-$exp);
+        }
+
+        // General solution. Calculate the new numerator and denominator with overflow checks.
+        return new self(
+            Integers::pow($this->numerator, $exp),
+            Integers::pow($this->denominator, $exp)
+        );
+    }
+
+    /**
+     * Run a calculation, replacing the message of an OverflowException from any step with one that names the
+     * operation the caller ran.
+     *
+     * @param string $operation The operation, for the exception message, e.g. 'add the given Rational numbers'.
+     * @param callable(): self $calc The calculation.
+     * @param-immediately-invoked-callable $calc
+     * @return self The result.
+     * @throws OverflowException If the result, or an intermediate value, is too large to represent as an int.
+     */
+    private static function calcWithOverflowMessage(string $operation, callable $calc): self
+    {
+        try {
+            return $calc();
+        } catch (OverflowException $e) {
+            throw new OverflowException("Cannot $operation. The result would overflow.", 0, $e);
+        }
     }
 
     /**

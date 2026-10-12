@@ -109,7 +109,7 @@ class ComplexUnaryArithmeticTest extends TestCase
     public function testInvOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot invert Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot invert the given Complex. The result would overflow.');
         new Complex(1e-320)->inv();
     }
 

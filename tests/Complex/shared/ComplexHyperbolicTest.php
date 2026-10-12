@@ -52,7 +52,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testSinhOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute hyperbolic sine of Complex. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute hyperbolic sine of the given Complex. The result would overflow.'
+        );
         new Complex(1000, 1)->sinh();
     }
 
@@ -97,7 +99,9 @@ class ComplexHyperbolicTest extends TestCase
     public function testCoshOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute hyperbolic cosine of Complex. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute hyperbolic cosine of the given Complex. The result would overflow.'
+        );
         new Complex(1000, 1)->cosh();
     }
 

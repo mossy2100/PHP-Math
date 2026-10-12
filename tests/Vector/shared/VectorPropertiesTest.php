@@ -94,7 +94,7 @@ class VectorPropertiesTest extends TestCase
     public function testMagnitudeOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute magnitude of Vector. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute magnitude of the given Vector. The result would overflow.');
         $magnitude = Vector::fromArray([1.5e308, 1.5e308])->magnitude;
     }
 

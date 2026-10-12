@@ -52,7 +52,7 @@ class ComplexInverseTrigonometricTest extends TestCase
     public function testAsinOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute inverse sine of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute inverse sine of the given Complex. The result would overflow.');
         new Complex(1e200, 1e200)->asin();
     }
 
@@ -101,7 +101,7 @@ class ComplexInverseTrigonometricTest extends TestCase
     public function testAcosOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute inverse cosine of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute inverse cosine of the given Complex. The result would overflow.');
         new Complex(1e200, 1e200)->acos();
     }
 
@@ -145,7 +145,9 @@ class ComplexInverseTrigonometricTest extends TestCase
     public function testAtanOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute inverse tangent of Complex. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute inverse tangent of the given Complex. The result would overflow.'
+        );
         new Complex(1e-320, -1)->atan();
     }
 

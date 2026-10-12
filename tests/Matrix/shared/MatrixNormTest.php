@@ -95,7 +95,7 @@ class MatrixNormTest extends TestCase
     public function testNormFrobeniusOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute norm of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute norm of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1.5e308],
             [1.5e308],
@@ -125,7 +125,7 @@ class MatrixNormTest extends TestCase
     public function testP1NormOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute P1 norm of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute P1 norm of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e308],
             [1e308],
@@ -155,7 +155,7 @@ class MatrixNormTest extends TestCase
     public function testPInfNormOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute P-infinity norm of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute P-infinity norm of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e308, 1e308],
         ])->pInfNorm();

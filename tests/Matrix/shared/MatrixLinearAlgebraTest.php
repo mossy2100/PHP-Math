@@ -122,7 +122,7 @@ class MatrixLinearAlgebraTest extends TestCase
     public function testDetOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute determinant of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute determinant of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e200, 1e200],
             [1e200, 1e200],
@@ -181,7 +181,7 @@ class MatrixLinearAlgebraTest extends TestCase
         ]);
 
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute determinant of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute determinant of the given Matrix. The result would overflow.');
         $m->det();
     }
 
@@ -258,7 +258,7 @@ class MatrixLinearAlgebraTest extends TestCase
     public function testTraceOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute trace of Matrix. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute trace of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e308, 0],
             [0, 1e308],

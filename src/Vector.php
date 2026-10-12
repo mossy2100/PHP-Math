@@ -66,7 +66,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             // Calculate the magnitude of the scaled vector, then undo the scaling.
             return self::checkResult(
                 $scale * sqrt(array_sum(array_map(static fn ($x) => ($x / $scale) ** 2, $this->data))),
-                'compute magnitude of Vector'
+                'compute magnitude of the given Vector'
             );
         }
     }
@@ -366,7 +366,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             if ($this->data[$i] === 0.0) {
                 throw new ArithmeticException("Cannot compute reciprocal of zero at index $i.");
             }
-            $data[] = self::checkResult(1 / $this->data[$i], 'compute reciprocal of Vector');
+            $data[] = self::checkResult(1 / $this->data[$i], 'compute reciprocal of the given Vector');
         }
 
         return self::fromList($data);
@@ -396,7 +396,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Add the vectors element-wise.
         $data = [];
         for ($i = 0; $i < $this->count; $i++) {
-            $data[] = self::checkResult($this->data[$i] + $other->data[$i], 'add Vectors');
+            $data[] = self::checkResult($this->data[$i] + $other->data[$i], 'add the given Vectors');
         }
 
         return self::fromList($data);
@@ -422,7 +422,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Subtract the vectors element-wise.
         $data = [];
         for ($i = 0; $i < $this->count; $i++) {
-            $data[] = self::checkResult($this->data[$i] - $other->data[$i], 'subtract Vectors');
+            $data[] = self::checkResult($this->data[$i] - $other->data[$i], 'subtract the given Vectors');
         }
 
         return self::fromList($data);
@@ -453,7 +453,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             }
 
             // Multiply each element by the scalar.
-            $operation = Stringify::prepEx('multiply Vector by ?', $other);
+            $operation = Stringify::prepEx('multiply the given Vector by ?', $other);
             $data = [];
             for ($i = 0; $i < $this->count; $i++) {
                 $data[] = self::checkResult($this->data[$i] * $other, $operation);
@@ -472,7 +472,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
             $data = [];
             for ($i = 0; $i < $this->count; $i++) {
-                $data[] = self::checkResult($this->data[$i] * $other->data[$i], 'multiply Vectors');
+                $data[] = self::checkResult($this->data[$i] * $other->data[$i], 'multiply the given Vectors');
             }
 
             return self::fromList($data);
@@ -492,7 +492,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             for ($i = 0; $i < $this->count; $i++) {
                 $sum += $this->data[$i] * $other->get($i, $j);
             }
-            $data[] = self::checkResult($sum, 'multiply Vector by Matrix');
+            $data[] = self::checkResult($sum, 'multiply the given Vector and Matrix');
         }
 
         return self::fromList($data);
@@ -525,7 +525,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 if ($other->data[$i] === 0.0) {
                     throw new ArithmeticException("Cannot divide by zero at index $i.");
                 }
-                $data[] = self::checkResult($this->data[$i] / $other->data[$i], 'divide Vectors');
+                $data[] = self::checkResult($this->data[$i] / $other->data[$i], 'divide the given Vectors');
             }
 
             return self::fromList($data);
@@ -542,7 +542,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Divide each element by the scalar.
-        $operation = Stringify::prepEx('divide Vector by ?', $other);
+        $operation = Stringify::prepEx('divide the given Vector by ?', $other);
         $data = [];
         for ($i = 0; $i < $this->count; $i++) {
             $data[] = self::checkResult($this->data[$i] / $other, $operation);
@@ -578,7 +578,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $result += $this->data[$i] * $other->data[$i];
         }
 
-        return self::checkResult($result, 'compute dot product');
+        return self::checkResult($result, 'compute dot product of the given Vectors');
     }
 
     /**
@@ -627,7 +627,9 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $maxScale = max($scaleA, $scaleB);
             $result = array_map(static fn ($x) => $x * $minScale * $maxScale, $result);
             if (!self::allFinite($result)) {
-                throw new OverflowException('Cannot compute cross product. The result would overflow.');
+                throw new OverflowException(
+                    'Cannot compute cross product of the given Vectors. The result would overflow.'
+                );
             }
         }
 
@@ -652,7 +654,11 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         try {
             return $this->toColumnMatrix()->mul($other->toRowMatrix());
         } catch (OverflowException $e) {
-            throw new OverflowException('Cannot compute outer product. The result would overflow.', 0, $e);
+            throw new OverflowException(
+                'Cannot compute outer product of the given Vectors. The result would overflow.',
+                0,
+                $e
+            );
         }
     }
 
@@ -690,7 +696,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function sum(): float
     {
-        return self::checkResult(array_sum($this->data), 'compute sum of Vector');
+        return self::checkResult(array_sum($this->data), 'compute sum of the given Vector');
     }
 
     /**
@@ -701,7 +707,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function prod(): float
     {
-        return self::checkResult(array_product($this->data), 'compute product of Vector');
+        return self::checkResult(array_product($this->data), 'compute product of the given Vector');
     }
 
     /**
@@ -829,7 +835,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
      *
      * @param float $value The calculated value.
-     * @param string $operation The operation, for the exception message, e.g. 'add Vectors'.
+     * @param string $operation The operation, for the exception message, e.g. 'add the given Vectors'.
      * @return float The value.
      * @throws OverflowException If the value is not finite.
      */

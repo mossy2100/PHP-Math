@@ -58,7 +58,7 @@ class ComplexTrigonometricTest extends TestCase
     public function testSinOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute sine of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute sine of the given Complex. The result would overflow.');
         new Complex(1, 1000)->sin();
     }
 
@@ -109,7 +109,7 @@ class ComplexTrigonometricTest extends TestCase
     public function testCosOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute cosine of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute cosine of the given Complex. The result would overflow.');
         new Complex(1, 1000)->cos();
     }
 

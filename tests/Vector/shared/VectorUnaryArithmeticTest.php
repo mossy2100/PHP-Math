@@ -65,7 +65,7 @@ class VectorUnaryArithmeticTest extends TestCase
     public function testReciprocalOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute reciprocal of Vector. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute reciprocal of the given Vector. The result would overflow.');
         Vector::fromArray([1e-320])->reciprocal();
     }
 

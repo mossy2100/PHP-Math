@@ -71,7 +71,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testExpOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute exponential of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute exponential of the given Complex. The result would overflow.');
         new Complex(1000, 1)->exp();
     }
 
@@ -279,7 +279,7 @@ class ComplexTranscendentalTest extends TestCase
     public function testLogOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot compute logarithm of Complex. The result would overflow.');
+        $this->expectExceptionMessage('Cannot compute logarithm of the given Complex. The result would overflow.');
         new Complex(1e300)->log(new Complex(1, 1e-310));
     }
 

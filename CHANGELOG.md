@@ -41,9 +41,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Vector::normalize()`** throws "Cannot normalize zero Vector." for a zero or empty vector, instead of "Cannot divide
   by zero." The exception class (`ArithmeticException`) is unchanged.
 - **Overflow throws `OverflowException` everywhere (breaking).** A result, or an intermediate value, too large to
-  represent now throws `OverflowException`, with a message naming the operation, e.g. "Cannot multiply Complex numbers.
-  The result would overflow." A `NAN` from finite operands comes from an intermediate overflow, so it's reported the
-  same way. Previously:
+  represent now throws `OverflowException`, with a message naming the operation, e.g. "Cannot multiply the given Complex
+  numbers. The result would overflow." A `NAN` from finite operands comes from an intermediate overflow, so it's
+  reported the same way. Previously:
   - `Complex` arithmetic, `pow()`, `exp()`, and the trigonometric and hyperbolic methods threw `DomainException`, e.g.
     "Cannot create Complex with non-finite real part: INF."
   - `Vector` and `Matrix` arithmetic threw `DomainException` "Cannot set element to non-finite value: INF."
@@ -58,8 +58,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Complex::fromString()` and `Rational::fromString()`** include the string in an invalid-format message, quoted and
   abbreviated to 32 characters, e.g. "Cannot convert string '3+4x' to Complex. Invalid format." A string that isn't
   valid UTF-8 is left out.
-- **Overflow messages no longer include the operands.** `Complex::div()` gives "Cannot divide Complex numbers. The
-  result would overflow.", and `Vector::cross()` gives "Cannot compute cross product. The result would overflow."
+- **`Rational` overflow messages name the operation,** like the other classes, e.g. "Cannot add the given Rational
+  numbers. The result would overflow." Previously they came from Core, e.g. "Overflow in integer addition." The
+  exception class (`OverflowException`) is unchanged.
 - **`Matrix::inv()`, `det()` and `pow()` use LU decomposition for matrices larger than 3×3 (breaking),** instead of
   cofactor expansion, which was O(n!): a 10×10 inverse took about 30 seconds, and now takes well under a millisecond.
   Matrices up to 3×3 still use the closed-form formulas, which give exact results where the arithmetic allows.

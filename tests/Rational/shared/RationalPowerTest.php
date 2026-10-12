@@ -163,6 +163,7 @@ class RationalPowerTest extends TestCase
     public function testPowOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot raise the given Rational to the given power. The result would overflow.');
         $r = new Rational(3);
         $r->pow(50);
     }
@@ -313,6 +314,17 @@ class RationalPowerTest extends TestCase
     {
         $r = new Rational(5, 7);
         $this->assertTrue($r->sqr()->equal($r->pow(2)));
+    }
+
+    /**
+     * Test sqr() throws on overflow, with a message naming sqr() rather than mul().
+     */
+    public function testSqrOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage('Cannot square the given Rational. The result would overflow.');
+        $r = new Rational(PHP_INT_MAX);
+        $r->sqr();
     }
 
     /**
