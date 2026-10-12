@@ -16,9 +16,9 @@ justification for the [Math extension](https://github.com/mossy2100/PHP-Math-ext
 
 ## Loose Equality (`==` and `!=`)
 
-### Comparing two objects of the same type
+### Comparing two objects of the same class
 
-In PHP, two objects are considered equal when they are of the same type and all their backed properties are equal.
+In PHP, two objects are considered equal when they are of the same class and all their backed properties are equal.
 
 **Example:**
 
@@ -29,9 +29,9 @@ var_export($z1 == $z2);
 // Prints "false".
 ```
 
-### Comparing two objects of different types
+### Comparing two objects of different classes
 
-Because the types are different, the operation will return `false` for `==` (or, conversely, `true` for `!=`), without
+Because the classes are different, the operation will return `false` for `==` (or, conversely, `true` for `!=`), without
 triggering a notice; no type conversion is attempted, and no property values will be considered.
 
 ### Comparing an object with a scalar
@@ -119,9 +119,9 @@ These comparisons have no defined meaning for `Complex`, `Vector`, and `Matrix`,
 
 If you _do_ use them, you will get the following results.
 
-### Comparing two objects of the same type
+### Comparing two objects of the same class
 
-If the types are the same, the objects' backed properties are compared one after the other in the order they are
+If the classes are the same, the objects' backed properties are compared one after the other in the order they are
 declared in the class, and the first difference determines the result.
 
 Therefore, for a `Complex` value, if the first value has a lesser real part than the second, it will compare as "less
@@ -144,7 +144,7 @@ this too. For `Rational` values, ordering comparisons work correctly once its op
 
 For `Vector` and `Matrix` values, the sizes will be compared first, then the element values.
 
-### Comparing two objects of different types
+### Comparing two objects of different classes
 
 PHP considers these genuinely incomparable, and the operators disagree with each other about precisely how:
 

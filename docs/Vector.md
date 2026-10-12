@@ -43,10 +43,10 @@ For v = (x₁, x₂, ..., xₙ): ‖v‖ = √(x₁² + x₂² + ... + xₙ²)
 ### $count
 
 ```php
-public int $count { get; }
+private(set) int $count
 ```
 
-The number of elements in the vector.
+The number of elements in the vector. Read-only from outside the class.
 
 ---
 

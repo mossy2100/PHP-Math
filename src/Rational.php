@@ -28,7 +28,7 @@ use Stringable;
  *
  * NB: The valid range of the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
  * Therefore, neither the numerator nor the denominator can be PHP_INT_MIN.
- * The reason is that PHP_INT_MIN equals -(PHP_INT_MAX + 1), .e. it cannot be negated without overflowing.
+ * The reason is that PHP_INT_MIN equals -(PHP_INT_MAX + 1), i.e. it cannot be negated without overflowing.
  * Allowing the numerator or the denominator to equal PHP_INT_MIN therefore complicates negation, reciprocal,
  * subtraction, and simplification methods.
  * So, while it's technically possible, supporting this edge case inflates the code for little gain.
@@ -317,8 +317,8 @@ final class Rational implements Stringable
      * as the original. In this way, the two can be added to reconstruct the original value.
      *
      * For example:
-     *     9/4 → [ 2,  1/4] (.e.  2 + 1/4    =  9/4).
-     *    -9/4 → [-2, -1/4] (.e. -2 + (-1/4) = -9/4).
+     *     9/4 → [ 2,  1/4] (i.e.  2 + 1/4    =  9/4).
+     *    -9/4 → [-2, -1/4] (i.e. -2 + (-1/4) = -9/4).
      *
      * For proper fractions (|numerator| < denominator), the integer part is 0.
      *
@@ -447,7 +447,7 @@ final class Rational implements Stringable
         }
 
         try {
-            // We can avoid a float conversin by cross multiplying and comparing a*d with b*c (for a/b vs c/d).
+            // We can avoid a float conversion by cross multiplying and comparing a*d with b*c (for a/b vs c/d).
             $ad = Integers::mul($this->numerator, $other->denominator);
             $bc = Integers::mul($this->denominator, $other->numerator);
             return Numbers::sign($ad <=> $bc);

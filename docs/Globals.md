@@ -1,4 +1,4 @@
-# Constants
+# Globals
 
 Global constants used by the Math package.
 

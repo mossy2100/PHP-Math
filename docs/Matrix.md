@@ -511,8 +511,6 @@ then relative tolerance.
 - `InvalidArgumentException` if `$other` is not a `Matrix`.
 - `DomainException` if either tolerance is negative.
 
-**@see** `Floats::approxEqual()`
-
 **Examples:**
 
 ```php
@@ -529,7 +527,7 @@ var_dump($m1->approxEqual($m2, 1e-15, 1e-15));  // false
 $m1->approxEqual('string');  // throws InvalidArgumentException
 ```
 
-### Comparison operators
+### Comparison Operators
 
 See: [Comparison Operators](Comparison_Operators.md) to read more about how the `==`, `<`, etc. operators work for the types in this package.
 

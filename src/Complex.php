@@ -99,7 +99,7 @@ final class Complex implements Stringable, ArrayAccess
             }
             // The phase must be in the range (-π, π].
             // In this branch, we know the imaginary part is not 0, so the result of atan2() should theoretically never
-            // equal π or -π. In practice it can be, however, it can be, if the imaginary part is very close to 0.
+            // equal π or -π. In practice, however, it can be, if the imaginary part is very close to 0.
             // So, we call wrap().
             $this->phase = Floats::wrap(atan2($imag, $real));
         }
@@ -1098,11 +1098,9 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Round the real and imaginary parts to the given number of decimal places.
      *
-     * If $precision is positive, the Complex parts are rounded to $precision significant digits *after* the decimal
-     * point.
-     * If $precision is negative, the Complex parts are rounded to $precision significant digits *before* the decimal
-     * point, i.e. to the nearest multiple of pow(10, -$precision), e.g. for a precision of -1 num is rounded to tens,
-     * for a precision of -2 to hundreds, etc.
+     * If $precision is positive, the Complex parts are rounded to $precision digits after the decimal point.
+     * If $precision is negative, the Complex parts are rounded to the nearest multiple of pow(10, -$precision), e.g. to
+     * tens for a precision of -1, to hundreds for a precision of -2, etc.
      *
      * @param int $precision The number of decimal places to round to.
      * @param RoundingMode $mode The rounding mode to use. Defaults to HalfAwayFromZero, matching the default mode
