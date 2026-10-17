@@ -12,6 +12,7 @@ use OceanMoon\Math\Vector;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 #[CoversClass(Vector::class)]
 class VectorBinaryArithmeticTest extends TestCase
@@ -158,6 +159,7 @@ class VectorBinaryArithmeticTest extends TestCase
         $m = new Matrix(2, 2);
 
         $this->expectException(LengthException::class);
+        $this->expectExceptionMessage("Invalid Matrix row count: 2. Must equal this Vector's count: 3.");
         $v->mul($m);
     }
 
@@ -252,6 +254,20 @@ class VectorBinaryArithmeticTest extends TestCase
         ]));
     }
 
+    /**
+     * Test mul() with an argument of the wrong type throws TypeError, naming the accepted types.
+     */
+    public function testMulInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage(
+            'must be of type OceanMoon\\Math\\Vector|OceanMoon\\Math\\Matrix|float, string given'
+        );
+
+        $x = Vector::fromArray([1, 2]);
+        $x->mul('x'); // @phpstan-ignore argument.type
+    }
+
     #endregion
 
     #region Method div() tests.
@@ -344,6 +360,18 @@ class VectorBinaryArithmeticTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot divide the given Vectors. The result would overflow.');
         Vector::fromArray([1e200])->div(Vector::fromArray([1e-200]));
+    }
+
+    /**
+     * Test div() with an argument of the wrong type throws TypeError, naming the accepted types.
+     */
+    public function testDivInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Vector|float, string given');
+
+        $x = Vector::fromArray([1, 2]);
+        $x->div('x'); // @phpstan-ignore argument.type
     }
 
     #endregion

@@ -12,6 +12,7 @@ use OceanMoon\Math\Vector;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 #[CoversClass(Matrix::class)]
 class MatrixBinaryArithmeticTest extends TestCase
@@ -286,6 +287,22 @@ class MatrixBinaryArithmeticTest extends TestCase
         ])->mul(Matrix::fromArray([
             [1e200],
         ]));
+    }
+
+    /**
+     * Test mul() with an argument of the wrong type throws TypeError, naming the accepted types.
+     */
+    public function testMulInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage(
+            'must be of type OceanMoon\\Math\\Vector|OceanMoon\\Math\\Matrix|float, string given'
+        );
+
+        $x = Matrix::fromArray([
+            [1, 2],
+        ]);
+        $x->mul('x'); // @phpstan-ignore argument.type
     }
 
     #endregion

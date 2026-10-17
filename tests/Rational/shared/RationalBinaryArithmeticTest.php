@@ -103,6 +103,18 @@ class RationalBinaryArithmeticTest extends TestCase
         $this->assertSame($expected->denominator, $result->denominator);
     }
 
+    /**
+     * Test add() with an argument of the wrong type throws TypeError, naming the accepted types.
+     */
+    public function testAddInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Rational|int, string given');
+
+        $x = new Rational(1, 2);
+        $x->add('x'); // @phpstan-ignore argument.type
+    }
+
     #endregion
 
     #region Method sub() tests.

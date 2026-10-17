@@ -115,5 +115,61 @@ class VectorPropertiesTest extends TestCase
         $v->magnitude = 99;
     }
 
+    /**
+     * Test that isset() and empty() compute magnitude, as for any property with a value.
+     */
+    public function testMagnitudeIssetAndEmpty(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+        $zero = Vector::fromArray([0, 0]);
+
+        $this->assertTrue(self::issetMagnitude($v));
+        $this->assertFalse(empty($v->magnitude));
+        $this->assertTrue(empty($zero->magnitude));
+    }
+
+    /**
+     * Test that json_encode(), get_object_vars() and var_export() include magnitude.
+     */
+    public function testMagnitudeInPublicProperties(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+
+        $this->assertSame('{"count":2,"magnitude":5}', json_encode($v));
+        $this->assertSame([
+            'count'     => 2,
+            'magnitude' => 5.0,
+        ], get_object_vars($v));
+        $this->assertStringContainsString("'magnitude' => 5.0", var_export($v, true));
+    }
+
+    /**
+     * Test that print_r() and an (array) cast leave magnitude out, since it has no stored value.
+     */
+    public function testMagnitudeNotInStoredProperties(): void
+    {
+        $v = Vector::fromArray([3, 4]);
+
+        $this->assertStringNotContainsString('magnitude', print_r($v, true));
+        $this->assertArrayNotHasKey('magnitude', (array) $v);
+    }
+
+    #endregion
+
+    #region Helper methods
+
+    /**
+     * Check isset() on magnitude. The parameter is a plain object because the package's and the extension's PHPStan
+     * disagree on whether isset() on the property is always true, and a shared test can't ignore an error only one of
+     * them reports.
+     *
+     * @param object $v The Vector.
+     * @return bool The result of isset().
+     */
+    private static function issetMagnitude(object $v): bool
+    {
+        return isset($v->magnitude);
+    }
+
     #endregion
 }

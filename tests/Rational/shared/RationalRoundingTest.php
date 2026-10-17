@@ -9,6 +9,7 @@ use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use RoundingMode;
+use TypeError;
 
 #[CoversClass(Rational::class)]
 class RationalRoundingTest extends TestCase
@@ -144,6 +145,18 @@ class RationalRoundingTest extends TestCase
         foreach (RoundingMode::cases() as $mode) {
             $this->assertSame(5, $r->round($mode));
         }
+    }
+
+    /**
+     * Test that round() rejects a null mode, rather than using the default.
+     */
+    public function testRoundNullModeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type RoundingMode, null given');
+
+        $r = new Rational(7, 2);
+        $r->round(null); // @phpstan-ignore argument.type
     }
 
     #endregion

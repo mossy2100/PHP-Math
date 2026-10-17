@@ -11,6 +11,7 @@ use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 use const OceanMoon\Math\M_I;
 
@@ -71,6 +72,18 @@ class ComplexBinaryArithmeticTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot add the given Complex numbers. The result would overflow.');
         new Complex(1e308)->add(new Complex(1e308));
+    }
+
+    /**
+     * Test add() with an argument of the wrong type throws TypeError, naming the accepted types.
+     */
+    public function testAddInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Complex|float, true given');
+
+        $x = new Complex(1, 2);
+        $x->add(true); // @phpstan-ignore argument.type
     }
 
     #endregion

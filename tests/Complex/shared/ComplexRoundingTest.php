@@ -8,6 +8,7 @@ use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
 use RoundingMode;
+use TypeError;
 
 #[CoversClass(Complex::class)]
 class ComplexRoundingTest extends TestCase
@@ -189,6 +190,18 @@ class ComplexRoundingTest extends TestCase
 
         $this->assertSame(3.0, $result->real);
         $this->assertSame(-3.0, $result->imaginary);
+    }
+
+    /**
+     * Test that round() rejects a null mode, rather than using the default.
+     */
+    public function testRoundNullModeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage('must be of type RoundingMode, null given');
+
+        $z = new Complex(1.25, 2.5);
+        $z->round(1, null); // @phpstan-ignore argument.type
     }
 
     #endregion
