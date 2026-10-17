@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Rational::trunc()`** gives the integer part, truncating toward zero, like `round(RoundingMode::TowardsZero)`.
 - **`Vector` and `Matrix` implement `IteratorAggregate`**, so `foreach` yields a Vector's elements and a Matrix's rows.
   Previously it silently yielded their public properties. A Matrix's rows are live, like `$m[$i]`.
+- **`Rational::mod()`** gives the exact remainder of dividing by a `Rational` or `int`. The result has the sign of the
+  dividend, like PHP's `%` and `fmod()`: `new Rational(-7, 2)->mod(2)` is `-3/2`.
 
 ### Changed
 

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
-use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
 use OverflowException;
@@ -435,16 +434,7 @@ class RationalBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test mod() with a float divisor gives a float.
-     */
-    public function testModFloat(): void
-    {
-        $this->assertSame(-1.5, new Rational(-7, 2)->mod(2.0));
-        $this->assertSame(1.5, new Rational(7, 2)->mod(-2.0));
-    }
-
-    /**
-     * Test mod() by zero throws ArithmeticException, for an int, a float and a Rational.
+     * Test mod() by zero throws ArithmeticException, for an int and a Rational.
      */
     public function testModByZeroThrows(): void
     {
@@ -453,8 +443,6 @@ class RationalBinaryArithmeticTest extends TestCase
         foreach (
             [
                 0,
-                0.0,
-                -0.0,
                 new Rational(0),
             ] as $zero
         ) {
@@ -465,18 +453,6 @@ class RationalBinaryArithmeticTest extends TestCase
                 $this->assertSame('Cannot divide by zero.', $e->getMessage());
             }
         }
-    }
-
-    /**
-     * Test mod() with a non-finite float throws DomainException.
-     */
-    public function testModNonFiniteFloatThrows(): void
-    {
-        $this->expectException(DomainException::class);
-        $this->expectExceptionMessage('Invalid operand: INF. Must be finite.');
-
-        $r = new Rational(3, 4);
-        $r->mod(INF);
     }
 
     /**
@@ -494,13 +470,13 @@ class RationalBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test mod() with an argument of the wrong type throws TypeError.
+     * Test mod() with an argument of the wrong type, including a float, throws TypeError.
      */
     public function testModInvalidTypeThrows(): void
     {
         $this->expectException(TypeError::class);
         $r = new Rational(3, 4);
-        $r->mod('x'); // @phpstan-ignore argument.type
+        $r->mod(1.5); // @phpstan-ignore argument.type
     }
 
     /**

@@ -694,15 +694,11 @@ $quotient2 = $r3->div(2);   // 3/8
 ### mod()
 
 ```php
-public function mod(self|int|float $other): self|float
+public function mod(self|int $other): self
 ```
 
-Find the remainder of dividing the rational number by another value.
-
-- With an `int` or `Rational` divisor, the result is an exact `Rational`.
-- With a `float` divisor, the rational number is converted to a `float`, and the result is a `float`.
-
-The result has the sign of the dividend, matching PHP's `%` operator and `fmod()`.
+Find the remainder of dividing the rational number by another value. The result has the sign of the dividend, matching
+PHP's `%` operator and `fmod()`.
 
 **Example:**
 
@@ -710,7 +706,6 @@ The result has the sign of the dividend, matching PHP's `%` operator and `fmod()
 $r = new Rational(7, 2);      // 7/2
 $r->mod(2);                   // 3/2
 $r->mod(new Rational(2, 3));  // 1/6
-$r->mod(1.5);                 // 0.5
 
 $r = new Rational(-7, 2);     // -7/2
 $r->mod(2);                   // -3/2
@@ -720,8 +715,8 @@ $r->mod(-2);                  // -3/2
 **Throws:**
 
 - `ArithmeticException` if dividing by zero.
-- `DomainException` if the divisor is a non-finite `float`.
 - `OverflowException` if an intermediate value overflows an integer.
+- `DomainException` if the result cannot be expressed as a Rational.
 
 ---
 

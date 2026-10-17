@@ -667,30 +667,16 @@ final class Rational implements Stringable
     /**
      * Find the remainder of dividing this Rational by a value.
      *
-     * With an int or Rational divisor, the result is an exact Rational. With a float divisor, this Rational is
-     * converted to a float, and so is the result.
-     *
      * The result has the sign of the dividend, matching PHP's % operator and fmod().
      *
-     * @param self|int|float $other The divisor.
-     * @return self|float The remainder.
-     * @throws DomainException If the divisor is a non-finite float, or the result cannot be expressed as a Rational.
+     * @param self|int $other The divisor.
+     * @return self The remainder.
      * @throws ArithmeticException If dividing by zero.
      * @throws OverflowException If integer overflow occurs.
+     * @throws DomainException If the result cannot be expressed as a Rational.
      */
-    public function mod(self|int|float $other): self|float
+    public function mod(self|int $other): self
     {
-        // Handle a float divisor.
-        if (is_float($other)) {
-            if (!is_finite($other)) {
-                throw new DomainException(Stringify::prepEx('Invalid operand: ?. Must be finite.', $other));
-            }
-            if ($other === 0.0) {
-                throw new ArithmeticException('Cannot divide by zero.');
-            }
-            return fmod($this->toFloat(), $other);
-        }
-
         // Check for divide by 0.
         if ($other === 0 || ($other instanceof self && $other->numerator === 0)) {
             throw new ArithmeticException('Cannot divide by zero.');
