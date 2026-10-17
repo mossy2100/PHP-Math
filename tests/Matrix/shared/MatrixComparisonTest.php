@@ -338,8 +338,14 @@ class MatrixComparisonTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
 
-        $m = Matrix::fromArray([[1, 2], [3, 4]]);
-        $m->approxEqual(Matrix::fromArray([[1, 2], [3, 4]]), $relTol);
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $m->approxEqual(Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]), $relTol);
     }
 
     /**
@@ -351,8 +357,14 @@ class MatrixComparisonTest extends TestCase
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
 
-        $m = Matrix::fromArray([[1, 2], [3, 4]]);
-        $m->approxEqual(Matrix::fromArray([[1, 2], [3, 4]]), 1e-9, $absTol);
+        $m = Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]);
+        $m->approxEqual(Matrix::fromArray([
+            [1, 2],
+            [3, 4],
+        ]), 1e-9, $absTol);
     }
 
     #endregion

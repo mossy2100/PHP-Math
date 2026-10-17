@@ -122,6 +122,7 @@ Immutable class for rational numbers (p/q) with support for:
 - A dedicated `fromFloat()` method for approximate conversion from floats using continued fractions
 - Overflow-safe integer operations
 - Exact comparison with `Rational`, `int` and `float` values
+- Remainders with `mod()`, with the sign of the dividend, like PHP's `%`
 - String parsing and formatting
 
 ### [Vector](docs/Vector.md)

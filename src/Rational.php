@@ -664,6 +664,53 @@ final class Rational implements Stringable
         );
     }
 
+    /**
+     * Find the remainder of dividing this Rational by a value.
+     *
+     * With an int or Rational divisor, the result is an exact Rational. With a float divisor, this Rational is
+     * converted to a float, and so is the result.
+     *
+     * The result has the sign of the dividend, matching PHP's % operator and fmod().
+     *
+     * @param self|int|float $other The divisor.
+     * @return self|float The remainder.
+     * @throws DomainException If the divisor is a non-finite float, or the result cannot be expressed as a Rational.
+     * @throws ArithmeticException If dividing by zero.
+     * @throws OverflowException If integer overflow occurs.
+     */
+    public function mod(self|int|float $other): self|float
+    {
+        // Handle a float divisor.
+        if (is_float($other)) {
+            if (!is_finite($other)) {
+                throw new DomainException(Stringify::prepEx('Invalid operand: ?. Must be finite.', $other));
+            }
+            if ($other === 0.0) {
+                throw new ArithmeticException('Cannot divide by zero.');
+            }
+            return fmod($this->toFloat(), $other);
+        }
+
+        // Check for divide by 0.
+        if ($other === 0 || ($other instanceof self && $other->numerator === 0)) {
+            throw new ArithmeticException('Cannot divide by zero.');
+        }
+
+        [$a, $b, $c, $d] = $this->getOperandComponents($other);
+
+        // Over the common denominator lcm(b, d), this Rational is A/lcm and the divisor is C/lcm, so the remainder is
+        // (A % C)/lcm.
+        $gcd = Integers::gcd($b, $d);
+        $bOverGcd = intdiv($b, $gcd);
+        return self::calcWithOverflowMessage(
+            'find the remainder of the given Rational numbers',
+            static fn () => new self(
+                Integers::mul($a, intdiv($d, $gcd)) % Integers::mul($c, $bOverGcd),
+                Integers::mul($bOverGcd, $d)
+            )
+        );
+    }
+
     #endregion
 
     #region Power methods

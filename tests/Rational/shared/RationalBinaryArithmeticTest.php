@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Rational;
 
+use DomainException;
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Rational;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use TypeError;
 
@@ -385,6 +387,132 @@ class RationalBinaryArithmeticTest extends TestCase
         $this->expectExceptionMessage('Cannot divide the given Rational numbers. The result would overflow.');
         $r = new Rational(PHP_INT_MAX);
         $r->div(new Rational(1, 2));
+    }
+
+    #endregion
+
+    #region Method mod() tests.
+
+    /**
+     * Data provider for testMod(): the dividend, the divisor, and the expected remainder.
+     *
+     * @return array<string, array{string, string, string}>
+     */
+    public static function modProvider(): array
+    {
+        return [
+            'both positive'        => ['7/2', '2', '3/2'],
+            'negative dividend'    => ['-7/2', '2', '-3/2'],
+            'negative divisor'     => ['7/2', '-2', '3/2'],
+            'both negative'        => ['-7/2', '-2', '-3/2'],
+            'fractional divisor'   => ['-1/2', '1/3', '-1/6'],
+            'exact multiple'       => ['9/2', '3/2', '0'],
+            'zero dividend'        => ['0', '-3/4', '0'],
+            'smaller than divisor' => ['-1/3', '-2', '-1/3'],
+        ];
+    }
+
+    /**
+     * Test mod() for every combination of signs: the result has the sign of the dividend.
+     */
+    #[DataProvider('modProvider')]
+    public function testMod(string $dividend, string $divisor, string $expected): void
+    {
+        $result = Rational::fromString($dividend)->mod(Rational::fromString($divisor));
+
+        $this->assertInstanceOf(Rational::class, $result);
+        $this->assertSame($expected, (string) $result);
+    }
+
+    /**
+     * Test mod() with an int divisor, including -1 with a dividend near PHP_INT_MIN.
+     */
+    public function testModInt(): void
+    {
+        $this->assertEquals(new Rational(-2), new Rational(-5)->mod(3));
+        $this->assertEquals(new Rational(-2), new Rational(-5)->mod(-3));
+        $this->assertEquals(new Rational(0), new Rational(PHP_INT_MIN + 1)->mod(-1));
+    }
+
+    /**
+     * Test mod() with a float divisor gives a float.
+     */
+    public function testModFloat(): void
+    {
+        $this->assertSame(-1.5, new Rational(-7, 2)->mod(2.0));
+        $this->assertSame(1.5, new Rational(7, 2)->mod(-2.0));
+    }
+
+    /**
+     * Test mod() by zero throws ArithmeticException, for an int, a float and a Rational.
+     */
+    public function testModByZeroThrows(): void
+    {
+        $r = new Rational(3, 4);
+
+        foreach (
+            [
+                0,
+                0.0,
+                -0.0,
+                new Rational(0),
+            ] as $zero
+        ) {
+            try {
+                $r->mod($zero);
+                $this->fail('Expected ArithmeticException.');
+            } catch (ArithmeticException $e) {
+                $this->assertSame('Cannot divide by zero.', $e->getMessage());
+            }
+        }
+    }
+
+    /**
+     * Test mod() with a non-finite float throws DomainException.
+     */
+    public function testModNonFiniteFloatThrows(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage('Invalid operand: INF. Must be finite.');
+
+        $r = new Rational(3, 4);
+        $r->mod(INF);
+    }
+
+    /**
+     * Test mod() throws OverflowException when the common denominator is too large.
+     */
+    public function testModOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot find the remainder of the given Rational numbers. The result would overflow.'
+        );
+
+        $r = new Rational(PHP_INT_MAX, 3);
+        $r->mod(new Rational(1, PHP_INT_MAX - 1));
+    }
+
+    /**
+     * Test mod() with an argument of the wrong type throws TypeError.
+     */
+    public function testModInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(3, 4);
+        $r->mod('x'); // @phpstan-ignore argument.type
+    }
+
+    /**
+     * Test mod() does not modify the original (immutability).
+     */
+    public function testModDoesNotMutate(): void
+    {
+        $r = new Rational(7, 2);
+        $r->mod(2);
+
+        $this->assertSame(7, $r->numerator);
+        $this->assertSame(2, $r->denominator);
     }
 
     #endregion
