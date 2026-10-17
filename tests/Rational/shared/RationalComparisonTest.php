@@ -794,6 +794,47 @@ class RationalComparisonTest extends TestCase
         $this->assertTrue($r->approxEqual($f));
     }
 
+    /**
+     * Data provider for the invalid tolerance tests: a tolerance, and how the exception message shows it.
+     *
+     * @return array<string, array{float, string}>
+     */
+    public static function invalidToleranceProvider(): array
+    {
+        return [
+            'negative' => [-1.0, '-1.0'],
+            'NAN'      => [NAN, 'NAN'],
+            'INF'      => [INF, 'INF'],
+            '-INF'     => [-INF, '-INF'],
+        ];
+    }
+
+    /**
+     * Test approxEqual() with an invalid relative tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+
+        $r = new Rational(1, 2);
+        $r->approxEqual(0.5, $relTol);
+    }
+
+    /**
+     * Test approxEqual() with an invalid absolute tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+
+        $r = new Rational(1, 2);
+        $r->approxEqual(0.5, 1e-9, $absTol);
+    }
+
     #endregion
 
     #region Method approxCompare() tests.
@@ -892,6 +933,20 @@ class RationalComparisonTest extends TestCase
 
         $this->assertSame(-1, $r->approxCompare(INF));
         $this->assertSame(1, $r->approxCompare(-INF));
+    }
+
+
+    /**
+     * Test approxCompare() with an invalid tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxCompareWithInvalidToleranceThrows(float $relTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+
+        $r = new Rational(7, 2);
+        $r->approxCompare(7, $relTol);
     }
 
     #endregion

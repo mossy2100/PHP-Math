@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Matrix;
 
+use DomainException;
 use InvalidArgumentException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Matrix::class)]
@@ -310,6 +312,47 @@ class MatrixComparisonTest extends TestCase
         $m1 = new Matrix(0, 0);
         $m2 = new Matrix(0, 0);
         $this->assertTrue($m1->approxEqual($m2));
+    }
+
+    /**
+     * Data provider for the invalid tolerance tests: a tolerance, and how the exception message shows it.
+     *
+     * @return array<string, array{float, string}>
+     */
+    public static function invalidToleranceProvider(): array
+    {
+        return [
+            'negative' => [-1.0, '-1.0'],
+            'NAN'      => [NAN, 'NAN'],
+            'INF'      => [INF, 'INF'],
+            '-INF'     => [-INF, '-INF'],
+        ];
+    }
+
+    /**
+     * Test approxEqual() with an invalid relative tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m->approxEqual(Matrix::fromArray([[1, 2], [3, 4]]), $relTol);
+    }
+
+    /**
+     * Test approxEqual() with an invalid absolute tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m->approxEqual(Matrix::fromArray([[1, 2], [3, 4]]), 1e-9, $absTol);
     }
 
     #endregion

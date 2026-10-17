@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use OceanMoon\Core\Floats;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -524,6 +525,47 @@ class ComplexComparisonTest extends TestCase
 
         $this->assertFalse($z->approxEqual(INF));
         $this->assertFalse($z->approxEqual(-INF));
+    }
+
+    /**
+     * Data provider for the invalid tolerance tests: a tolerance, and how the exception message shows it.
+     *
+     * @return array<string, array{float, string}>
+     */
+    public static function invalidToleranceProvider(): array
+    {
+        return [
+            'negative' => [-1.0, '-1.0'],
+            'NAN'      => [NAN, 'NAN'],
+            'INF'      => [INF, 'INF'],
+            '-INF'     => [-INF, '-INF'],
+        ];
+    }
+
+    /**
+     * Test approxEqual() with an invalid relative tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+
+        $z = new Complex(3, 4);
+        $z->approxEqual(new Complex(3, 4), $relTol);
+    }
+
+    /**
+     * Test approxEqual() with an invalid absolute tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+
+        $z = new Complex(3, 4);
+        $z->approxEqual(new Complex(3, 4), 1e-9, $absTol);
     }
 
     #endregion

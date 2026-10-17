@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Vector;
 
+use DomainException;
 use InvalidArgumentException;
 use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Vector::class)]
@@ -189,6 +191,47 @@ class VectorComparisonTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $v = Vector::fromArray([1.0, 2.0, 3.0]);
         $v->approxEqual(null);
+    }
+
+    /**
+     * Data provider for the invalid tolerance tests: a tolerance, and how the exception message shows it.
+     *
+     * @return array<string, array{float, string}>
+     */
+    public static function invalidToleranceProvider(): array
+    {
+        return [
+            'negative' => [-1.0, '-1.0'],
+            'NAN'      => [NAN, 'NAN'],
+            'INF'      => [INF, 'INF'],
+            '-INF'     => [-INF, '-INF'],
+        ];
+    }
+
+    /**
+     * Test approxEqual() with an invalid relative tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+
+        $v = Vector::fromArray([1, 2]);
+        $v->approxEqual(Vector::fromArray([1, 2]), $relTol);
+    }
+
+    /**
+     * Test approxEqual() with an invalid absolute tolerance throws DomainException.
+     */
+    #[DataProvider('invalidToleranceProvider')]
+    public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+
+        $v = Vector::fromArray([1, 2]);
+        $v->approxEqual(Vector::fromArray([1, 2]), 1e-9, $absTol);
     }
 
     #endregion

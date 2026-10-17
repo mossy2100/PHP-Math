@@ -9,6 +9,7 @@ use OceanMoon\Math\Rational;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
+use TypeError;
 
 #[CoversClass(Rational::class)]
 class RationalBinaryArithmeticTest extends TestCase
@@ -349,6 +350,16 @@ class RationalBinaryArithmeticTest extends TestCase
         $this->expectException(ArithmeticException::class);
         $r = new Rational(3, 4);
         $r->div(0);
+    }
+
+    /**
+     * Test that zero divided by an argument of the wrong type throws TypeError, rather than returning zero.
+     */
+    public function testDivZeroByInvalidTypeThrows(): void
+    {
+        $this->expectException(TypeError::class);
+        $r = new Rational(0);
+        $r->div('x'); // @phpstan-ignore argument.type
     }
 
     /**
