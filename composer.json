@@ -25,6 +25,18 @@
         "issues": "https://github.com/mossy2100/PHP-Math/issues",
         "source": "https://github.com/mossy2100/PHP-Math"
     },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../Core",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "oceanmoon/core": "4.0.1"
+                }
+            }
+        }
+    ],
     "require": {
         "php": "^8.4",
         "oceanmoon/core": "^4.0"

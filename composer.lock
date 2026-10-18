@@ -4,21 +4,15 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ae78e3f4697cfb965c9169d0b0363300",
+    "content-hash": "9f331d0efb86152f520b2aaedcf9ac1d",
     "packages": [
         {
             "name": "oceanmoon/core",
-            "version": "v4.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mossy2100/PHP-Core.git",
-                "reference": "d2289c4f56edb599e6b2d699379d94047086cec0"
-            },
+            "version": "4.0.1",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mossy2100/PHP-Core/zipball/d2289c4f56edb599e6b2d699379d94047086cec0",
-                "reference": "d2289c4f56edb599e6b2d699379d94047086cec0",
-                "shasum": ""
+                "type": "path",
+                "url": "../Core",
+                "reference": "d2289c4f56edb599e6b2d699379d94047086cec0"
             },
             "require": {
                 "php": "^8.4"
@@ -35,14 +29,48 @@
                 "phpcodesniffer-search-depth": 3
             },
             "autoload": {
-                "files": [
-                    "src/globals.php"
-                ],
                 "psr-4": {
                     "OceanMoon\\Core\\": "src/"
+                },
+                "files": [
+                    "src/globals.php"
+                ]
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "OceanMoon\\Core\\Tests\\": "tests/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "scripts": {
+                "fix": [
+                    "vendor/bin/phpcbf -vp"
+                ],
+                "check": [
+                    "vendor/bin/phpcs -s"
+                ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
+                ],
+                "analyze": [
+                    "scripts/analyze"
+                ],
+                "test": [
+                    "php8.4 -d xdebug.mode=coverage vendor/bin/phpunit --coverage-html build/coverage --coverage-clover build/logs/clover.xml --do-not-cache-result"
+                ],
+                "coverage": [
+                    "php8.4 scripts/coverage-check.php"
+                ],
+                "coverage-report": [
+                    "open build/coverage/index.html"
+                ],
+                "quality": [
+                    "@fix",
+                    "@check",
+                    "@analyze",
+                    "@test",
+                    "@coverage"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -73,7 +101,10 @@
                 "issues": "https://github.com/mossy2100/PHP-Core/issues",
                 "source": "https://github.com/mossy2100/PHP-Core"
             },
-            "time": "2026-10-09T23:35:35+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         }
     ],
     "packages-dev": [

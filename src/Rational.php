@@ -692,15 +692,21 @@ final class Rational implements Stringable
 
         // Over the common denominator lcm(b, d), this Rational is h/lcm and the divisor is k/lcm, where
         // h = a·(d/g) and k = c·(b/g), so the remainder is (h % k)/lcm. h can overflow even when the remainder is
-        // small, so reduce a first: h % k = ((a % k)·(d/g)) % k.
+        // small, so h % k is calculated with mulMod(), which never overflows.
         $g = Integers::gcd($b, $d);
         $bOverG = intdiv($b, $g);
         return self::calcWithOverflowMessage(
             'find the remainder of the given Rational numbers',
             static function () use ($a, $c, $d, $g, $bOverG): self {
                 $k = Integers::mul($c, $bOverG);
-                $lcm = Integers::mul($bOverG, $d);
-                return new self(Integers::mul($a % $k, intdiv($d, $g)) % $k, $lcm);
+                $rem = Integers::mulMod($a, intdiv($d, $g), $k);
+
+                // The lcm, (b/g)·d, can overflow when the remainder in lowest terms wouldn't, so cancel common factors
+                // from each part of it first.
+                $g1 = Integers::gcd($rem, $bOverG);
+                $rem = intdiv($rem, $g1);
+                $g2 = Integers::gcd($rem, $d);
+                return new self(intdiv($rem, $g2), Integers::mul(intdiv($bOverG, $g1), intdiv($d, $g2)));
             }
         );
     }
