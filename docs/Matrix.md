@@ -309,8 +309,8 @@ Extract a rectangular sub-matrix: a copy of a subset of the matrix's elements. I
 
 **Returns:** `self` - A new matrix containing the copied elements.
 
-**Throws:** `OutOfRangeException` if either count is negative, or the selected region extends beyond the matrix's
-bounds.
+**Throws:** `OutOfRangeException` if the start row or column isn't a valid index, either count is negative, or the
+selected region extends beyond the matrix's bounds. So there's nothing to copy from a matrix with no rows or columns.
 
 **Examples:**
 
@@ -424,8 +424,8 @@ Copy the elements of another matrix into the matrix, starting at the given posit
 - `$row` (int) - Row at which to place the top-left corner of `$other` (0-based). Defaults to 0.
 - `$col` (int) - Column at which to place the top-left corner of `$other` (0-based). Defaults to 0.
 
-**Throws:** `OutOfRangeException` if either offset is negative, or `$other` doesn't fit within the matrix at that
-offset.
+**Throws:** `OutOfRangeException` if either offset isn't a valid index, or `$other` doesn't fit within the matrix at
+that offset. So nothing can be pasted into a matrix with no rows or columns.
 
 **Examples:**
 

@@ -351,8 +351,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @param int $rowCount Number of rows to copy (sub-matrix height).
      * @param int $colCount Number of columns to copy (sub-matrix width).
      * @return self A new matrix containing the copied elements.
-     * @throws OutOfRangeException If either count is negative, or the selected region extends beyond this matrix's
-     * bounds.
+     * @throws OutOfRangeException If the start row or column isn't a valid index, either count is negative, or the
+     * selected region extends beyond this matrix's bounds.
      */
     public function copy(int $row, int $col, int $rowCount, int $colCount): self
     {
@@ -467,8 +467,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @param self $other Matrix to paste. Must fit within this Matrix at the given offset.
      * @param int $row Row at which to place the top-left corner of $other (0-based). Defaults to 0.
      * @param int $col Column at which to place the top-left corner of $other (0-based). Defaults to 0.
-     * @throws OutOfRangeException If either offset is negative, or $other doesn't fit within this matrix at that
-     * offset.
+     * @throws OutOfRangeException If either offset isn't a valid index, or $other doesn't fit within this matrix at
+     * that offset.
      */
     public function paste(self $other, int $row = 0, int $col = 0): void
     {
@@ -587,7 +587,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function resize(int $rowCount, int $columnCount): self
     {
         $result = new self($rowCount, $columnCount);
-        $result->paste($this->copy(0, 0, min($this->rowCount, $rowCount), min($this->columnCount, $columnCount)));
+
+        // copy() and paste() need a valid start row and column, so skip them when there's nothing to copy.
+        $copyRowCount = min($this->rowCount, $rowCount);
+        $copyColumnCount = min($this->columnCount, $columnCount);
+        if ($copyRowCount > 0 && $copyColumnCount > 0) {
+            $result->paste($this->copy(0, 0, $copyRowCount, $copyColumnCount));
+        }
+
         return $result;
     }
 
@@ -1315,35 +1322,31 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     /**
      * Check a range of rows or columns, given by its start and length, lies within the Matrix.
      *
-     * The message shows the range as an inclusive span, e.g. "Invalid row range: 1-3. Must be within 0-2.". An empty
-     * range has no last row or column, so for that only the start is shown, and it may equal the size.
+     * The start must be a valid index, even for an empty range, so a Matrix with no rows or columns has no valid range.
+     * The message shows the range as an inclusive span, e.g. "Invalid row range: 1-3. Must be within 0-2.".
      *
      * @param string $axis 'row' or 'column'.
      * @param int $start The first row or column in the range (0-based).
      * @param int $count The number of rows or columns in the range.
      * @param int $size The number of rows or columns in the Matrix.
-     * @throws OutOfRangeException If the count is negative, or the range extends beyond the Matrix.
+     * @throws OutOfRangeException If the start isn't a valid index, the count is negative, or the range extends
+     * beyond the Matrix.
      */
     private static function checkRange(string $axis, int $start, int $count, int $size): void
     {
+        if ($start < 0 || $start >= $size) {
+            throw new OutOfRangeException(self::indexMessage($axis, $start, $size));
+        }
+
         if ($count < 0) {
             throw new OutOfRangeException("Invalid $axis count: $count. Must not be negative.");
         }
 
-        if ($start >= 0 && $start + $count <= $size) {
-            return;
-        }
-
-        if ($count === 0) {
+        if ($start + $count > $size) {
             throw new OutOfRangeException(
-                "Invalid $axis: $start. " . ($size === 0 ? 'Must be 0.' : "Must be within 0-$size.")
+                "Invalid $axis range: $start-" . ($start + $count - 1) . '. Must be within 0-' . ($size - 1) . '.'
             );
         }
-
-        throw new OutOfRangeException(
-            "Invalid $axis range: $start-" . ($start + $count - 1) . '. '
-            . ($size === 0 ? "The Matrix has no {$axis}s." : 'Must be within 0-' . ($size - 1) . '.')
-        );
     }
 
     /**

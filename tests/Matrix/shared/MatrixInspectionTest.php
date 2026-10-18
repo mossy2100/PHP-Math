@@ -398,13 +398,13 @@ class MatrixInspectionTest extends TestCase
                 [0, 2, 1, 2],
                 'Invalid column range: 2-3. Must be within 0-2.',
             ],
-            'start beyond'     => [
-                [4, 0, 0, 0],
-                'Invalid row: 4. Must be within 0-3.',
+            'start at the end' => [
+                [3, 0, 0, 0],
+                'Invalid row index: 3. Must be in the range 0-2.',
             ],
-            'one row'          => [
+            'negative start'   => [
                 [-1, 0, 1, 1],
-                'Invalid row range: -1--1. Must be within 0-2.',
+                'Invalid row index: -1. Must be in the range 0-2.',
             ],
             'negative count'   => [
                 [0, 0, -1, 1],
@@ -414,7 +414,8 @@ class MatrixInspectionTest extends TestCase
     }
 
     /**
-     * Test copy() describes an invalid region as an inclusive span, and the valid range.
+     * Test copy() requires a valid start, even for an empty region, and shows a region past the end as an inclusive
+     * span.
      *
      * @param array{int, int, int, int} $args The row, column, row count and column count.
      * @param string $message The expected message.
@@ -428,13 +429,13 @@ class MatrixInspectionTest extends TestCase
     }
 
     /**
-     * Test copy() from a Matrix with no rows says so.
+     * Test copy() from a Matrix with no rows throws, even for an empty region, as no start row is valid.
      */
     public function testCopyFromEmptyMatrixMessage(): void
     {
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Invalid row range: 0-0. The Matrix has no rows.');
-        new Matrix(0, 0)->copy(0, 0, 1, 1);
+        $this->expectExceptionMessage('Invalid row index: 0. The Matrix has no rows.');
+        new Matrix(0, 0)->copy(0, 0, 0, 0);
     }
 
     #endregion
