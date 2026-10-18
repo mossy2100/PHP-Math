@@ -744,7 +744,12 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $elements = array_map(abs(...), array_merge(...$this->toArray()));
             $max = $elements === [] ? 0.0 : max($elements);
             if ($max !== 0.0) {
-                $scale = 2 ** floor(log($max, 2));
+                // As in Vector::powerOf2Scale(), use the power below if log() rounds up, e.g. near PHP_FLOAT_MAX.
+                $exp = floor(log($max, 2));
+                if (2 ** $exp > $max) {
+                    $exp--;
+                }
+                $scale = 2 ** $exp;
                 $scaled = $this->div($scale);
                 $det = self::calcDet($scaled->toArray());
             }

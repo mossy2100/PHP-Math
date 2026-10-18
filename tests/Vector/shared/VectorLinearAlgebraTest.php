@@ -284,6 +284,10 @@ class VectorLinearAlgebraTest extends TestCase
                 [0.0, -5e-324],
                 [0.0, -1.0],
             ],
+            'largest float'       => [
+                [PHP_FLOAT_MAX, 0.0],
+                [1.0, 0.0],
+            ],
         ];
     }
 

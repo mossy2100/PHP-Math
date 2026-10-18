@@ -58,16 +58,19 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public float $magnitude {
         get {
             // Handle a zero or empty vector.
-            $scale = self::powerOfTwoScale($this->data);
+            $scale = self::powerOf2Scale($this->data);
             if ($scale === 0.0) {
                 return 0.0;
             }
 
-            // Calculate the magnitude of the scaled vector, then undo the scaling.
-            return self::checkResult(
-                $scale * sqrt(array_sum(array_map(static fn ($x) => ($x / $scale) ** 2, $this->data))),
-                'compute magnitude of the given Vector'
-            );
+            // Calculate the magnitude of the scaled vector, then undo the scaling. Square with * rather than ** 2,
+            // which calls pow(), as pow() can be a unit in the last place off where * is always correctly rounded.
+            $sum = 0.0;
+            foreach ($this->data as $x) {
+                $scaled = $x / $scale;
+                $sum += $scaled * $scaled;
+            }
+            return self::checkResult($scale * sqrt($sum), 'compute magnitude of the given Vector');
         }
     }
 
@@ -615,8 +618,8 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // If an intermediate product overflowed, scale each vector so its largest element is in the range [1, 2), and
         // try again. Scaling by a power of 2 is exact. Neither vector can be zero here, or every product would be 0.
         if (!self::allFinite($result)) {
-            $scaleA = self::powerOfTwoScale($a);
-            $scaleB = self::powerOfTwoScale($b);
+            $scaleA = self::powerOf2Scale($a);
+            $scaleB = self::powerOf2Scale($b);
             $result = self::calcCross(
                 array_map(static fn ($x) => $x / $scaleA, $a),
                 array_map(static fn ($x) => $x / $scaleB, $b)
@@ -674,7 +677,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function normalize(): self
     {
         // Check for a zero (or empty) vector.
-        $scale = self::powerOfTwoScale($this->data);
+        $scale = self::powerOf2Scale($this->data);
         if ($scale === 0.0) {
             throw new ArithmeticException('Cannot normalize zero Vector.');
         }
@@ -857,14 +860,24 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @param list<float> $values The values.
      * @return float The power of 2, or 0.0 if every value is zero (or there are none).
      */
-    private static function powerOfTwoScale(array $values): float
+    private static function powerOf2Scale(array $values): float
     {
         $max = 0.0;
         foreach ($values as $value) {
             $max = max($max, abs($value));
         }
 
-        return $max === 0.0 ? 0.0 : 2 ** floor(log($max, 2));
+        if ($max === 0.0) {
+            return 0.0;
+        }
+
+        // log() can round up to the next power of 2, e.g. to 1024 near PHP_FLOAT_MAX, where 2 ** 1024 is INF. If so,
+        // use the power below.
+        $exp = floor(log($max, 2));
+        if (2 ** $exp > $max) {
+            $exp--;
+        }
+        return 2 ** $exp;
     }
 
     /**

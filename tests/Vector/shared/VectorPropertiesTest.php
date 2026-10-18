@@ -71,6 +71,7 @@ class VectorPropertiesTest extends TestCase
             'huge, squares overflow' => [1e308, 1e308, 1.4142135623730951e308],
             'tiny'                   => [3e-200, -4e-200, 5e-200],
             'subnormal'              => [0.0, 5e-324, 5e-324],
+            'largest float'          => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
         ];
     }
 

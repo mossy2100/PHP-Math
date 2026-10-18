@@ -72,6 +72,7 @@ class MatrixNormTest extends TestCase
             'huge'                   => [3e300, 4e300, 5e300],
             'huge, squares overflow' => [1e308, -1e308, 1.4142135623730951e308],
             'tiny'                   => [3e-200, 4e-200, 5e-200],
+            'largest float'          => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
         ];
     }
 

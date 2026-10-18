@@ -221,6 +221,22 @@ class MatrixUnaryArithmeticTest extends TestCase
     }
 
     /**
+     * Test inv() of a matrix of the largest floats, whose determinant overflows, so it's scaled first. The scale must
+     * be a finite power of 2, though log2(PHP_FLOAT_MAX) rounds up to 1024.
+     */
+    public function testInvLargestFloats(): void
+    {
+        $m = Matrix::fromArray([
+            [PHP_FLOAT_MAX, 0],
+            [0, PHP_FLOAT_MAX],
+        ]);
+        $inv = $m->inv();
+
+        $this->assertSame(1 / PHP_FLOAT_MAX, $inv->get(0, 0));
+        $this->assertSame(1 / PHP_FLOAT_MAX, $inv->get(1, 1));
+    }
+
+    /**
      * Test inv() of an empty matrix is an empty matrix, and of a zero matrix throws.
      */
     public function testInvEmptyAndZero(): void
