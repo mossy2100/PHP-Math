@@ -9,6 +9,7 @@ use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Exceptions\FormatException;
 use OceanMoon\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Rational::class)]
@@ -133,6 +134,49 @@ class RationalFactoryTest extends TestCase
         $this->expectException(FormatException::class);
         $this->expectExceptionMessage('Cannot convert string to Rational. Invalid format.');
         Rational::fromString("\xff\xfe");
+    }
+
+    /**
+     * Data provider for testFromStringOutOfRangeThrows(): numeric strings outside the valid range for a Rational.
+     *
+     * @return array<string, array{string}>
+     */
+    public static function fromStringOutOfRangeProvider(): array
+    {
+        return [
+            'PHP_INT_MAX + 1'       => ['9223372036854775808'],
+            'PHP_INT_MIN - 1'       => ['-9223372036854775809'],
+            '10^19 with a sign'     => ['+10000000000000000000'],
+            'leading zeros'         => ['009223372036854775808'],
+            'float too large'       => ['9.3e18'],
+            'float overflows'       => ['1e400'],
+            'float overflows, neg.' => ['-1e999'],
+            'float too small'       => ['1e-30'],
+        ];
+    }
+
+    /**
+     * Test fromString() throws DomainException, naming the string, for a number outside the valid range, rather than
+     * clamping an integer to PHP_INT_MAX, or calling a huge exponent an invalid format.
+     */
+    #[DataProvider('fromStringOutOfRangeProvider')]
+    public function testFromStringOutOfRangeThrows(string $str): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage("Cannot convert string '$str' to Rational. Outside valid range.");
+        Rational::fromString($str);
+    }
+
+    /**
+     * Test fromString() at the edges of what it accepts: PHP_INT_MAX, with or without leading zeros, and zero written
+     * with an exponent, which filter_var() rejects as a float.
+     */
+    public function testFromStringEdgeValues(): void
+    {
+        $this->assertSame(PHP_INT_MAX, Rational::fromString('9223372036854775807')->numerator);
+        $this->assertSame(PHP_INT_MAX, Rational::fromString('0009223372036854775807')->numerator);
+        $this->assertSame(-PHP_INT_MAX, Rational::fromString('-9223372036854775807')->numerator);
+        $this->assertSame(0, Rational::fromString('0e9')->numerator);
     }
 
     #endregion

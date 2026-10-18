@@ -123,7 +123,9 @@ final class Rational implements Stringable
      * @see https://en.wikipedia.org/wiki/Simple_continued_fraction
      *
      * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
-     * This method will throw an exception if the absolute value of $value is non-zero and outside that range.
+     * This method will throw an exception if the absolute value of $value is non-zero and outside that range. As the
+     * result is the closest Rational, a float that only rounding takes outside it gives the limit: (float) PHP_INT_MAX
+     * is 2^63, which gives PHP_INT_MAX, and 1.0 / PHP_INT_MAX is 2^-63, which gives 1/PHP_INT_MAX.
      *
      * Float representation limits can cause inexact round-trip conversions for values very close to integers.
      *
@@ -271,10 +273,30 @@ final class Rational implements Stringable
             return new self($n);
         }
 
-        // Check for a string that looks like a float.
-        $n = filter_var($str, FILTER_VALIDATE_FLOAT);
-        if (is_float($n)) {
-            return self::fromFloat($n);
+        // Check for an integer too large for an int. FILTER_VALIDATE_INT rejects it, and as a float it would round,
+        // then be clamped to PHP_INT_MAX. Leading zeros are ignored, as FILTER_VALIDATE_INT rejects those too.
+        if (preg_match('/^[+-]?0*(\d+)$/', $str, $matches)) {
+            $digits = $matches[1];
+            $max = (string) PHP_INT_MAX;
+            if (strlen($digits) > strlen($max) || (strlen($digits) === strlen($max) && strcmp($digits, $max) > 0)) {
+                throw new DomainException(
+                    Stringify::prepEx('Cannot convert string ? to Rational. Outside valid range.', $str)
+                );
+            }
+        }
+
+        // Check for a string that looks like a float. Unlike filter_var(), is_numeric() accepts a number too large for
+        // a float, e.g. '1e400', which (float) converts to INF, so it's reported as out of range, not as invalid.
+        if (is_numeric($str)) {
+            try {
+                return self::fromFloat((float) $str);
+            } catch (DomainException $e) {
+                throw new DomainException(
+                    Stringify::prepEx('Cannot convert string ? to Rational. Outside valid range.', $str),
+                    0,
+                    $e
+                );
+            }
         }
 
         // Check for a string that looks like a fraction (int/int).

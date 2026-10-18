@@ -119,6 +119,9 @@ echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_P
 **Throws:** `DomainException` if the value is not finite (±INF or NAN), or is outside the representable range (too large
 or too small, but non-zero).
 
+As the result is the closest Rational, a float that only rounding takes outside the range gives the limit:
+`(float) PHP_INT_MAX` is 2^63, which gives `PHP_INT_MAX`, and `1.0 / PHP_INT_MAX` gives `1/PHP_INT_MAX`.
+
 **Examples:**
 
 ```php
@@ -155,7 +158,8 @@ $r4 = Rational::fromString(" 6 / 8 ");   // 3/4 (whitespace OK, auto-reduced)
 
 - `FormatException` if the string is empty or does not match a supported format.
 - `ArithmeticException` if the string is a fraction with a zero denominator (e.g. `"1/0"`).
-- `DomainException` if the string represents a unrepresentable value.
+- `DomainException` if the number is outside the valid range, e.g. `"9223372036854775808"`, which is
+  `PHP_INT_MAX + 1`, or `"1e400"`.
 
 ---
 
