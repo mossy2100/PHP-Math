@@ -340,5 +340,15 @@ class MatrixModificationTest extends TestCase
         $this->assertTrue($rotation->equal($extracted));
     }
 
+    /**
+     * Test paste() describes where the pasted Matrix doesn't fit.
+     */
+    public function testPasteOutOfRangeMessage(): void
+    {
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid row range: 2 rows from row 2. Must be within rows 0-2.');
+        Matrix::identity(3)->paste(Matrix::identity(2), 2, 0);
+    }
+
     #endregion
 }

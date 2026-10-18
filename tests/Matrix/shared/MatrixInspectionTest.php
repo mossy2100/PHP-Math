@@ -8,6 +8,7 @@ use OceanMoon\Math\Matrix;
 use OceanMoon\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 #[CoversClass(Matrix::class)]
@@ -106,6 +107,32 @@ class MatrixInspectionTest extends TestCase
         $m = new Matrix(2, 2);
         $this->expectException(OutOfRangeException::class);
         $m->get(0, 2);
+    }
+
+    /**
+     * Data provider for testGetOutOfRangeMessage().
+     *
+     * @return array<string, array{int, int, int, int, string}>
+     */
+    public static function getOutOfRangeMessageProvider(): array
+    {
+        return [
+            'row'        => [3, 3, 3, 0, 'Invalid row index: 3. Must be in the range 0-2.'],
+            'column'     => [3, 3, 0, -1, 'Invalid column index: -1. Must be in the range 0-2.'],
+            'no rows'    => [0, 0, 0, 0, 'Invalid row index: 0. The Matrix has no rows.'],
+            'no columns' => [2, 0, 0, 0, 'Invalid column index: 0. The Matrix has no columns.'],
+        ];
+    }
+
+    /**
+     * Test get() names the valid range when an index is outside it, or says the Matrix has no rows or columns.
+     */
+    #[DataProvider('getOutOfRangeMessageProvider')]
+    public function testGetOutOfRangeMessage(int $rows, int $cols, int $row, int $col, string $message): void
+    {
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage($message);
+        new Matrix($rows, $cols)->get($row, $col);
     }
 
     #endregion
@@ -353,6 +380,61 @@ class MatrixInspectionTest extends TestCase
         $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
         $m->copy(0, 2, 1, 2);
+    }
+
+    /**
+     * Data provider for testCopyOutOfRangeMessage(): copy()'s arguments, and the expected message.
+     *
+     * @return array<string, array{array{int, int, int, int}, string}>
+     */
+    public static function copyOutOfRangeMessageProvider(): array
+    {
+        return [
+            'too many rows'    => [
+                [1, 0, 3, 1],
+                'Invalid row range: 3 rows from row 1. Must be within rows 0-2.',
+            ],
+            'too many columns' => [
+                [0, 2, 1, 2],
+                'Invalid column range: 2 columns from column 2. Must be within columns 0-2.',
+            ],
+            'start beyond'     => [
+                [4, 0, 0, 0],
+                'Invalid row range: 0 rows from row 4. Must be within rows 0-2.',
+            ],
+            'one row'          => [
+                [-1, 0, 1, 1],
+                'Invalid row range: 1 row from row -1. Must be within rows 0-2.',
+            ],
+            'negative count'   => [
+                [0, 0, -1, 1],
+                'Invalid row count: -1. Must not be negative.',
+            ],
+        ];
+    }
+
+    /**
+     * Test copy() describes an invalid region by its start and length, and the valid range.
+     *
+     * @param array{int, int, int, int} $args The row, column, row count and column count.
+     * @param string $message The expected message.
+     */
+    #[DataProvider('copyOutOfRangeMessageProvider')]
+    public function testCopyOutOfRangeMessage(array $args, string $message): void
+    {
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage($message);
+        Matrix::identity(3)->copy(...$args);
+    }
+
+    /**
+     * Test copy() from a Matrix with no rows says so.
+     */
+    public function testCopyFromEmptyMatrixMessage(): void
+    {
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid row range: 1 row from row 0. The Matrix has no rows.');
+        new Matrix(0, 0)->copy(0, 0, 1, 1);
     }
 
     #endregion

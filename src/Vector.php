@@ -220,7 +220,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->count - 1) . '.');
+            throw $this->indexException($index);
         }
 
         return $this->data[$index];
@@ -242,7 +242,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     {
         // Check index is valid.
         if ($index < 0 || $index >= count($this->data)) {
-            throw new OutOfRangeException("Invalid index: $index. Must be in the range 0-" . ($this->count - 1) . '.');
+            throw $this->indexException($index);
         }
 
         // Check the value is finite.
@@ -817,6 +817,23 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     #endregion
 
     #region Helper methods
+
+    /**
+     * Create the exception for an index outside the valid range.
+     *
+     * The callers check the index inline, against count($this->data), so PHPStan knows a valid index exists in the
+     * list.
+     *
+     * @param int $index The invalid index.
+     * @return OutOfRangeException The exception, naming the valid range, or saying the Vector is empty.
+     */
+    private function indexException(int $index): OutOfRangeException
+    {
+        return new OutOfRangeException(
+            "Invalid index: $index. "
+            . ($this->count === 0 ? 'The Vector is empty.' : 'Must be in the range 0-' . ($this->count - 1) . '.')
+        );
+    }
 
     /**
      * Create a vector from a list of finite floats, without validating them.

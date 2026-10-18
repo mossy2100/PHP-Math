@@ -55,5 +55,22 @@ class VectorInspectionTest extends TestCase
         $v->get(0);
     }
 
+    /**
+     * Test get() names the valid range when the index is outside it, or says the Vector is empty.
+     */
+    public function testGetOutOfRangeMessages(): void
+    {
+        try {
+            Vector::fromArray([1, 2, 3])->get(3);
+            $this->fail('Expected OutOfRangeException.');
+        } catch (OutOfRangeException $e) {
+            $this->assertSame('Invalid index: 3. Must be in the range 0-2.', $e->getMessage());
+        }
+
+        $this->expectException(OutOfRangeException::class);
+        $this->expectExceptionMessage('Invalid index: 0. The Vector is empty.');
+        new Vector(0)->get(0);
+    }
+
     #endregion
 }

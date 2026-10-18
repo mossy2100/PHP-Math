@@ -298,16 +298,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function get(int $row, int $col): float
     {
         // Check if indexes are within bounds.
-        if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row index: $row. Must be in the range 0-" . ($this->rowCount - 1) . '.'
-            );
-        }
-        if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column index: $col. Must be in the range 0-" . ($this->columnCount - 1) . '.'
-            );
-        }
+        $this->checkRowIndex($row);
+        $this->checkColumnIndex($col);
 
         return $this->data[$row]->get($col);
     }
@@ -326,11 +318,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function getRow(int $row): Vector
     {
         // Check if row index is within bounds.
-        if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row index: $row. Must be in the range 0-" . ($this->rowCount - 1) . '.'
-            );
-        }
+        $this->checkRowIndex($row);
 
         return clone $this->data[$row];
     }
@@ -345,11 +333,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function getColumn(int $col): Vector
     {
         // Check if column index is within bounds.
-        if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column index: $col. Must be in the range 0-" . ($this->columnCount - 1) . '.'
-            );
-        }
+        $this->checkColumnIndex($col);
 
         $column = [];
         for ($i = 0; $i < $this->rowCount; $i++) {
@@ -372,21 +356,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function copy(int $row, int $col, int $rowCount, int $colCount): self
     {
-        // Check the row range is valid.
-        if ($row < 0 || $rowCount < 0 || $row + $rowCount > $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row range: $row-" . ($row + $rowCount) . '. Must be within 0-'
-                . ($this->rowCount - 1) . '.'
-            );
-        }
-
-        // Check the column range is valid.
-        if ($col < 0 || $colCount < 0 || $col + $colCount > $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column range: $col-" . ($col + $colCount) . '. Must be within 0-'
-                . ($this->columnCount - 1) . '.'
-            );
-        }
+        // Check the row and column ranges are valid.
+        self::checkRange('row', $row, $rowCount, $this->rowCount);
+        self::checkRange('column', $col, $colCount, $this->columnCount);
 
         // Copy the selected elements into a new matrix.
         $result = new self($rowCount, $colCount);
@@ -415,16 +387,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function set(int $row, int $col, float $value): void
     {
         // Check if indexes are within bounds.
-        if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row index: $row. Must be in the range 0-" . ($this->rowCount - 1) . '.'
-            );
-        }
-        if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column index: $col. Must be in the range 0-" . ($this->columnCount - 1) . '.'
-            );
-        }
+        $this->checkRowIndex($row);
+        $this->checkColumnIndex($col);
 
         // Check the value is finite.
         if (!is_finite($value)) {
@@ -451,11 +415,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function setRow(int $row, Vector $vec): void
     {
         // Check if row index is within bounds.
-        if ($row < 0 || $row >= $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row index: $row. Must be in the range 0-" . ($this->rowCount - 1) . '.'
-            );
-        }
+        $this->checkRowIndex($row);
 
         // Check length.
         $vectorCount = count($vec);
@@ -482,11 +442,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function setColumn(int $col, Vector $vec): void
     {
         // Check if column index is within bounds.
-        if ($col < 0 || $col >= $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column index: $col. Must be in the range 0-" . ($this->columnCount - 1) . '.'
-            );
-        }
+        $this->checkColumnIndex($col);
 
         // Check length.
         $vectorCount = count($vec);
@@ -516,21 +472,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function paste(self $other, int $row = 0, int $col = 0): void
     {
-        // Check the row offset is valid.
-        if ($row < 0 || $row + $other->rowCount > $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row range: $row-" . ($row + $other->rowCount) . '. Must be within 0-'
-                . ($this->rowCount - 1) . '.'
-            );
-        }
-
-        // Check the column offset is valid.
-        if ($col < 0 || $col + $other->columnCount > $this->columnCount) {
-            throw new OutOfRangeException(
-                "Invalid column range: $col-" . ($col + $other->columnCount) . '. Must be within 0-'
-                . ($this->columnCount - 1) . '.'
-            );
-        }
+        // Check $other fits at the given offsets.
+        self::checkRange('row', $row, $other->rowCount, $this->rowCount);
+        self::checkRange('column', $col, $other->columnCount, $this->columnCount);
 
         // Copy the elements from $other into this matrix.
         for ($i = 0; $i < $other->rowCount; $i++) {
@@ -1260,11 +1204,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Check if row index is within bounds.
-        if ($offset < 0 || $offset >= $this->rowCount) {
-            throw new OutOfRangeException(
-                "Invalid row index: $offset. Must be in the range 0-" . ($this->rowCount - 1) . '.'
-            );
-        }
+        $this->checkRowIndex($offset);
 
         return $this->data[$offset];
     }
@@ -1331,6 +1271,70 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     #endregion
 
     #region Helper methods
+
+    /**
+     * Check a row index is valid.
+     *
+     * @param int $row The row index (0-based).
+     * @throws OutOfRangeException If the index is outside the valid range.
+     */
+    private function checkRowIndex(int $row): void
+    {
+        if ($row < 0 || $row >= $this->rowCount) {
+            throw new OutOfRangeException(self::indexMessage('row', $row, $this->rowCount));
+        }
+    }
+
+    /**
+     * Check a column index is valid.
+     *
+     * @param int $col The column index (0-based).
+     * @throws OutOfRangeException If the index is outside the valid range.
+     */
+    private function checkColumnIndex(int $col): void
+    {
+        if ($col < 0 || $col >= $this->columnCount) {
+            throw new OutOfRangeException(self::indexMessage('column', $col, $this->columnCount));
+        }
+    }
+
+    /**
+     * Get the message for an invalid row or column index.
+     *
+     * @param string $axis 'row' or 'column'.
+     * @param int $index The invalid index.
+     * @param int $size The number of rows or columns.
+     * @return string The message, e.g. "Invalid row index: 3. Must be in the range 0-2.".
+     */
+    private static function indexMessage(string $axis, int $index, int $size): string
+    {
+        return "Invalid $axis index: $index. "
+            . ($size === 0 ? "The Matrix has no {$axis}s." : 'Must be in the range 0-' . ($size - 1) . '.');
+    }
+
+    /**
+     * Check a range of rows or columns, given by its start and length, lies within the Matrix.
+     *
+     * @param string $axis 'row' or 'column'.
+     * @param int $start The first row or column in the range (0-based).
+     * @param int $count The number of rows or columns in the range.
+     * @param int $size The number of rows or columns in the Matrix.
+     * @throws OutOfRangeException If the count is negative, or the range extends beyond the Matrix.
+     */
+    private static function checkRange(string $axis, int $start, int $count, int $size): void
+    {
+        if ($count < 0) {
+            throw new OutOfRangeException("Invalid $axis count: $count. Must not be negative.");
+        }
+
+        if ($start < 0 || $start + $count > $size) {
+            $what = $count === 1 ? $axis : "{$axis}s";
+            throw new OutOfRangeException(
+                "Invalid $axis range: $count $what from $axis $start. "
+                . ($size === 0 ? "The Matrix has no {$axis}s." : "Must be within {$axis}s 0-" . ($size - 1) . '.')
+            );
+        }
+    }
 
     /**
      * Calculate a power of this square matrix, for pow(), once the exponent 0 and 1 cases are handled.
