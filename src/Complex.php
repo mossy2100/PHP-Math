@@ -31,6 +31,57 @@ final class Complex implements Stringable, ArrayAccess
 {
     use ApproxEquatable;
 
+    #region Constants
+
+    // Constants for the inverse trigonometric and hyperbolic functions. See calcAsinh().
+
+    /**
+     * Below this value of A, ln(A + √(A² - 1)) is calculated with log1p() (Hull et al. suggest 1.5; 10 works better).
+     */
+    private const float A_CROSSOVER = 10.0;
+
+    /**
+     * Above this value of B, asin(B) is calculated with atan2(), as suggested by Hull et al.
+     */
+    private const float B_CROSSOVER = 0.6417;
+
+    /**
+     * At least 4·√PHP_FLOAT_MIN.
+     */
+    private const float FOUR_SQRT_MIN = 2 ** -509;
+
+    /**
+     * At most √PHP_FLOAT_MAX / 4.
+     */
+    private const float QUARTER_SQRT_MAX = 2 ** 509;
+
+    /**
+     * At least √PHP_FLOAT_MIN.
+     */
+    private const float SQRT_MIN = 2 ** -511;
+
+    /**
+     * Above this magnitude, a part is so large that the asymptotic formulas are exact to within rounding.
+     */
+    private const float RECIP_EPSILON = 1 / PHP_FLOAT_EPSILON;
+
+    /**
+     * √(3·PHP_FLOAT_EPSILON).
+     */
+    private const float SQRT_3_EPSILON = 2.5809568279517849e-8;
+
+    /**
+     * √(6·PHP_FLOAT_EPSILON).
+     */
+    private const float SQRT_6_EPSILON = 3.6500241499888571e-8;
+
+    /**
+     * The rounding error in M_PI_2, i.e. π/2 - M_PI_2.
+     */
+    private const float PI_2_LO = 6.1232339957367659e-17;
+
+    #endregion
+
     #region Properties
 
     /**
@@ -919,50 +970,42 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the inverse sine of this complex number.
      *
+     * The result is the principal value, accurate to within a few ulps for any argument. On a branch cut (the real
+     * axis outside [-1, 1]), the sign of the imaginary part, including a signed zero, chooses the side, as in C99.
+     *
      * @return self A new complex number representing the inverse sine of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function asin(): self
     {
-        return self::calcWithOverflowMessage('compute inverse sine of the given Complex', function (): self {
-            // asin(z) = -i·ln(iz + √(1-z²))
-            // iz = -y + ix (multiply by i directly)
-            $iz = new self(-$this->imaginary, $this->real);
-            // 1 - z²
-            $oneMinusZ2 = new self(1)->sub($this->mul($this));
-            // -i·ln(iz + √(1-z²))
-            return $iz->add($oneMinusZ2->sqrt())->ln()->mul(new self(0, -1));
-        });
+        // asin(x + iy) is asinh(y + ix) with its parts swapped.
+        [$real, $imag] = self::calcAsinh($this->imaginary, $this->real);
+        return new self($imag, $real);
     }
 
     /**
      * Calculate the inverse cosine of this complex number.
      *
+     * The result is the principal value, accurate to within a few ulps for any argument. On a branch cut (the real
+     * axis outside [-1, 1]), the sign of the imaginary part, including a signed zero, chooses the side, as in C99.
+     *
      * @return self A new complex number representing the inverse cosine of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function acos(): self
     {
-        return self::calcWithOverflowMessage('compute inverse cosine of the given Complex', function (): self {
-            // acos(z) = -i·ln(z + i·√(1-z²))
-            // 1 - z²
-            $oneMinusZ2 = new self(1)->sub($this->mul($this));
-            // i·√(1-z²) - multiply √(1-z²) by i directly
-            $sqrt = $oneMinusZ2->sqrt();
-            $iSqrt = new self(-$sqrt->imaginary, $sqrt->real);
-            // -i·ln(z + i·√(1-z²))
-            return $this->add($iSqrt)->ln()->mul(new self(0, -1));
-        });
+        [$real, $imag] = self::calcAcos($this->real, $this->imaginary);
+        return new self($real, $imag);
     }
 
     /**
      * Calculate the inverse tangent of this complex number.
      *
+     * The result is the principal value, accurate to within a few ulps for any argument. On a branch cut (the
+     * imaginary axis outside [-i, i]), the sign of the real part, including a signed zero, chooses the side, as in C99.
+     *
      * @return self A new complex number representing the inverse tangent of this complex number.
      * @throws ArithmeticException If this Complex is i or -i, where the inverse tangent is undefined.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_trigonometric_functions#Extension_to_the_complex_plane
      */
     public function atan(): self
@@ -973,15 +1016,9 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException("Cannot compute inverse tangent of $value.");
         }
 
-        return self::calcWithOverflowMessage('compute inverse tangent of the given Complex', function (): self {
-            // atan(z) = (-i/2)·ln((i-z)/(i+z))
-            // i - z = -x + (1-y)i (calculate directly)
-            $iMinusZ = new self(-$this->real, 1 - $this->imaginary);
-            // i + z = x + (1+y)i (calculate directly)
-            $iPlusZ = new self($this->real, 1 + $this->imaginary);
-            // (-i/2)·ln((i-z)/(i+z))
-            return $iMinusZ->div($iPlusZ)->ln()->mul(new self(0, -0.5));
-        });
+        // atan(x + iy) is atanh(y + ix) with its parts swapped.
+        [$real, $imag] = self::calcAtanh($this->imaginary, $this->real);
+        return new self($imag, $real);
     }
 
     #endregion
@@ -1045,48 +1082,43 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the inverse hyperbolic sine of this complex number.
      *
+     * The result is the principal value, accurate to within a few ulps for any argument. On a branch cut (the
+     * imaginary axis outside [-i, i]), the sign of the real part, including a signed zero, chooses the side, as in C99.
+     *
      * @return self A new complex number representing the inverse hyperbolic sine of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function asinh(): self
     {
-        return self::calcWithOverflowMessage('compute inverse hyperbolic sine of the given Complex', function (): self {
-            // asinh(z) = ln(z + √(z² + 1))
-            $z2Plus1 = $this->mul($this)->add(new self(1));
-            return $this->add($z2Plus1->sqrt())->ln();
-        });
+        [$real, $imag] = self::calcAsinh($this->real, $this->imaginary);
+        return new self($real, $imag);
     }
 
     /**
      * Calculate the inverse hyperbolic cosine of this complex number.
      *
-     * The result is the principal value, whose real part is never negative.
+     * The result is the principal value, whose real part is never negative, accurate to within a few ulps for any
+     * argument. On the branch cut (the real axis below 1), the sign of the imaginary part, including a signed zero,
+     * chooses the side, as in C99.
      *
      * @return self A new complex number representing the inverse hyperbolic cosine of this complex number.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function acosh(): self
     {
-        return self::calcWithOverflowMessage(
-            'compute inverse hyperbolic cosine of the given Complex',
-            function (): self {
-                // acosh(z) = ln(z + √(z + 1)·√(z - 1))
-                // Taking the two square roots separately gives the principal value. √(z² - 1) would lose track of
-                // which half-plane z is in, giving the negative of it whenever the real part of z is negative.
-                $root = $this->add(1.0)->sqrt()->mul($this->sub(1.0)->sqrt());
-                return $this->add($root)->ln();
-            }
-        );
+        // acosh(z) is ±i·acos(z), with the sign chosen so the real part isn't negative.
+        [$acosReal, $acosImag] = self::calcAcos($this->real, $this->imaginary);
+        return new self(abs($acosImag), Numbers::copySign($acosReal, $this->imaginary));
     }
 
     /**
      * Calculate the inverse hyperbolic tangent of this complex number.
      *
+     * The result is the principal value, accurate to within a few ulps for any argument. On a branch cut (the real
+     * axis outside [-1, 1]), the sign of the imaginary part, including a signed zero, chooses the side, as in C99.
+     *
      * @return self A new complex number representing the inverse hyperbolic tangent of this complex number.
      * @throws ArithmeticException If this Complex is 1 or -1, where the inverse hyperbolic tangent is undefined.
-     * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
      */
     public function atanh(): self
@@ -1097,15 +1129,8 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException("Cannot compute inverse hyperbolic tangent of $value.");
         }
 
-        return self::calcWithOverflowMessage(
-            'compute inverse hyperbolic tangent of the given Complex',
-            function (): self {
-                // atanh(z) = (1/2)·ln((1+z)/(1-z))
-                $onePlusZ = new self(1)->add($this);
-                $oneMinusZ = new self(1)->sub($this);
-                return $onePlusZ->div($oneMinusZ)->ln()->mul(0.5);
-            }
-        );
+        [$real, $imag] = self::calcAtanh($this->real, $this->imaginary);
+        return new self($real, $imag);
     }
 
     #endregion
@@ -1290,6 +1315,346 @@ final class Complex implements Stringable, ArrayAccess
         $real = $beta * $rho * $s / $denom;
         $imag = $t / $denom;
         return [$real, $imag];
+    }
+
+    /*
+     * The inverse trigonometric and hyperbolic helpers below, calcAsinh() to calcLogLarge(), are ported from FreeBSD's
+     * lib/msun/src/catrig.c, which implements the algorithms in T. E. Hull, T. F. Fairgrieve and P. T. P. Tang,
+     * "Implementing the complex arcsine and arccosine functions using exception handling", ACM Transactions on
+     * Mathematical Software 23(3), 1997, pages 299-335. The inputs are always finite here, so catrig.c's handling of
+     * INF and NAN is left out. Its licence is reproduced here, as it requires:
+     *
+     * Copyright (c) 2012 Stephen Montgomery-Smith <stephen@FreeBSD.ORG>
+     * All rights reserved.
+     *
+     * Redistribution and use in source and binary forms, with or without
+     * modification, are permitted provided that the following conditions
+     * are met:
+     * 1. Redistributions of source code must retain the above copyright
+     *    notice, this list of conditions and the following disclaimer.
+     * 2. Redistributions in binary form must reproduce the above copyright
+     *    notice, this list of conditions and the following disclaimer in the
+     *    documentation and/or other materials provided with the distribution.
+     *
+     * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+     * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+     * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+     * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+     * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+     * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+     * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+     * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+     * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+     * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+     * SUCH DAMAGE.
+     */
+
+    /**
+     * Calculate the inverse hyperbolic sine of x + iy, for asinh() and asin().
+     *
+     * With A = (|z + i| + |z - i|) / 2 and B = y / A, asinh(z) = sign(x)·ln(A + √(A² - 1)) + i·asin(B). See
+     * calcAsinhParts() for how that's kept accurate.
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part.
+     * @return array{float, float} The real and imaginary parts of the result.
+     */
+    private static function calcAsinh(float $x, float $y): array
+    {
+        $ax = abs($x);
+        $ay = abs($y);
+
+        // For a large argument, asinh(z) = sign(x)·(ln(sign(x)·z) + ln 2), to within rounding.
+        if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
+            [$logReal, $logImag] = Floats::isNegative($x) ? self::calcLogLarge(-$x, -$y) : self::calcLogLarge($x, $y);
+            return [
+                Numbers::copySign($logReal + M_LN2, $x),
+                Numbers::copySign($logImag, $y),
+            ];
+        }
+
+        // For a small argument (including zero), asinh(z) = z, to within rounding.
+        if ($ax < self::SQRT_6_EPSILON / 4 && $ay < self::SQRT_6_EPSILON / 4) {
+            return [$x, $y];
+        }
+
+        [$rx, $bIsUsable, $b, $sqrtA2My2, $newY] = self::calcAsinhParts($ax, $ay);
+        $ry = $bIsUsable ? asin($b) : atan2($newY, $sqrtA2My2);
+        return [
+            Numbers::copySign($rx, $x),
+            Numbers::copySign($ry, $y),
+        ];
+    }
+
+    /**
+     * Calculate the inverse cosine of x + iy, for acos() and acosh().
+     *
+     * acos(z) = π/2 - asin(z), but calculated so it's accurate when z is close to 1.
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part.
+     * @return array{float, float} The real and imaginary parts of the result.
+     */
+    private static function calcAcos(float $x, float $y): array
+    {
+        $ax = abs($x);
+        $ay = abs($y);
+
+        // For a large argument, acos(z) = -sign(y)·i·(ln(z) + ln 2), to within rounding.
+        if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
+            [$logReal, $logImag] = self::calcLogLarge($x, $y);
+            $ry = $logReal + M_LN2;
+            return [
+                abs($logImag),
+                Floats::isNegative($y) ? $ry : -$ry,
+            ];
+        }
+
+        // acos(1) = 0 exactly.
+        if ($x === 1.0 && $y === 0.0) {
+            return [0.0, -$y];
+        }
+
+        // For a small argument, acos(z) = π/2 - z, to within rounding.
+        if ($ax < self::SQRT_6_EPSILON / 4 && $ay < self::SQRT_6_EPSILON / 4) {
+            return [
+                M_PI_2 - ($x - self::PI_2_LO),
+                -$y,
+            ];
+        }
+
+        // The same calculation as asinh(), with the parts swapped.
+        [$ry, $bIsUsable, $b, $sqrtA2Mx2, $newX] = self::calcAsinhParts($ay, $ax);
+        if ($bIsUsable) {
+            $rx = acos(Floats::isNegative($x) ? -$b : $b);
+        } else {
+            $rx = atan2($sqrtA2Mx2, Floats::isNegative($x) ? -$newX : $newX);
+        }
+        return [
+            $rx,
+            Floats::isNegative($y) ? $ry : -$ry,
+        ];
+    }
+
+    /**
+     * Calculate the parts of asinh(x + iy) for calcAsinh() and calcAcos(), where x and y are non-negative and less than
+     * RECIP_EPSILON. This is do_hard_work() in catrig.c.
+     *
+     * With A = (|z + i| + |z - i|) / 2 and B = y / A, the textbook formulas lose accuracy in two places:
+     * - ln(A + √(A² - 1)), when z is close to the segment [-i, i]. Below A_CROSSOVER, it's calculated as
+     *   log1p((A - 1) + √((A - 1)·(A + 1))), with A - 1 calculated without cancellation.
+     * - asin(B), when z is close to the rays [i, i∞) or (-i∞, -i]. Above B_CROSSOVER, it's calculated as
+     *   atan2(y, √(A² - y²)), with √(A² - y²) calculated without cancellation.
+     *
+     * @param float $x The real part. Must be non-negative.
+     * @param float $y The imaginary part. Must be non-negative.
+     * @return array{float, bool, float, float, float} The real part of asinh(z); whether B is usable; B; and if B
+     * isn't usable, √(A² - y²) and y, both possibly scaled up by the same factor to avoid underflow.
+     */
+    private static function calcAsinhParts(float $x, float $y): array
+    {
+        // |z + i| and |z - i|.
+        $r = hypot($x, $y + 1);
+        $s = hypot($x, $y - 1);
+
+        // A is at least 1 mathematically, but rounding could take it just below.
+        $a = max(($r + $s) / 2, 1.0);
+
+        // Calculate the real part, ln(A + √(A² - 1)).
+        if ($a < self::A_CROSSOVER) {
+            if ($y === 1.0 && $x < PHP_FLOAT_EPSILON * PHP_FLOAT_EPSILON / 128) {
+                // A - 1 is about x / 2.
+                $rx = sqrt($x);
+            } elseif ($x >= PHP_FLOAT_EPSILON * abs($y - 1)) {
+                $aMinus1 = self::calcHalfHypotDiff($x, 1 + $y, $r) + self::calcHalfHypotDiff($x, 1 - $y, $s);
+                $rx = log1p($aMinus1 + sqrt($aMinus1 * ($a + 1)));
+            } elseif ($y < 1) {
+                // A is 1, to within rounding.
+                $rx = $x / sqrt((1 - $y) * (1 + $y));
+            } else {
+                // A - 1 is y - 1, to within rounding.
+                $rx = log1p(($y - 1) + sqrt(($y - 1) * ($y + 1)));
+            }
+        } else {
+            $rx = log($a + sqrt($a * $a - 1));
+        }
+
+        // For a tiny y, y / A could underflow, so return √(A² - y²) and y, scaled up, for atan2().
+        if ($y < self::FOUR_SQRT_MIN) {
+            return [
+                $rx,
+                false,
+                0.0,
+                $a * (2 / PHP_FLOAT_EPSILON),
+                $y * (2 / PHP_FLOAT_EPSILON),
+            ];
+        }
+
+        // B = y / A, which is usable unless it's close to 1, where asin() loses accuracy.
+        $b = $y / $a;
+        if ($b <= self::B_CROSSOVER) {
+            return [$rx, true, $b, 0.0, $y];
+        }
+
+        // Calculate √(A² - y²) for atan2().
+        $newY = $y;
+        if ($y === 1.0 && $x < PHP_FLOAT_EPSILON / 128) {
+            // A - y is about x / 2.
+            $sqrtA2My2 = sqrt($x) * sqrt(($a + $y) / 2);
+        } elseif ($x >= PHP_FLOAT_EPSILON * abs($y - 1)) {
+            $aMinusY = self::calcHalfHypotDiff($x, $y + 1, $r) + self::calcHalfHypotDiff($x, $y - 1, $s);
+            $sqrtA2My2 = sqrt($aMinusY * ($a + $y));
+        } elseif ($y > 1) {
+            // A is y, to within rounding. Scale up to avoid underflow; y < RECIP_EPSILON, so this can't overflow.
+            $scale = 4 / PHP_FLOAT_EPSILON / PHP_FLOAT_EPSILON;
+            $sqrtA2My2 = $x * $scale * $y / sqrt(($y + 1) * ($y - 1));
+            $newY = $y * $scale;
+        } else {
+            // A is 1, to within rounding.
+            $sqrtA2My2 = sqrt((1 - $y) * (1 + $y));
+        }
+
+        return [$rx, false, $b, $sqrtA2My2, $newY];
+    }
+
+    /**
+     * Calculate (hypot(a, b) - b) / 2 without cancellation. This is f() in catrig.c.
+     *
+     * @param float $a The first value.
+     * @param float $b The second value.
+     * @param float $hypot hypot(a, b), already calculated.
+     * @return float (hypot(a, b) - b) / 2.
+     */
+    private static function calcHalfHypotDiff(float $a, float $b, float $hypot): float
+    {
+        if ($b < 0) {
+            return ($hypot - $b) / 2;
+        }
+        if ($b === 0.0) {
+            return $a / 2;
+        }
+        // hypot(a, b) - b = a² / (hypot(a, b) + b), which doesn't cancel when b is positive.
+        return $a * $a / ($hypot + $b) / 2;
+    }
+
+    /**
+     * Calculate the inverse hyperbolic tangent of x + iy, for atanh() and atan().
+     *
+     * atanh(z) = ln((1 + z) / (1 - z)) / 2 = log1p(4x / |z - 1|²) / 4 + i·atan2(2y, (1 - x)(1 + x) - y²) / 2.
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part. If y is 0, x must not be ±1.
+     * @return array{float, float} The real and imaginary parts of the result.
+     */
+    private static function calcAtanh(float $x, float $y): array
+    {
+        $ax = abs($x);
+        $ay = abs($y);
+
+        // A real argument in [-1, 1].
+        if ($y === 0.0 && $ax <= 1) {
+            return [
+                atanh($x),
+                $y,
+            ];
+        }
+
+        // An imaginary argument, matching the accuracy of atan().
+        if ($x === 0.0) {
+            return [
+                $x,
+                atan($y),
+            ];
+        }
+
+        // For a large argument, atanh(z) = 1/z + sign(y)·iπ/2, to within rounding.
+        if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
+            return [
+                self::calcRealPartReciprocal($x, $y),
+                Numbers::copySign(M_PI_2, $y),
+            ];
+        }
+
+        // For a small argument, atanh(z) = z, to within rounding.
+        if ($ax < self::SQRT_3_EPSILON / 2 && $ay < self::SQRT_3_EPSILON / 2) {
+            return [$x, $y];
+        }
+
+        // Real part. Near ±1, log1p(4/|z - 1|²) is ln(4/y²) = ln 2 - 2·ln(y), which avoids squaring a tiny y.
+        if ($ax === 1.0 && $ay < PHP_FLOAT_EPSILON) {
+            $rx = (M_LN2 - log($ay)) / 2;
+        } else {
+            $ax1 = $ax - 1;
+            $sumSquares = $ay < self::SQRT_MIN ? $ax1 * $ax1 : $ax1 * $ax1 + $ay * $ay;
+            $rx = log1p(4 * $ax / $sumSquares) / 4;
+        }
+
+        // Imaginary part.
+        if ($ax === 1.0) {
+            $ry = atan2(2, -$ay) / 2;
+        } elseif ($ay < PHP_FLOAT_EPSILON) {
+            $ry = atan2(2 * $ay, (1 - $ax) * (1 + $ax)) / 2;
+        } else {
+            $ry = atan2(2 * $ay, (1 - $ax) * (1 + $ax) - $ay * $ay) / 2;
+        }
+
+        return [
+            Numbers::copySign($rx, $x),
+            Numbers::copySign($ry, $y),
+        ];
+    }
+
+    /**
+     * Calculate the real part of 1 / (x + iy), x / (x² + y²), for a large x + iy, without overflowing or underflowing
+     * needlessly.
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part.
+     * @return float The real part of the reciprocal.
+     */
+    private static function calcRealPartReciprocal(float $x, float $y): float
+    {
+        // Scale so the larger part is 1, so the squares can't overflow.
+        $scale = max(abs($x), abs($y));
+        $x /= $scale;
+        $y /= $scale;
+        return $x / ($x * $x + $y * $y) / $scale;
+    }
+
+    /**
+     * Calculate ln(x + iy) for a large x + iy, without overflowing. This is clog_for_large_values() in catrig.c.
+     *
+     * @param float $x The real part.
+     * @param float $y The imaginary part.
+     * @return array{float, float} The real and imaginary parts of the logarithm.
+     */
+    private static function calcLogLarge(float $x, float $y): array
+    {
+        $absx = abs($x);
+        $absy = abs($y);
+        $max = max($absx, $absy);
+        $min = min($absx, $absy);
+
+        // hypot() could overflow, so divide both parts by e, and add 1 to the logarithm.
+        if ($max > PHP_FLOAT_MAX / 2) {
+            return [
+                log(hypot($x / M_E, $y / M_E)) + 1,
+                atan2($y, $x),
+            ];
+        }
+
+        // Squaring could overflow or underflow.
+        if ($max > self::QUARTER_SQRT_MAX || $min < self::SQRT_MIN) {
+            return [
+                log(hypot($x, $y)),
+                atan2($y, $x),
+            ];
+        }
+
+        return [
+            log($max * $max + $min * $min) / 2,
+            atan2($y, $x),
+        ];
     }
 
     /**

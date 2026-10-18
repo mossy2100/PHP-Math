@@ -70,6 +70,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   Matrix." if a pivot is negligible relative to its row, instead of only for an exactly zero determinant. Previously, a
   matrix such as `[[0.1, 0.3], [0.7, 2.1]]`, singular but with a determinant of about 3e-17 due to rounding, gave an
   inverse with elements around 1e16. The message was "Cannot invert Matrix with zero determinant."
+- **The branch cuts of the inverse trigonometric and hyperbolic methods follow C99 (breaking).** On a cut, the sign of
+  the zero part chooses the side, as in Python and NumPy. For example, `asin(2)` is now `π/2 + 1.317i`, instead of
+  `π/2 - 1.317i`, and `new Complex(2, -0.0)->asin()` gives the other side.
 
 ### Fixed
 
@@ -118,6 +121,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   the principal value, e.g. `acosh(-2)` was `-1.317 + πi` instead of `1.317 + πi`. It also threw "Cannot compute
   logarithm of zero." for a large negative real number, e.g. `-1e10`, and `OverflowException` for numbers above about
   1e154, e.g. `1e200 + 1e200i`, though the result is finite.
+- **`Complex::asin()`, `acos()`, `atan()`, `asinh()` and `atanh()` threw, lost precision or had the wrong sign for
+  some arguments**, because their textbook logarithm formulas cancel. For example, `asinh(-1e10)` threw "Cannot compute
+  logarithm of zero.", `atan(-1e17)` was `π/2` instead of `-π/2`, and `asinh(1e-20)` was `0`. All six inverse
+  trigonometric and hyperbolic methods now use the algorithms of Hull, Fairgrieve and Tang (1997), ported from
+  FreeBSD's `catrig.c`, and are accurate to within a few ulps for any argument.
+- **The inverse trigonometric and hyperbolic methods threw `OverflowException` where the result is finite**, e.g.
+  `asin(1e200)` and `atanh(1 + 1e-320i)`. They never overflow now.
 
 ### Documentation
 

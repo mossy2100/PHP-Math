@@ -6,8 +6,8 @@ namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Floats;
+use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
-use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
@@ -15,6 +15,8 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Complex::class)]
 class ComplexInverseHyperbolicTest extends TestCase
 {
+    use FloatAssertions;
+
     #region Method asinh() tests.
 
     /**
@@ -47,25 +49,49 @@ class ComplexInverseHyperbolicTest extends TestCase
     }
 
     /**
-     * Test asinh() throws when squaring the argument overflows.
+     * Data provider for testAsinhReferenceValues(). The expected values are from Python's cmath.asinh().
+     *
+     * @return array<string, array{float, float, float, float}>
      */
-    public function testAsinhOverflowThrows(): void
+    public static function asinhReferenceProvider(): array
     {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            'Cannot compute inverse hyperbolic sine of the given Complex. The result would overflow.'
-        );
-        new Complex(1e200, 1e200)->asinh();
+        return [
+            'first quadrant'            => [1.5, 2.5, 1.7501487613175148, 1.0033627117332509],
+            'second quadrant'           => [-1.5, 2.5, -1.7501487613175148, 1.0033627117332509],
+            'third quadrant'            => [-1.5, -2.5, -1.7501487613175148, -1.0033627117332509],
+            'fourth quadrant'           => [1.5, -2.5, 1.7501487613175148, -1.0033627117332509],
+            'tiny real'                 => [1e-20, 0.0, 1e-20, 0.0],
+            'tiny imaginary'            => [0.0, 1e-20, 0.0, 1e-20],
+            'large negative real'       => [-1e10, 0.0, -23.7189981105004, 0.0],
+            'large imaginary'           => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
+            'huge'                      => [1e200, 1e200, 461.55673936964905, 0.7853981633974483],
+            'huge negative'             => [-1e300, -1e-300, -691.4686750787736, -0.0],
+            'imaginary cut, right side' => [0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
+            'imaginary cut, left side'  => [-0.0, 2.0, -1.3169578969248166, 1.5707963267948966],
+        ];
     }
 
     /**
-     * Test asinh() gives a positive zero imaginary part when the phase underflows, as the phase is wrapped.
+     * Test asinh() against reference values: in every quadrant, at extreme magnitudes, and on each side of its branch
+     * cut (the imaginary axis outside [-i, i]), where the sign of a zero part chooses the side.
      */
-    public function testAsinhUnderflowedPhaseIsPositiveZero(): void
+    #[DataProvider('asinhReferenceProvider')]
+    public function testAsinhReferenceValues(float $real, float $imag, float $expectedReal, float $expectedImag): void
+    {
+        $result = new Complex($real, $imag)->asinh();
+
+        $this->assertApproxEqual($expectedReal, $result->real, 1e-14, 0.0);
+        $this->assertApproxEqual($expectedImag, $result->imaginary, 1e-14, 0.0);
+    }
+
+    /**
+     * Test asinh() gives an imaginary part that underflows to zero with the sign of the argument's imaginary part.
+     */
+    public function testAsinhUnderflowedImaginaryPartKeepsSign(): void
     {
         $result = new Complex(1e75, -1e-300)->asinh();
 
-        $this->assertTrue(Floats::isPositiveZero($result->imaginary));
+        $this->assertTrue(Floats::isNegativeZero($result->imaginary));
     }
 
     #endregion
@@ -132,25 +158,39 @@ class ComplexInverseHyperbolicTest extends TestCase
     }
 
     /**
-     * Test acosh() of a large negative real number, where √(z² - 1) would cancel z exactly.
+     * Data provider for testAcoshReferenceValues(). The expected values are from Python's cmath.acosh().
+     *
+     * @return array<string, array{float, float, float, float}>
      */
-    public function testAcoshLargeNegativeReal(): void
+    public static function acoshReferenceProvider(): array
     {
-        $result = new Complex(-1e10)->acosh();
-
-        $this->assertEqualsWithDelta(23.7189981105004, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(M_PI, $result->imaginary, EPSILON);
+        return [
+            'first quadrant'       => [1.5, 2.5, 1.777662377506645, 1.0552478910599898],
+            'second quadrant'      => [-1.5, 2.5, 1.777662377506645, 2.0863447625298033],
+            'third quadrant'       => [-1.5, -2.5, 1.777662377506645, -2.0863447625298033],
+            'fourth quadrant'      => [1.5, -2.5, 1.777662377506645, -1.0552478910599898],
+            'tiny real'            => [1e-20, 0.0, 0.0, 1.5707963267948966],
+            'tiny imaginary'       => [0.0, 1e-20, 1e-20, 1.5707963267948966],
+            'large negative real'  => [-1e10, 0.0, 23.7189981105004, 3.141592653589793],
+            'large imaginary'      => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
+            'huge'                 => [1e200, 1e200, 461.55673936964905, 0.7853981633974484],
+            'huge negative'        => [-1e300, -1e-300, 691.4686750787736, -3.141592653589793],
+            'real cut, upper side' => [-2.0, 0.0, 1.3169578969248166, 3.141592653589793],
+            'real cut, lower side' => [-2.0, -0.0, 1.3169578969248166, -3.141592653589793],
+        ];
     }
 
     /**
-     * Test acosh() of a number whose square overflows, though the result is finite.
+     * Test acosh() against reference values: in every quadrant, at extreme magnitudes, and on each side of its branch
+     * cut (the real axis below 1), where the sign of a zero part chooses the side.
      */
-    public function testAcoshLarge(): void
+    #[DataProvider('acoshReferenceProvider')]
+    public function testAcoshReferenceValues(float $real, float $imag, float $expectedReal, float $expectedImag): void
     {
-        $result = new Complex(1e200, 1e200)->acosh();
+        $result = new Complex($real, $imag)->acosh();
 
-        $this->assertEqualsWithDelta(461.55673936964905, $result->real, EPSILON);
-        $this->assertEqualsWithDelta(0.7853981633974484, $result->imaginary, EPSILON);
+        $this->assertApproxEqual($expectedReal, $result->real, 1e-14, 0.0);
+        $this->assertApproxEqual($expectedImag, $result->imaginary, 1e-14, 0.0);
     }
 
     #endregion
@@ -187,15 +227,40 @@ class ComplexInverseHyperbolicTest extends TestCase
     }
 
     /**
-     * Test atanh() throws when (1 + z) / (1 - z) overflows, for z very close to 1.
+     * Data provider for testAtanhReferenceValues(). The expected values are from Python's cmath.atanh().
+     *
+     * @return array<string, array{float, float, float, float}>
      */
-    public function testAtanhOverflowThrows(): void
+    public static function atanhReferenceProvider(): array
     {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            'Cannot compute inverse hyperbolic tangent of the given Complex. The result would overflow.'
-        );
-        new Complex(1, 1e-320)->atanh();
+        return [
+            'first quadrant'       => [1.5, 2.5, 0.163481616851666, 1.2767950250211129],
+            'second quadrant'      => [-1.5, 2.5, -0.163481616851666, 1.2767950250211129],
+            'third quadrant'       => [-1.5, -2.5, -0.163481616851666, -1.2767950250211129],
+            'fourth quadrant'      => [1.5, -2.5, 0.163481616851666, -1.2767950250211129],
+            'tiny real'            => [1e-20, 0.0, 1e-20, 0.0],
+            'tiny imaginary'       => [0.0, 1e-20, 0.0, 1e-20],
+            'large negative real'  => [-1e10, 0.0, -1e-10, 1.5707963267948966],
+            'large imaginary'      => [0.0, 1e10, 0.0, 1.5707963266948965],
+            'huge'                 => [1e200, 1e200, 5e-201, 1.5707963267948966],
+            'huge negative'        => [-1e300, -1e-300, -1e-300, -1.5707963267948966],
+            'real cut, upper side' => [2.0, 0.0, 0.5493061443340549, 1.5707963267948966],
+            'real cut, lower side' => [2.0, -0.0, 0.5493061443340549, -1.5707963267948966],
+            'next to 1'            => [1.0, 1e-320, 368.7601940357669, 0.7853981633974483],
+        ];
+    }
+
+    /**
+     * Test atanh() against reference values: in every quadrant, at extreme magnitudes, and on each side of its branch
+     * cut (the real axis outside [-1, 1]), where the sign of a zero part chooses the side.
+     */
+    #[DataProvider('atanhReferenceProvider')]
+    public function testAtanhReferenceValues(float $real, float $imag, float $expectedReal, float $expectedImag): void
+    {
+        $result = new Complex($real, $imag)->atanh();
+
+        $this->assertApproxEqual($expectedReal, $result->real, 1e-14, 0.0);
+        $this->assertApproxEqual($expectedImag, $result->imaginary, 1e-14, 0.0);
     }
 
     /**

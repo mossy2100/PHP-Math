@@ -702,12 +702,15 @@ public function acos(): self;
 public function atan(): self;
 ```
 
-Calculate inverse trigonometric functions.
+Calculate inverse trigonometric functions. Each returns the principal value, accurate to within a few ulps for any
+argument, and never overflows. They use the algorithms of Hull, Fairgrieve and Tang (1997), as in FreeBSD's `catrig.c`.
 
-**Throws:**
+On a branch cut, the sign of the zero part chooses the side, as in C99, Python and NumPy:
 
-- `OverflowException` if the result is too large to represent as a float.
-- `ArithmeticException` from `atan()` at i or -i, where it's undefined.
+- `asin()` and `acos()`: the real axis outside [-1, 1], where the imaginary part's sign decides.
+- `atan()`: the imaginary axis outside [-i, i], where the real part's sign decides.
+
+**Throws:** `ArithmeticException` from `atan()` at i or -i, where it's undefined.
 
 **Examples:**
 
@@ -716,6 +719,10 @@ $z = new Complex(0.5);
 $asin = $z->asin();
 $acos = $z->acos();
 $atan = $z->atan();
+
+echo new Complex(2)->asin();        // 1.5707963267949 + 1.3169578969248i
+echo new Complex(2, -0.0)->asin();  // 1.5707963267949 - 1.3169578969248i
+echo new Complex(1e200)->asin();    // 1.5707963267949 + 461.21016577937i
 ```
 
 ---
@@ -759,12 +766,17 @@ public function acosh(): self;
 public function atanh(): self;
 ```
 
-Calculate inverse hyperbolic functions.
+Calculate inverse hyperbolic functions. Each returns the principal value, accurate to within a few ulps for any
+argument, and never overflows. `acosh()`'s real part is never negative. They use the same algorithms as the inverse
+trigonometric methods.
 
-**Throws:**
+On a branch cut, the sign of the zero part chooses the side, as in C99, Python and NumPy:
 
-- `OverflowException` if the result is too large to represent as a float.
-- `ArithmeticException` from `atanh()` at 1 or -1, where it's undefined.
+- `asinh()`: the imaginary axis outside [-i, i], where the real part's sign decides.
+- `acosh()`: the real axis below 1, and `atanh()`: the real axis outside [-1, 1], where the imaginary part's sign
+  decides.
+
+**Throws:** `ArithmeticException` from `atanh()` at 1 or -1, where it's undefined.
 
 **Examples:**
 
@@ -773,6 +785,9 @@ $z = new Complex(0.5);
 $asinh = $z->asinh();
 $acosh = $z->acosh();
 $atanh = $z->atanh();
+
+echo new Complex(-2)->acosh();      // 1.3169578969248 + 3.1415926535898i
+echo new Complex(1e-20)->asinh();   // 1.0E-20
 ```
 
 ---
