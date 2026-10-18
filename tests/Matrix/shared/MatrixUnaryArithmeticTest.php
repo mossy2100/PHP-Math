@@ -200,6 +200,27 @@ class MatrixUnaryArithmeticTest extends TestCase
     }
 
     /**
+     * Test inv() of a 3×3 matrix whose determinant underflows to 0, even after scaling, though it's invertible.
+     *
+     * The adjugate formula needs the determinant, so the inverse comes from the LU decomposition instead.
+     */
+    public function testInvDeterminantUnderflows(): void
+    {
+        $m = Matrix::fromArray([
+            [1, 0, 0],
+            [0, 1e-200, 0],
+            [0, 0, 1e-200],
+        ]);
+        $inv = $m->inv();
+
+        $this->assertSame(1.0, $inv->get(0, 0));
+        $this->assertApproxEqual(1e200, $inv->get(1, 1));
+        $this->assertApproxEqual(1e200, $inv->get(2, 2));
+        $this->assertSame(0.0, $inv->get(0, 1));
+        $this->assertSame(0.0, $inv->get(1, 2));
+    }
+
+    /**
      * Test inv() of an empty matrix is an empty matrix, and of a zero matrix throws.
      */
     public function testInvEmptyAndZero(): void

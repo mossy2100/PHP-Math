@@ -95,7 +95,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Matrix::inv()` threw "zero determinant" for a matrix of uniformly tiny elements**, e.g.
   `[[1e-300, 0], [0, 1e-300]]`, because the determinant underflowed to 0, and overflowed for huge ones. In that case,
   the matrix is now scaled by a power of 2, which is exact, and inverted again. Other matrices aren't scaled, so their
-  results are unchanged.
+  results are unchanged. If the determinant still underflows, as it can when the elements span a wide range, e.g.
+  `diag(1, 1e-200, 1e-200)`, the inverse comes from the LU decomposition.
 - **`Complex::sqrt()` and `roots()` weren't exact on the axes**, because they used the polar form, e.g. `sqrt(-1)` was
   `6.1e-17 + i`. `sqrt()` now uses a numerically stable formula, so `sqrt(-4)` is exactly `2i` and `sqrt(3 + 4i)` is
   exactly `2 + i`. It also no longer loses precision for a subnormal number. Roots that lie on an axis are exact, e.g.

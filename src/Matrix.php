@@ -751,9 +751,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // The determinant is finite here: either it was already, or the matrix was scaled so every element is less than
-        // 2. It's non-zero unless it underflowed even after scaling, which the singularity check above makes unlikely.
+        // 2. It can still be 0 if it underflowed even after scaling, which happens when the elements span a wide range,
+        // e.g. diag(1, 1e-200, 1e-200). The singularity check above has passed, so use the LU decomposition instead.
         if ($det === 0.0) {
-            throw new ArithmeticException('Cannot invert singular Matrix.');
+            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
         }
 
         // Calculate the inverse from the cofactors.
