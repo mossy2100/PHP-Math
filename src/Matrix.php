@@ -702,9 +702,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * by LU decomposition with partial pivoting, which is O(n³).
      *
      * Either way, the matrix is first checked for singularity by LU decomposition. It's singular if a pivot is
-     * negligible relative to the elements of its row: no more than n × PHP_FLOAT_EPSILON times the largest of them.
-     * That also rejects a matrix that's singular in exact arithmetic, but whose determinant comes out tiny rather than
-     * zero in floating point, whose "inverse" would be meaningless.
+     * negligible relative to the elements of its row: no more than n × PHP_FLOAT_EPSILON times the largest of them,
+     * once each column is scaled so its largest element is 1. That also rejects a matrix that's singular in exact
+     * arithmetic, but whose determinant comes out tiny rather than zero in floating point, whose "inverse" would be
+     * meaningless. Scaling the columns means a matrix that's merely badly scaled, e.g. [[1, 1e20], [0, 1]], isn't.
      *
      * @return self New matrix representing the inverse.
      * @throws DomainException If matrix is not square.
@@ -1462,9 +1463,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * keeps every multiplier's magnitude at most 1.
      *
      * The matrix is reported as singular if a pivot is negligible relative to the elements of its original row: no
-     * more than n × PHP_FLOAT_EPSILON times the largest of them. Comparing with each row's own scale, rather than the
-     * whole matrix's, means a matrix whose rows differ widely in scale, e.g. [[1e-300, 0], [0, 1e300]], isn't
-     * mistaken for a singular one.
+     * more than n × PHP_FLOAT_EPSILON times the largest of them, once each column is divided by its largest element.
+     * Comparing with each row's own scale, rather than the whole matrix's, means a matrix whose rows differ widely in
+     * scale, e.g. [[1e-300, 0], [0, 1e300]], isn't mistaken for a singular one. Dividing the columns does the same
+     * for columns, e.g. [[1, 1e20], [0, 1]].
+     *
+     * Dividing a column by a constant doesn't change which row is chosen as the pivot, or any multiplier, so the
+     * pivot is just divided by its column's largest element too. So the columns are only scaled in the comparison,
+     * and the decomposition itself is of the matrix as given.
      *
      * @param list<list<float>> $matrix Matrix data.
      * @return array{lu: array<int, array<int, float>>, perm: array<int, int>, sign: int, singular: bool} The packed
@@ -1479,12 +1485,22 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         $sign = 1;
         $singular = false;
 
-        // Get the scale of each original row: its largest absolute element.
+        // Get the scale of each column: its largest absolute element.
+        $colScales = array_fill(0, $n, 0.0);
+        foreach ($matrix as $row) {
+            foreach ($row as $j => $value) {
+                $colScales[$j] = max($colScales[$j], abs($value));
+            }
+        }
+
+        // Get the scale of each original row: its largest absolute element, with each divided by its column's scale.
         $rowScales = [];
         foreach ($matrix as $row) {
             $rowScale = 0.0;
-            foreach ($row as $value) {
-                $rowScale = max($rowScale, abs($value));
+            foreach ($row as $j => $value) {
+                if ($colScales[$j] !== 0.0) {
+                    $rowScale = max($rowScale, abs($value) / $colScales[$j]);
+                }
             }
             $rowScales[] = $rowScale;
         }
@@ -1511,9 +1527,13 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 $sign = -$sign;
             }
 
-            // Check for a negligible pivot.
+            // Check for a negligible pivot, divided by its column's scale like the row's elements. A zero column makes
+            // the matrix singular.
             $pivot = $lu[$k][$k];
-            if (abs($pivot) <= $n * PHP_FLOAT_EPSILON * $rowScales[$perm[$k]]) {
+            if (
+                $colScales[$k] === 0.0
+                || abs($pivot) / $colScales[$k] <= $n * PHP_FLOAT_EPSILON * $rowScales[$perm[$k]]
+            ) {
                 $singular = true;
             }
 

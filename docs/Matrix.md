@@ -631,8 +631,10 @@ Calculate the inverse of the matrix, which must be square and not singular.
   of a second.
 
 The matrix is singular if, during LU decomposition, a pivot is negligible relative to the elements of its row: at most
-`n * PHP_FLOAT_EPSILON` times the largest of them. That also catches a matrix that's singular in exact arithmetic, but
-whose determinant comes out tiny rather than zero due to rounding, e.g. `[[0.1, 0.3], [0.7, 2.1]]`.
+`n * PHP_FLOAT_EPSILON` times the largest of them, once each column is scaled so its largest element is 1. That also
+catches a matrix that's singular in exact arithmetic, but whose determinant comes out tiny rather than zero due to
+rounding, e.g. `[[0.1, 0.3], [0.7, 2.1]]`. A matrix that's merely badly scaled, e.g. `[[1, 1e20], [0, 1]]`, isn't
+rejected.
 
 **Returns:** `self` - New matrix representing the inverse.
 

@@ -276,6 +276,104 @@ class MatrixUnaryArithmeticTest extends TestCase
     }
 
     /**
+     * Data provider for testInvBadlyScaledColumns(): invertible matrices whose columns differ widely in scale, with
+     * their exact inverses.
+     *
+     * @return array<string, array{list<list<float>>, list<list<float>>}>
+     */
+    public static function invBadlyScaledColumnsProvider(): array
+    {
+        return [
+            'shear'      => [
+                [
+                    [1, 1e20],
+                    [0, 1],
+                ],
+                [
+                    [1, -1e20],
+                    [0, 1],
+                ],
+            ],
+            'swapped'    => [
+                [
+                    [1, 1e16],
+                    [1, 0],
+                ],
+                [
+                    [0, 1],
+                    [1e-16, -1e-16],
+                ],
+            ],
+            'shear, 4×4' => [
+                [
+                    [1, 1e20, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                ],
+                [
+                    [1, -1e20, 0, 0],
+                    [0, 1, 0, 0],
+                    [0, 0, 1, 0],
+                    [0, 0, 0, 1],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test inv() of a matrix that's only badly scaled by column isn't mistaken for a singular one.
+     *
+     * @param list<list<float>> $data The matrix.
+     * @param list<list<float>> $expected Its inverse.
+     */
+    #[DataProvider('invBadlyScaledColumnsProvider')]
+    public function testInvBadlyScaledColumns(array $data, array $expected): void
+    {
+        $this->assertTrue(Matrix::fromArray($data)->inv()->approxEqual(Matrix::fromArray($expected), absTol: 0.0));
+    }
+
+    /**
+     * Test inv() still rejects a singular matrix after its columns are scaled, e.g. one with a column far larger than
+     * the others, or a zero column.
+     *
+     * @param list<list<float>> $data The matrix.
+     */
+    #[DataProvider('invSingularScaledColumnsProvider')]
+    public function testInvSingularScaledColumnsThrows(array $data): void
+    {
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage('Cannot invert singular Matrix.');
+        Matrix::fromArray($data)->inv();
+    }
+
+    /**
+     * Data provider for testInvSingularScaledColumnsThrows().
+     *
+     * @return array<string, array{list<list<float>>}>
+     */
+    public static function invSingularScaledColumnsProvider(): array
+    {
+        return [
+            'rank 2, large column' => [
+                [
+                    [1, 2e10, 3],
+                    [4, 5e10, 6],
+                    [7, 8e10, 9],
+                ],
+            ],
+            'zero column, 4×4'     => [
+                [
+                    [1, 0, 2, 3],
+                    [4, 0, 5, 6],
+                    [7, 0, 8, 9],
+                    [1, 0, 1, 1],
+                ],
+            ],
+        ];
+    }
+
+    /**
      * Test inv() throws for a singular matrix larger than 3×3, inverted by LU decomposition.
      */
     public function testInvLargeSingularThrows(): void

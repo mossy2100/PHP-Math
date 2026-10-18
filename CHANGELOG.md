@@ -67,9 +67,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   cofactor expansion, which was O(n!): a 10×10 inverse took about 30 seconds, and now takes well under a millisecond.
   Matrices up to 3×3 still use the closed-form formulas, which give exact results where the arithmetic allows.
 - **`Matrix::inv()` detects near-singular matrices (breaking).** It throws `ArithmeticException` "Cannot invert singular
-  Matrix." if a pivot is negligible relative to its row, instead of only for an exactly zero determinant. Previously, a
-  matrix such as `[[0.1, 0.3], [0.7, 2.1]]`, singular but with a determinant of about 3e-17 due to rounding, gave an
-  inverse with elements around 1e16. The message was "Cannot invert Matrix with zero determinant."
+  Matrix." if a pivot is negligible relative to its row, once each column is scaled, instead of only for an exactly
+  zero determinant. Previously, a matrix such as `[[0.1, 0.3], [0.7, 2.1]]`, singular but with a determinant of about
+  3e-17 due to rounding, gave an inverse with elements around 1e16. The message was "Cannot invert Matrix with zero
+  determinant." A matrix that's merely badly scaled, e.g. `[[1, 1e20], [0, 1]]`, isn't rejected.
 - **The branch cuts of the inverse trigonometric and hyperbolic methods follow C99 (breaking).** On a cut, the sign of
   the zero part chooses the side, as in Python and NumPy. For example, `asin(2)` is now `π/2 + 1.317i`, instead of
   `π/2 - 1.317i`, and `new Complex(2, -0.0)->asin()` gives the other side.
