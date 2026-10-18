@@ -102,15 +102,55 @@ class ComplexInverseHyperbolicTest extends TestCase
     }
 
     /**
-     * Test acosh() throws when squaring the argument overflows.
+     * Data provider for testAcoshPrincipalValue(). The expected values are from Python's cmath.acosh().
+     *
+     * @return array<string, array{float, float, float, float}>
      */
-    public function testAcoshOverflowThrows(): void
+    public static function acoshPrincipalValueProvider(): array
     {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage(
-            'Cannot compute inverse hyperbolic cosine of the given Complex. The result would overflow.'
-        );
-        new Complex(1e200, 1e200)->acosh();
+        return [
+            'negative real'        => [-2.0, 0.0, 1.3169578969248166, 3.141592653589793],
+            'second quadrant'      => [-2.0, 0.1, 1.3188765472109005, 3.083953449538381],
+            'third quadrant'       => [-2.0, -0.1, 1.3188765472109005, -3.083953449538381],
+            'third quadrant 3, 4'  => [-3.0, -4.0, 2.305509031243477, -2.2047801924340735],
+            'second quadrant near' => [-0.5, 0.5, 0.5306375309525179, 2.0230747739460875],
+            'third quadrant 1, 1'  => [-1.0, -1.0, 1.0612750619050357, -2.2370357592874117],
+            'first quadrant'       => [1.0, 1.0, 1.0612750619050357, 0.9045568943023813],
+        ];
+    }
+
+    /**
+     * Test acosh() gives the principal value, whose real part is never negative, including for a negative real part.
+     */
+    #[DataProvider('acoshPrincipalValueProvider')]
+    public function testAcoshPrincipalValue(float $real, float $imag, float $expectedReal, float $expectedImag): void
+    {
+        $result = new Complex($real, $imag)->acosh();
+
+        $this->assertEqualsWithDelta($expectedReal, $result->real, EPSILON);
+        $this->assertEqualsWithDelta($expectedImag, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test acosh() of a large negative real number, where √(z² - 1) would cancel z exactly.
+     */
+    public function testAcoshLargeNegativeReal(): void
+    {
+        $result = new Complex(-1e10)->acosh();
+
+        $this->assertEqualsWithDelta(23.7189981105004, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(M_PI, $result->imaginary, EPSILON);
+    }
+
+    /**
+     * Test acosh() of a number whose square overflows, though the result is finite.
+     */
+    public function testAcoshLarge(): void
+    {
+        $result = new Complex(1e200, 1e200)->acosh();
+
+        $this->assertEqualsWithDelta(461.55673936964905, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(0.7853981633974484, $result->imaginary, EPSILON);
     }
 
     #endregion

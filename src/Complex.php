@@ -1061,6 +1061,8 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the inverse hyperbolic cosine of this complex number.
      *
+     * The result is the principal value, whose real part is never negative.
+     *
      * @return self A new complex number representing the inverse hyperbolic cosine of this complex number.
      * @throws OverflowException If the result is too large to represent as a float.
      * @see https://en.wikipedia.org/wiki/Inverse_hyperbolic_functions#Complex_arguments
@@ -1070,9 +1072,11 @@ final class Complex implements Stringable, ArrayAccess
         return self::calcWithOverflowMessage(
             'compute inverse hyperbolic cosine of the given Complex',
             function (): self {
-                // acosh(z) = ln(z + √(z² - 1))
-                $z2Minus1 = $this->mul($this)->sub(new self(1));
-                return $this->add($z2Minus1->sqrt())->ln();
+                // acosh(z) = ln(z + √(z + 1)·√(z - 1))
+                // Taking the two square roots separately gives the principal value. √(z² - 1) would lose track of
+                // which half-plane z is in, giving the negative of it whenever the real part of z is negative.
+                $root = $this->add(1.0)->sqrt()->mul($this->sub(1.0)->sqrt());
+                return $this->add($root)->ln();
             }
         );
     }

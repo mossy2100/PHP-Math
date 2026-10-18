@@ -114,6 +114,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   reducing, e.g. `1/6000000000 + 1/4000000000` threw. They now add the integer parts separately and the fractions with
   Knuth's gcd method, so they only overflow when the result does, except in rare cases where the denominators share a
   large common factor.
+- **`Complex::acosh()` gave the wrong result for any number with a negative real part.** It returned the negative of
+  the principal value, e.g. `acosh(-2)` was `-1.317 + πi` instead of `1.317 + πi`. It also threw "Cannot compute
+  logarithm of zero." for a large negative real number, e.g. `-1e10`, and `OverflowException` for numbers above about
+  1e154, e.g. `1e200 + 1e200i`, though the result is finite.
 
 ### Documentation
 
