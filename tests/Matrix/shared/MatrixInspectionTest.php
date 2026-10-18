@@ -392,19 +392,19 @@ class MatrixInspectionTest extends TestCase
         return [
             'too many rows'    => [
                 [1, 0, 3, 1],
-                'Invalid row range: 3 rows from row 1. Must be within rows 0-2.',
+                'Invalid row range: 1-3. Must be within 0-2.',
             ],
             'too many columns' => [
                 [0, 2, 1, 2],
-                'Invalid column range: 2 columns from column 2. Must be within columns 0-2.',
+                'Invalid column range: 2-3. Must be within 0-2.',
             ],
             'start beyond'     => [
                 [4, 0, 0, 0],
-                'Invalid row range: 0 rows from row 4. Must be within rows 0-2.',
+                'Invalid row: 4. Must be within 0-3.',
             ],
             'one row'          => [
                 [-1, 0, 1, 1],
-                'Invalid row range: 1 row from row -1. Must be within rows 0-2.',
+                'Invalid row range: -1--1. Must be within 0-2.',
             ],
             'negative count'   => [
                 [0, 0, -1, 1],
@@ -414,7 +414,7 @@ class MatrixInspectionTest extends TestCase
     }
 
     /**
-     * Test copy() describes an invalid region by its start and length, and the valid range.
+     * Test copy() describes an invalid region as an inclusive span, and the valid range.
      *
      * @param array{int, int, int, int} $args The row, column, row count and column count.
      * @param string $message The expected message.
@@ -433,7 +433,7 @@ class MatrixInspectionTest extends TestCase
     public function testCopyFromEmptyMatrixMessage(): void
     {
         $this->expectException(OutOfRangeException::class);
-        $this->expectExceptionMessage('Invalid row range: 1 row from row 0. The Matrix has no rows.');
+        $this->expectExceptionMessage('Invalid row range: 0-0. The Matrix has no rows.');
         new Matrix(0, 0)->copy(0, 0, 1, 1);
     }
 

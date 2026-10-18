@@ -1315,6 +1315,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     /**
      * Check a range of rows or columns, given by its start and length, lies within the Matrix.
      *
+     * The message shows the range as an inclusive span, e.g. "Invalid row range: 1-3. Must be within 0-2.". An empty
+     * range has no last row or column, so for that only the start is shown, and it may equal the size.
+     *
      * @param string $axis 'row' or 'column'.
      * @param int $start The first row or column in the range (0-based).
      * @param int $count The number of rows or columns in the range.
@@ -1327,13 +1330,20 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new OutOfRangeException("Invalid $axis count: $count. Must not be negative.");
         }
 
-        if ($start < 0 || $start + $count > $size) {
-            $what = $count === 1 ? $axis : "{$axis}s";
+        if ($start >= 0 && $start + $count <= $size) {
+            return;
+        }
+
+        if ($count === 0) {
             throw new OutOfRangeException(
-                "Invalid $axis range: $count $what from $axis $start. "
-                . ($size === 0 ? "The Matrix has no {$axis}s." : "Must be within {$axis}s 0-" . ($size - 1) . '.')
+                "Invalid $axis: $start. " . ($size === 0 ? 'Must be 0.' : "Must be within 0-$size.")
             );
         }
+
+        throw new OutOfRangeException(
+            "Invalid $axis range: $start-" . ($start + $count - 1) . '. '
+            . ($size === 0 ? "The Matrix has no {$axis}s." : 'Must be within 0-' . ($size - 1) . '.')
+        );
     }
 
     /**

@@ -75,9 +75,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   the zero part chooses the side, as in Python and NumPy. For example, `asin(2)` is now `π/2 + 1.317i`, instead of
   `π/2 - 1.317i`, and `new Complex(2, -0.0)->asin()` gives the other side.
 - **Index and range messages for `Vector` and `Matrix`** say when there's nothing to index, e.g. "Invalid index: 0. The
-  Vector is empty." instead of "Must be in the range 0--1.". `copy()` and `paste()` describe a range by its start and
-  length, e.g. "Invalid row range: 3 rows from row 1. Must be within rows 0-2.", instead of "1-4", which showed an
-  exclusive end, and a negative count gets its own message. The exception class (`OutOfRangeException`) is unchanged.
+  Vector is empty." instead of "Must be in the range 0--1.". `copy()` and `paste()` show a range's last row or column,
+  e.g. "Invalid row range: 1-3. Must be within 0-2.", instead of "1-4", which showed the one after it, and a negative
+  count gets its own message. The exception class (`OutOfRangeException`) is unchanged.
 
 ### Fixed
 
