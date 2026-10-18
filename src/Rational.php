@@ -682,18 +682,26 @@ final class Rational implements Stringable
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
+        // If |this| < |divisor|, the remainder is this Rational. abs(PHP_INT_MIN) is a float, which compare() handles
+        // exactly.
+        if ($this->abs()->compare(is_int($other) ? abs($other) : $other->abs()) < 0) {
+            return $this;
+        }
+
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
 
-        // Over the common denominator lcm(b, d), this Rational is A/lcm and the divisor is C/lcm, so the remainder is
-        // (A % C)/lcm.
-        $gcd = Integers::gcd($b, $d);
-        $bOverGcd = intdiv($b, $gcd);
+        // Over the common denominator lcm(b, d), this Rational is h/lcm and the divisor is k/lcm, where
+        // h = a·(d/g) and k = c·(b/g), so the remainder is (h % k)/lcm. h can overflow even when the remainder is
+        // small, so reduce a first: h % k = ((a % k)·(d/g)) % k.
+        $g = Integers::gcd($b, $d);
+        $bOverG = intdiv($b, $g);
         return self::calcWithOverflowMessage(
             'find the remainder of the given Rational numbers',
-            static fn () => new self(
-                Integers::mul($a, intdiv($d, $gcd)) % Integers::mul($c, $bOverGcd),
-                Integers::mul($bOverGcd, $d)
-            )
+            static function () use ($a, $c, $d, $g, $bOverG): self {
+                $k = Integers::mul($c, $bOverG);
+                $lcm = Integers::mul($bOverG, $d);
+                return new self(Integers::mul($a % $k, intdiv($d, $g)) % $k, $lcm);
+            }
         );
     }
 

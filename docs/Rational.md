@@ -715,7 +715,8 @@ $r->mod(-2);                  // -3/2
 **Throws:**
 
 - `ArithmeticException` if dividing by zero.
-- `OverflowException` if an intermediate value overflows an integer.
+- `OverflowException` if the remainder, in lowest terms, has a denominator too large for an `int`. In rare cases, it
+  also throws when an intermediate value overflows, though the remainder would fit.
 - `DomainException` if the result cannot be expressed as a Rational.
 
 ---
