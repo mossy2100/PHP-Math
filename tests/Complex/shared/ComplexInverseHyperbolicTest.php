@@ -66,6 +66,8 @@ class ComplexInverseHyperbolicTest extends TestCase
             'large imaginary'              => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
             'huge'                         => [1e200, 1e200, 461.55673936964905, 0.7853981633974483],
             'huge negative'                => [-1e300, -1e-300, -691.4686750787736, 0.0],
+            'large'                        => [1.0, 1e20, 46.74484904044086, 1.5707963267948966],
+            'near the float limit'         => [1.0, 1.5e308, 710.2948209308341, 1.5707963267948966],
             'imaginary cut, right side'    => [0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
             'imaginary cut, negative zero' => [-0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
         ];
@@ -240,6 +242,7 @@ class ComplexInverseHyperbolicTest extends TestCase
             'third quadrant'          => [-1.5, -2.5, -0.163481616851666, -1.2767950250211129],
             'fourth quadrant'         => [1.5, -2.5, 0.163481616851666, -1.2767950250211129],
             'tiny real'               => [1e-20, 0.0, 1e-20, 0.0],
+            'tiny'                    => [1e-20, 1e-20, 1e-20, 1e-20],
             'tiny imaginary'          => [0.0, 1e-20, 0.0, 1e-20],
             'large negative real'     => [-1e10, 0.0, -1e-10, 1.5707963267948966],
             'large imaginary'         => [0.0, 1e10, 0.0, 1.5707963266948965],

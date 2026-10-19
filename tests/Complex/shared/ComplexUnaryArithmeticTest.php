@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace OceanMoon\Math\Tests\Complex;
 
+use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
 use OverflowException;
@@ -120,6 +121,16 @@ class ComplexUnaryArithmeticTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot invert the given Complex. The result would overflow.');
         new Complex(1e-320)->inv();
+    }
+
+    /**
+     * Test inv() throws for zero.
+     */
+    public function testInvZeroThrows(): void
+    {
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage('Cannot divide by zero.');
+        new Complex()->inv();
     }
 
     #endregion
