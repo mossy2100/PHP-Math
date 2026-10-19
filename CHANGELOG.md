@@ -85,6 +85,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   and products with zero print `0`, not `-0`. Values that are equal now always give the same results: on a branch cut,
   the inverse functions return the value from the +0 side, e.g. `new Complex(2, -0.0)->asin()` is
   `1.5707963267949 + 1.3169578969248i`, as for `new Complex(2)`.
+- **Faster `Matrix` arithmetic.** The element-wise methods, `t()` and `mul()` work on plain arrays, so a 100×100
+  matrix product is about 8× faster, and the element-wise methods about 2×. Results are unchanged.
 
 ### Fixed
 

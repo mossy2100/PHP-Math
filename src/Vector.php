@@ -489,11 +489,12 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Calculate each element of the result as the dot product of this vector with a column of the matrix.
+        $rows = $other->toArray();
         $data = [];
         for ($j = 0; $j < $other->columnCount; $j++) {
             $sum = 0.0;
             for ($i = 0; $i < $this->count; $i++) {
-                $sum += $this->data[$i] * $other->get($i, $j);
+                $sum += $this->data[$i] * $rows[$i][$j];
             }
             $data[] = self::checkResult($sum, 'multiply the given Vector and Matrix');
         }

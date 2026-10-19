@@ -609,14 +609,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function neg(): self
     {
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($i, $j, -$this->data[$i]->get($j));
+        $rows = [];
+        foreach ($this->toArray() as $row) {
+            foreach ($row as $j => $value) {
+                $row[$j] = -$value;
             }
+            $rows[] = $row;
         }
 
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -631,18 +632,18 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function reciprocal(): self
     {
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $value = $this->data[$i]->get($j);
+        $rows = [];
+        foreach ($this->toArray() as $i => $row) {
+            foreach ($row as $j => $value) {
                 if ($value === 0.0) {
                     throw new ArithmeticException("Cannot compute reciprocal of zero at row $i, column $j.");
                 }
-                $result->set($i, $j, self::checkResult(1 / $value, 'compute reciprocal of the given Matrix'));
+                $row[$j] = self::checkResult(1 / $value, 'compute reciprocal of the given Matrix');
             }
+            $rows[] = $row;
         }
 
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -752,14 +753,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Add the matrices.
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $sum = $this->data[$i]->get($j) + $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($sum, 'add the given Matrices'));
+        $otherRows = $other->toArray();
+        $rows = [];
+        foreach ($this->toArray() as $i => $row) {
+            foreach ($row as $j => $value) {
+                $row[$j] = self::checkResult($value + $otherRows[$i][$j], 'add the given Matrices');
             }
+            $rows[] = $row;
         }
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -781,14 +783,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Subtract the matrices.
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $diff = $this->data[$i]->get($j) - $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($diff, 'subtract the given Matrices'));
+        $otherRows = $other->toArray();
+        $rows = [];
+        foreach ($this->toArray() as $i => $row) {
+            foreach ($row as $j => $value) {
+                $row[$j] = self::checkResult($value - $otherRows[$i][$j], 'subtract the given Matrices');
             }
+            $rows[] = $row;
         }
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -814,13 +817,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
             // Multiply each element of the matrix by the float.
             $operation = Stringify::prepEx('multiply the given Matrix by ?', $other);
-            $scaled = new self($this->rowCount, $this->columnCount);
-            for ($i = 0; $i < $this->rowCount; $i++) {
-                for ($j = 0; $j < $this->columnCount; $j++) {
-                    $scaled->set($i, $j, self::checkResult($this->data[$i]->get($j) * $other, $operation));
+            $rows = [];
+            foreach ($this->toArray() as $row) {
+                foreach ($row as $j => $value) {
+                    $row[$j] = self::checkResult($value * $other, $operation);
                 }
+                $rows[] = $row;
             }
-            return $scaled;
+            return self::fromRows($rows, $this->columnCount);
         }
 
         // Multiply matrix by a vector: Ax, treating the vector as a column vector.
@@ -833,16 +837,17 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             }
 
             // Calculate each element of the result as the dot product of a row with the vector.
-            $result = new Vector($this->rowCount);
-            for ($i = 0; $i < $this->rowCount; $i++) {
+            $vector = $other->toArray();
+            $data = [];
+            foreach ($this->toArray() as $row) {
                 $sum = 0.0;
-                for ($j = 0; $j < $this->columnCount; $j++) {
-                    $sum += $this->data[$i]->get($j) * $other->get($j);
+                foreach ($row as $j => $value) {
+                    $sum += $value * $vector[$j];
                 }
-                $result->set($i, self::checkResult($sum, 'multiply the given Matrix and Vector'));
+                $data[] = self::checkResult($sum, 'multiply the given Matrix and Vector');
             }
 
-            return $result;
+            return Vector::fromArray($data);
         }
 
         // Multiply matrix by a matrix.
@@ -854,19 +859,28 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             );
         }
 
-        // Multiply the matrices.
-        $result = new self($this->rowCount, $other->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $other->columnCount; $j++) {
-                $sum = 0.0;
-                for ($k = 0; $k < $this->columnCount; $k++) {
-                    $sum += $this->data[$i]->get($k) * $other->data[$k]->get($j);
+        // Multiply the matrices. Loop in i-k-j order, adding each element of a row of this matrix times the matching
+        // row of the other, which is faster in PHP than i-j-k. Each element is still summed in order of k, so the
+        // results are the same.
+        $otherRows = $other->toArray();
+        $columnCount = $other->columnCount;
+        $rows = [];
+        foreach ($this->toArray() as $thisRow) {
+            $row = array_fill(0, $columnCount, 0.0);
+            foreach ($thisRow as $k => $value) {
+                $otherRow = $otherRows[$k];
+                for ($j = 0; $j < $columnCount; $j++) {
+                    $row[$j] += $value * $otherRow[$j];
                 }
-                $result->set($i, $j, self::checkResult($sum, 'multiply the given Matrices'));
             }
+            $checkedRow = [];
+            foreach ($row as $sum) {
+                $checkedRow[] = self::checkResult($sum, 'multiply the given Matrices');
+            }
+            $rows[] = $checkedRow;
         }
 
-        return $result;
+        return self::fromRows($rows, $columnCount);
     }
 
     /**
@@ -892,13 +906,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
         // Divide each element of the matrix by the scalar.
         $operation = Stringify::prepEx('divide the given Matrix by ?', $scalar);
-        $scaled = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $scaled->set($i, $j, self::checkResult($this->data[$i]->get($j) / $scalar, $operation));
+        $rows = [];
+        foreach ($this->toArray() as $row) {
+            foreach ($row as $j => $value) {
+                $row[$j] = self::checkResult($value / $scalar, $operation);
             }
+            $rows[] = $row;
         }
-        return $scaled;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -920,15 +935,17 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Multiply the matrices element-wise.
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $product = $this->data[$i]->get($j) * $other->data[$i]->get($j);
-                $result->set($i, $j, self::checkResult($product, 'multiply the given Matrices element-wise'));
+        $otherRows = $other->toArray();
+        $rows = [];
+        foreach ($this->toArray() as $i => $row) {
+            foreach ($row as $j => $value) {
+                $product = $value * $otherRows[$i][$j];
+                $row[$j] = self::checkResult($product, 'multiply the given Matrices element-wise');
             }
+            $rows[] = $row;
         }
 
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     /**
@@ -951,19 +968,20 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         // Divide the matrices element-wise.
-        $result = new self($this->rowCount, $this->columnCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $divisor = $other->data[$i]->get($j);
+        $otherRows = $other->toArray();
+        $rows = [];
+        foreach ($this->toArray() as $i => $row) {
+            foreach ($row as $j => $value) {
+                $divisor = $otherRows[$i][$j];
                 if ($divisor === 0.0) {
                     throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
                 }
-                $quotient = $this->data[$i]->get($j) / $divisor;
-                $result->set($i, $j, self::checkResult($quotient, 'divide the given Matrices element-wise'));
+                $row[$j] = self::checkResult($value / $divisor, 'divide the given Matrices element-wise');
             }
+            $rows[] = $row;
         }
 
-        return $result;
+        return self::fromRows($rows, $this->columnCount);
     }
 
     #endregion
@@ -1044,14 +1062,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function t(): self
     {
-        $result = new self($this->columnCount, $this->rowCount);
-        for ($i = 0; $i < $this->rowCount; $i++) {
-            for ($j = 0; $j < $this->columnCount; $j++) {
-                $result->set($j, $i, $this->data[$i]->get($j));
-            }
+        // Each row of the result is a column of this matrix.
+        $thisRows = $this->toArray();
+        $rows = [];
+        for ($j = 0; $j < $this->columnCount; $j++) {
+            $rows[] = array_column($thisRows, $j);
         }
 
-        return $result;
+        return self::fromRows($rows, $this->rowCount);
     }
 
     /**
@@ -1416,6 +1434,20 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         return $value;
+    }
+
+    /**
+     * Create a matrix from rows of finite floats.
+     *
+     * Unlike fromArray(), this keeps the column count when there are no rows.
+     *
+     * @param list<list<float>> $rows The rows.
+     * @param int $columnCount The number of columns, used when there are no rows.
+     * @return self The new matrix.
+     */
+    private static function fromRows(array $rows, int $columnCount): self
+    {
+        return $rows === [] ? new self(0, $columnCount) : self::fromArray($rows);
     }
 
     /**
