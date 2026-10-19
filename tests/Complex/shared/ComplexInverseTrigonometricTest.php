@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace OceanMoon\Math\Tests\Complex;
 
 use OceanMoon\Core\Exceptions\ArithmeticException;
+use OceanMoon\Core\Floats;
 use OceanMoon\Core\Traits\Asserts\FloatAssertions;
 use OceanMoon\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Random\Engine\Mt19937;
+use Random\Randomizer;
 
 #[CoversClass(Complex::class)]
 class ComplexInverseTrigonometricTest extends TestCase
@@ -86,6 +89,14 @@ class ComplexInverseTrigonometricTest extends TestCase
         $this->assertApproxEqual($expectedImag, $result->imaginary, 1e-14, 0.0);
     }
 
+    /**
+     * Test asin() matches PHP's asin() on 5,000 real arguments strictly between -1 and 1.
+     */
+    public function testAsinMatchesRealFunction(): void
+    {
+        $this->assertMatchesRealFunction('asin', self::randomInsideUnit(...));
+    }
+
     #endregion
 
     #region Method acos() tests.
@@ -159,6 +170,14 @@ class ComplexInverseTrigonometricTest extends TestCase
 
         $this->assertApproxEqual($expectedReal, $result->real, 1e-14, 0.0);
         $this->assertApproxEqual($expectedImag, $result->imaginary, 1e-14, 0.0);
+    }
+
+    /**
+     * Test acos() matches PHP's acos() on 5,000 real arguments strictly between -1 and 1.
+     */
+    public function testAcosMatchesRealFunction(): void
+    {
+        $this->assertMatchesRealFunction('acos', self::randomInsideUnit(...));
     }
 
     #endregion
@@ -254,6 +273,83 @@ class ComplexInverseTrigonometricTest extends TestCase
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage($message);
         new Complex(0, $imag)->atan();
+    }
+
+    /**
+     * Test atan() matches PHP's atan() on 5,000 real arguments from 1e-300 to 1e300 in magnitude, of both signs.
+     */
+    public function testAtanMatchesRealFunction(): void
+    {
+        $this->assertMatchesRealFunction('atan', self::randomReal(...));
+    }
+
+    #endregion
+
+    #region Helper methods
+
+    /**
+     * Assert a Complex method matches PHP's function of the same name on real arguments.
+     *
+     * Each result must be real, and within a relative difference of 4 × PHP_FLOAT_EPSILON of PHP's. The arguments are
+     * seeded, so a failure is reproducible, and every mismatch is listed.
+     *
+     * @param 'asin'|'acos'|'atan'|'asinh'|'acosh'|'atanh' $function The function name.
+     * @param callable(Randomizer): float $generate Generates one argument.
+     */
+    private function assertMatchesRealFunction(string $function, callable $generate): void
+    {
+        $randomizer = new Randomizer(new Mt19937(1));
+        $mismatches = [];
+        for ($i = 0; $i < 5000; $i++) {
+            $x = $generate($randomizer);
+            $result = new Complex($x)->$function();
+            $expected = $function($x);
+            if (
+                $result->imaginary !== 0.0
+                || !Floats::approxEqual($expected, $result->real, 4 * PHP_FLOAT_EPSILON, 0.0)
+            ) {
+                $mismatches[] = "$function($x) gave $result, expected $expected.";
+            }
+        }
+
+        $this->assertSame([], $mismatches);
+    }
+
+    /**
+     * Generate 1 or -1.
+     *
+     * @param Randomizer $randomizer The seeded randomizer.
+     * @return float The sign.
+     */
+    private static function randomSign(Randomizer $randomizer): float
+    {
+        return $randomizer->getInt(0, 1) === 0 ? 1.0 : -1.0;
+    }
+
+    /**
+     * Generate a real number from 1e-300 to 1e300 in magnitude, of either sign.
+     *
+     * @param Randomizer $randomizer The seeded randomizer.
+     * @return float The number.
+     */
+    private static function randomReal(Randomizer $randomizer): float
+    {
+        return self::randomSign($randomizer) * 10 ** $randomizer->getFloat(-300, 300);
+    }
+
+    /**
+     * Generate a real number strictly between -1 and 1: half from 1e-300 to 1 in magnitude, and half within 1e-15 of
+     * ±1.
+     *
+     * @param Randomizer $randomizer The seeded randomizer.
+     * @return float The number.
+     */
+    private static function randomInsideUnit(Randomizer $randomizer): float
+    {
+        $magnitude = $randomizer->getInt(0, 1) === 0
+            ? 10 ** $randomizer->getFloat(-300, 0)
+            : 1 - 10 ** $randomizer->getFloat(-15, 0);
+        return self::randomSign($randomizer) * $magnitude;
     }
 
     #endregion
