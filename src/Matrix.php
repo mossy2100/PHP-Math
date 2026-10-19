@@ -96,6 +96,19 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         $this->data = $data;
     }
 
+    /**
+     * Deep-clone the matrix data.
+     *
+     * PHP's default shallow clone copies the $data array itself but not the Vector objects inside it, so without
+     * this, a cloned Matrix would share its row Vectors with the original -- mutating a row of one (via set(),
+     * setRow(), or offsetSet()) would silently mutate the other too, since row content is always mutated in place
+     * (see the $data property doc comment). pow() relies on clone producing a fully independent Matrix.
+     */
+    public function __clone(): void
+    {
+        $this->data = array_map(static fn (Vector $v): Vector => clone $v, $this->data);
+    }
+
     #endregion
 
     #region Factory methods
@@ -197,19 +210,6 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $result->set($i, $i, 1);
         }
         return $result;
-    }
-
-    /**
-     * Deep-clone the matrix data.
-     *
-     * PHP's default shallow clone copies the $data array itself but not the Vector objects inside it, so without
-     * this, a cloned Matrix would share its row Vectors with the original -- mutating a row of one (via set(),
-     * setRow(), or offsetSet()) would silently mutate the other too, since row content is always mutated in place
-     * (see the $data property doc comment). pow() relies on clone producing a fully independent Matrix.
-     */
-    public function __clone(): void
-    {
-        $this->data = array_map(static fn (Vector $v): Vector => clone $v, $this->data);
     }
 
     #endregion
@@ -1192,7 +1192,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
     #endregion
 
-    #region ArrayAccess methods
+    #region ArrayAccess implementation
 
     /**
      * Check if a row offset exists.
@@ -1286,7 +1286,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      *
      * @return Traversable<int, Vector> The iterator.
      */
-    #[Override]
+    #[Override] // IteratorAggregate
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->data);

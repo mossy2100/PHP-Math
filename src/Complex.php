@@ -167,7 +167,7 @@ final class Complex implements Stringable, ArrayAccess
      *
      * Supports various formats:
      * - Real numbers: "5", "-3.14", "0"
-     * - Pure imaginary: "i", "-i", "3i", "-2.5i", "i"
+     * - Pure imaginary: "i", "-i", "3i", "-2.5i"
      * - Complex: "3+4i", "5-2i", "-1+i", "2.5-3.7i"
      * - Spaces allowed: "3 + 4i", "5 - 2i"
      * - Either order: "4i+3", "-2i+5"
@@ -198,10 +198,10 @@ final class Complex implements Stringable, ArrayAccess
             [$entire, $imagSign, $imagVal] = $matches;
             $realSign = '';
             $realVal = 0;
-        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)i\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)i$/", $str, $matches)) {
             // Pattern: ±a ± bi (real + imag)
             [$entire, $realSign, $realVal, $imagSign, $imagVal] = $matches;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i\s*([+-])\s*($rxNum)\$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i\s*([+-])\s*($rxNum)$/", $str, $matches)) {
             // Pattern: ±bi ± a (imag + real)
             [$entire, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
@@ -1159,7 +1159,7 @@ final class Complex implements Stringable, ArrayAccess
 
     #endregion
 
-    #region ArrayAccess methods
+    #region ArrayAccess implementation
 
     /**
      * Check if the complex number has a given offset. Only 0 and 1 are valid offsets.

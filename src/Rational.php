@@ -774,6 +774,7 @@ final class Rational implements Stringable
      * Equivalent to pow(2), but more readable as a standalone call.
      *
      * @return self A new Rational representing the square of this number.
+     * @throws OverflowException If integer overflow occurs.
      */
     public function sqr(): self
     {

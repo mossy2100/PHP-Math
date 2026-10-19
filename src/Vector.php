@@ -727,7 +727,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
     #endregion
 
-    #region ArrayAccess methods
+    #region ArrayAccess implementation
 
     /**
      * Check if an offset exists.
@@ -809,7 +809,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      *
      * @return Traversable<int, float> The iterator.
      */
-    #[Override]
+    #[Override] // IteratorAggregate
     public function getIterator(): Traversable
     {
         return new ArrayIterator($this->data);
