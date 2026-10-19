@@ -50,7 +50,7 @@ PHP's own naming pattern for mathematical constants, such as `M_PI`, `M_E`, etc.
 ```php
 use const OceanMoon\Math\M_I;
 
-$result = M_I->pow(2);  // -1 + 0i
+$result = M_I->pow(2);  // -1
 ```
 
 ---

@@ -62,6 +62,22 @@ composer require oceanmoon/math
 
 ---
 
+## Quick start
+
+```php
+use OceanMoon\Math\Complex;
+use OceanMoon\Math\Rational;
+
+$z = new Complex(3, 4);
+echo $z->mul(new Complex(1, -2));    // 11 - 2i
+echo $z->magnitude;                  // 5
+
+$r = Rational::fromString('3/4');
+echo $r->add(new Rational(1, 6));    // 11/12
+```
+
+---
+
 ## Strict Typing
 
 Strict typing (`declare(strict_types=1)`) is used throughout the library, with type hints on every property, parameter,
@@ -155,8 +171,8 @@ Mutable two-dimensional matrix with support for:
 
 ## [Globals](docs/Globals.md)
 
-`M_I`, the imaginary unit constant (namespaced to `OceanMoon\Math`), which is more convenient to use a global than as a
-class member.
+`M_I`, the imaginary unit constant (namespaced to `OceanMoon\Math`), which is more convenient to use as a global than as
+a class member.
 
 ---
 

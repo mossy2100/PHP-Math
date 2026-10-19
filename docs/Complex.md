@@ -80,9 +80,9 @@ A negative zero (-0.0) in either part is stored as 0.0.
 
 ```php
 $z1 = new Complex(3, 4);        // 3 + 4i
-$z2 = new Complex(5);           // 5 + 0i (real number)
-$z3 = new Complex(0, 2);        // 0 + 2i (pure imaginary)
-$z4 = new Complex();            // 0 + 0i (zero)
+$z2 = new Complex(5);           // 5 (real number)
+$z3 = new Complex(0, 2);        // 2i (pure imaginary)
+$z4 = new Complex();            // 0 (zero)
 ```
 
 **Throws:**
@@ -505,7 +505,7 @@ formula, for better precision and performance.
 $z = new Complex(3, 4);
 $result = $z->pow(2);  // -7 + 24i
 
-$result = M_I->pow(2);  // -1 + 0i, using the imaginary unit constant - see Globals.md
+$result = M_I->pow(2);  // -1, using the imaginary unit constant - see Globals.md
 ```
 
 **Special cases:**
@@ -591,7 +591,7 @@ Uses a numerically stable formula rather than the polar form, so the result is e
 
 ```php
 $z = new Complex(-1);
-$result = $z->sqrt();  // 0 + 1i
+$result = $z->sqrt();  // i
 
 $z = new Complex(0, 2);
 $result = $z->sqrt();  // 1 + 1i
@@ -618,7 +618,7 @@ Calculate e raised to the power of the complex number.
 
 ```php
 $z = new Complex(0, M_PI);
-$result = $z->exp();  // -1 + 0i (Euler's identity)
+$result = $z->exp();  // -1 (Euler's identity)
 ```
 
 ### ln()
@@ -650,7 +650,7 @@ Calculate logarithm with specified base using change of base formula: log_b(z) =
 
 ```php
 $z = new Complex(8);
-$result = $z->log(2);  // 3 + 0i (log₂(8) = 3)
+$result = $z->log(2);  // 3 (log₂(8) = 3)
 
 // Negative real arguments return the principal complex value.
 $negThis = (new Complex(-8))->log(2);  // 3 + iπ/ln 2
@@ -689,7 +689,7 @@ $sin = $z->sin();
 $cos = $z->cos();
 $tan = $z->tan();
 
-$tan = new Complex(0, 1000)->tan();  // 0 + 1i
+$tan = new Complex(0, 1000)->tan();  // i
 ```
 
 ---
@@ -752,7 +752,7 @@ $sinh = $z->sinh();
 $cosh = $z->cosh();
 $tanh = $z->tanh();
 
-$tanh = new Complex(1000, 1)->tanh();  // 1 + 0i
+$tanh = new Complex(1000, 1)->tanh();  // 1
 ```
 
 ---
@@ -899,11 +899,11 @@ use const OceanMoon\Core\M_TAU;
 
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
-$result = $z->exp();  // -1 + 0i
+$result = $z->exp();  // -1
 
 // e^(iτ) = 1
 $z = new Complex(0, M_TAU);
-$result = $z->exp();  // 1 + 0i
+$result = $z->exp();  // 1
 ```
 
 ### Finding Roots
@@ -931,7 +931,7 @@ $cos = $z->cos();
 // Verify Pythagorean identity: sin²(z) + cos²(z) = 1
 $sin2 = $sin->sqr();
 $cos2 = $cos->sqr();
-$sum = $sin2->add($cos2);  // 1 + 0i
+$sum = $sin2->add($cos2);  // 1
 ```
 
 ---
