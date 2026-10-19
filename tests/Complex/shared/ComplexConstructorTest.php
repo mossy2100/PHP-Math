@@ -53,6 +53,18 @@ class ComplexConstructorTest extends TestCase
     }
 
     /**
+     * Test the constructor stores negative zeros as positive zeros. assertSame() treats -0.0 and 0.0 as equal, so
+     * compare the strings, where -0.0 is "-0".
+     */
+    public function testConstructorNormalizesNegativeZero(): void
+    {
+        $z = new Complex(-0.0, -0.0);
+        $this->assertSame('0', (string) $z->real);
+        $this->assertSame('0', (string) $z->imaginary);
+        $this->assertSame('0', (string) $z);
+    }
+
+    /**
      * Test constructor throws for INF real part.
      */
     public function testConstructorInfRealThrows(): void

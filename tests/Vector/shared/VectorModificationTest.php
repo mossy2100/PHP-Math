@@ -36,6 +36,17 @@ class VectorModificationTest extends TestCase
     }
 
     /**
+     * Test set() and array-style assignment store negative zeros as positive zeros.
+     */
+    public function testSetNormalizesNegativeZero(): void
+    {
+        $v = Vector::fromArray([1, 2]);
+        $v->set(0, -0.0);
+        $v[1] = -0.0;
+        $this->assertSame(['0', '0'], array_map(strval(...), $v->toArray()));
+    }
+
+    /**
      * Test set() with a negative index throws OutOfRangeException.
      */
     public function testSetWithNegativeIndexThrows(): void

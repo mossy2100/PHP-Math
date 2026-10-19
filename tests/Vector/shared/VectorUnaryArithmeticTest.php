@@ -35,6 +35,16 @@ class VectorUnaryArithmeticTest extends TestCase
         $this->assertSame([0.0, 0.0, 0.0], $result->toArray());
     }
 
+    /**
+     * Test negating zeros doesn't give negative zeros. assertSame() treats -0.0 and 0.0 as equal, so compare the
+     * strings, where -0.0 is "-0".
+     */
+    public function testNegHasNoNegativeZeros(): void
+    {
+        $result = Vector::fromArray([0, 1])->neg();
+        $this->assertSame(['0', '-1'], array_map(strval(...), $result->toArray()));
+    }
+
     #endregion
 
     #region Method reciprocal() tests.

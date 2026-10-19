@@ -20,7 +20,8 @@ The `Matrix` class provides a complete implementation of matrix arithmetic with 
 - String representation using box-drawing characters
 - Support for n⨉0 and 0⨉n empty matrices
 
-Matrix data is stored privately to prevent non-rectangular or non-numeric mutation.
+Matrix data is stored privately to prevent non-rectangular or non-numeric mutation. Elements never hold a negative
+zero: -0.0 is stored as 0.0.
 
 ---
 

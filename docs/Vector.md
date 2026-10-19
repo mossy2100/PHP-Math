@@ -23,6 +23,8 @@ Vectors are directionless (neither row nor column). When converted to a `Matrix`
 
 Vectors with a count of 0 are allowed.
 
+Elements never hold a negative zero: -0.0 is stored as 0.0.
+
 ---
 
 ## Properties

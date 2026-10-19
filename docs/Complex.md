@@ -74,6 +74,8 @@ Create a new complex number from real and imaginary parts.
 - `$real` (float) - The real part (default: 0).
 - `$imag` (float) - The imaginary part (default: 0).
 
+A negative zero (-0.0) in either part is stored as 0.0.
+
 **Examples:**
 
 ```php
@@ -705,10 +707,10 @@ public function atan(): self;
 Calculate inverse trigonometric functions. Each returns the principal value, accurate to within a few ulps for any
 argument, and never overflows. They use the algorithms of Hull, Fairgrieve and Tang (1997), as in FreeBSD's `catrig.c`.
 
-On a branch cut, the sign of the zero part chooses the side, as in C99, Python and NumPy:
+On a branch cut, the result is the limit from the +0 side, since Complex doesn't store negative zeros:
 
-- `asin()` and `acos()`: the real axis outside [-1, 1], where the imaginary part's sign decides.
-- `atan()`: the imaginary axis outside [-i, i], where the real part's sign decides.
+- `asin()` and `acos()`: the real axis outside [-1, 1], approached from above.
+- `atan()`: the imaginary axis outside [-i, i], approached from the right.
 
 **Throws:** `ArithmeticException` from `atan()` at i or -i, where it's undefined.
 
@@ -721,7 +723,6 @@ $acos = $z->acos();
 $atan = $z->atan();
 
 echo new Complex(2)->asin();        // 1.5707963267949 + 1.3169578969248i
-echo new Complex(2, -0.0)->asin();  // 1.5707963267949 - 1.3169578969248i
 echo new Complex(1e200)->asin();    // 1.5707963267949 + 461.21016577937i
 ```
 
@@ -770,11 +771,10 @@ Calculate inverse hyperbolic functions. Each returns the principal value, accura
 argument, and never overflows. `acosh()`'s real part is never negative. They use the same algorithms as the inverse
 trigonometric methods.
 
-On a branch cut, the sign of the zero part chooses the side, as in C99, Python and NumPy:
+On a branch cut, the result is the limit from the +0 side, since Complex doesn't store negative zeros:
 
-- `asinh()`: the imaginary axis outside [-i, i], where the real part's sign decides.
-- `acosh()`: the real axis below 1, and `atanh()`: the real axis outside [-1, 1], where the imaginary part's sign
-  decides.
+- `asinh()`: the imaginary axis outside [-i, i], approached from the right.
+- `acosh()`: the real axis below 1, and `atanh()`: the real axis outside [-1, 1], approached from above.
 
 **Throws:** `ArithmeticException` from `atanh()` at 1 or -1, where it's undefined.
 

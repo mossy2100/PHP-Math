@@ -114,6 +114,8 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Create a new complex number.
      *
+     * Negative zeros are stored as positive zeros, so values that are equal always give the same results.
+     *
      * @param float $real The real part.
      * @param float $imag The imaginary part.
      * @throws DomainException If either part is not finite (±INF or NAN).
@@ -132,8 +134,8 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Set the properties.
-        $this->real = $real;
-        $this->imaginary = $imag;
+        $this->real = Floats::normalizeZero($real);
+        $this->imaginary = Floats::normalizeZero($imag);
 
         if ($imag === 0.0) {
             $this->magnitude = abs($real);
@@ -671,12 +673,12 @@ final class Complex implements Stringable, ArrayAccess
             ];
         }
 
-        // Handle degree 2. Use sqrt(), so the results agree. Adding 0.0 turns a negative zero into a positive zero.
+        // Handle degree 2. Use sqrt(), so the results agree.
         if ($degree === 2) {
             $root = $this->sqrt();
             return [
                 $root,
-                new self(-$root->real + 0.0, -$root->imaginary + 0.0),
+                $root->neg(),
             ];
         }
 

@@ -44,6 +44,15 @@ class ComplexUnaryArithmeticTest extends TestCase
     }
 
     /**
+     * Test negating zero, or multiplying a negative number by zero, doesn't give a negative zero.
+     */
+    public function testNegOfZeroHasNoNegativeZero(): void
+    {
+        $this->assertSame('0', (string) new Complex(0)->neg());
+        $this->assertSame('0', (string) new Complex(-1)->mul(0.0));
+    }
+
+    /**
      * Test neg() does not modify the original (immutability).
      */
     public function testNegDoesNotMutate(): void

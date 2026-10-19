@@ -55,6 +55,15 @@ class VectorFactoryTest extends TestCase
     }
 
     /**
+     * Test fromArray() stores negative zeros as positive zeros.
+     */
+    public function testFromArrayNormalizesNegativeZero(): void
+    {
+        $v = Vector::fromArray([-0.0, 1]);
+        $this->assertSame(['0', '1'], array_map(strval(...), $v->toArray()));
+    }
+
+    /**
      * Data provider for non-numeric element values.
      *
      * @return array<string, list<mixed>>

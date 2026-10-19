@@ -82,6 +82,15 @@ class VectorLinearAlgebraTest extends TestCase
     }
 
     /**
+     * Test the cross product doesn't give negative zeros. Here the y element is 0 × -1 - 0 × 0 = -0.0 - 0.0.
+     */
+    public function testCrossHasNoNegativeZeros(): void
+    {
+        $result = Vector::fromArray([0, 0, -1])->cross(Vector::fromArray([0, 1, 0]));
+        $this->assertSame(['1', '0', '0'], array_map(strval(...), $result->toArray()));
+    }
+
+    /**
      * Test cross product with first vector not size 3 throws LengthException.
      */
     public function testCrossWithFirstVectorNotSize3Throws(): void

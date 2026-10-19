@@ -721,9 +721,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             for ($j = 0; $j < $n; $j++) {
                 $minor = $scaled->getMinor($i, $j);
                 $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * self::calcDet($minor);
-                // Note: transposed. Normalize, as negating a zero cofactor gives -0.0.
-                $element = self::checkResult($cofactor / $det / $scale, 'invert the given Matrix');
-                $adjugate->set($j, $i, Floats::normalizeZero($element));
+                // Note: transposed.
+                $adjugate->set($j, $i, self::checkResult($cofactor / $det / $scale, 'invert the given Matrix'));
             }
         }
 
@@ -1614,9 +1613,9 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 $x[$i] = $sum / $lu[$i][$i];
             }
 
-            // Store the column. Normalize, as the substitutions can give -0.0.
+            // Store the column.
             for ($i = 0; $i < $n; $i++) {
-                $inverse->set($i, $col, Floats::normalizeZero(self::checkResult($x[$i], 'invert the given Matrix')));
+                $inverse->set($i, $col, self::checkResult($x[$i], 'invert the given Matrix'));
             }
         }
 

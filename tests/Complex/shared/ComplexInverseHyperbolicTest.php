@@ -56,18 +56,18 @@ class ComplexInverseHyperbolicTest extends TestCase
     public static function asinhReferenceProvider(): array
     {
         return [
-            'first quadrant'            => [1.5, 2.5, 1.7501487613175148, 1.0033627117332509],
-            'second quadrant'           => [-1.5, 2.5, -1.7501487613175148, 1.0033627117332509],
-            'third quadrant'            => [-1.5, -2.5, -1.7501487613175148, -1.0033627117332509],
-            'fourth quadrant'           => [1.5, -2.5, 1.7501487613175148, -1.0033627117332509],
-            'tiny real'                 => [1e-20, 0.0, 1e-20, 0.0],
-            'tiny imaginary'            => [0.0, 1e-20, 0.0, 1e-20],
-            'large negative real'       => [-1e10, 0.0, -23.7189981105004, 0.0],
-            'large imaginary'           => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
-            'huge'                      => [1e200, 1e200, 461.55673936964905, 0.7853981633974483],
-            'huge negative'             => [-1e300, -1e-300, -691.4686750787736, -0.0],
-            'imaginary cut, right side' => [0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
-            'imaginary cut, left side'  => [-0.0, 2.0, -1.3169578969248166, 1.5707963267948966],
+            'first quadrant'               => [1.5, 2.5, 1.7501487613175148, 1.0033627117332509],
+            'second quadrant'              => [-1.5, 2.5, -1.7501487613175148, 1.0033627117332509],
+            'third quadrant'               => [-1.5, -2.5, -1.7501487613175148, -1.0033627117332509],
+            'fourth quadrant'              => [1.5, -2.5, 1.7501487613175148, -1.0033627117332509],
+            'tiny real'                    => [1e-20, 0.0, 1e-20, 0.0],
+            'tiny imaginary'               => [0.0, 1e-20, 0.0, 1e-20],
+            'large negative real'          => [-1e10, 0.0, -23.7189981105004, 0.0],
+            'large imaginary'              => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
+            'huge'                         => [1e200, 1e200, 461.55673936964905, 0.7853981633974483],
+            'huge negative'                => [-1e300, -1e-300, -691.4686750787736, 0.0],
+            'imaginary cut, right side'    => [0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
+            'imaginary cut, negative zero' => [-0.0, 2.0, 1.3169578969248166, 1.5707963267948966],
         ];
     }
 
@@ -85,13 +85,14 @@ class ComplexInverseHyperbolicTest extends TestCase
     }
 
     /**
-     * Test asinh() gives an imaginary part that underflows to zero with the sign of the argument's imaginary part.
+     * Test asinh() gives a positive zero when the imaginary part underflows, as Complex doesn't store negative zeros.
      */
-    public function testAsinhUnderflowedImaginaryPartKeepsSign(): void
+    public function testAsinhUnderflowedImaginaryPartIsPositiveZero(): void
     {
         $result = new Complex(1e75, -1e-300)->asinh();
 
-        $this->assertTrue(Floats::isNegativeZero($result->imaginary));
+        $this->assertSame(0.0, $result->imaginary);
+        $this->assertFalse(Floats::isNegativeZero($result->imaginary));
     }
 
     #endregion
@@ -165,18 +166,18 @@ class ComplexInverseHyperbolicTest extends TestCase
     public static function acoshReferenceProvider(): array
     {
         return [
-            'first quadrant'       => [1.5, 2.5, 1.777662377506645, 1.0552478910599898],
-            'second quadrant'      => [-1.5, 2.5, 1.777662377506645, 2.0863447625298033],
-            'third quadrant'       => [-1.5, -2.5, 1.777662377506645, -2.0863447625298033],
-            'fourth quadrant'      => [1.5, -2.5, 1.777662377506645, -1.0552478910599898],
-            'tiny real'            => [1e-20, 0.0, 0.0, 1.5707963267948966],
-            'tiny imaginary'       => [0.0, 1e-20, 1e-20, 1.5707963267948966],
-            'large negative real'  => [-1e10, 0.0, 23.7189981105004, 3.141592653589793],
-            'large imaginary'      => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
-            'huge'                 => [1e200, 1e200, 461.55673936964905, 0.7853981633974484],
-            'huge negative'        => [-1e300, -1e-300, 691.4686750787736, -3.141592653589793],
-            'real cut, upper side' => [-2.0, 0.0, 1.3169578969248166, 3.141592653589793],
-            'real cut, lower side' => [-2.0, -0.0, 1.3169578969248166, -3.141592653589793],
+            'first quadrant'          => [1.5, 2.5, 1.777662377506645, 1.0552478910599898],
+            'second quadrant'         => [-1.5, 2.5, 1.777662377506645, 2.0863447625298033],
+            'third quadrant'          => [-1.5, -2.5, 1.777662377506645, -2.0863447625298033],
+            'fourth quadrant'         => [1.5, -2.5, 1.777662377506645, -1.0552478910599898],
+            'tiny real'               => [1e-20, 0.0, 0.0, 1.5707963267948966],
+            'tiny imaginary'          => [0.0, 1e-20, 1e-20, 1.5707963267948966],
+            'large negative real'     => [-1e10, 0.0, 23.7189981105004, 3.141592653589793],
+            'large imaginary'         => [0.0, 1e10, 23.7189981105004, 1.5707963267948966],
+            'huge'                    => [1e200, 1e200, 461.55673936964905, 0.7853981633974484],
+            'huge negative'           => [-1e300, -1e-300, 691.4686750787736, -3.141592653589793],
+            'real cut, upper side'    => [-2.0, 0.0, 1.3169578969248166, 3.141592653589793],
+            'real cut, negative zero' => [-2.0, -0.0, 1.3169578969248166, 3.141592653589793],
         ];
     }
 
@@ -234,19 +235,19 @@ class ComplexInverseHyperbolicTest extends TestCase
     public static function atanhReferenceProvider(): array
     {
         return [
-            'first quadrant'       => [1.5, 2.5, 0.163481616851666, 1.2767950250211129],
-            'second quadrant'      => [-1.5, 2.5, -0.163481616851666, 1.2767950250211129],
-            'third quadrant'       => [-1.5, -2.5, -0.163481616851666, -1.2767950250211129],
-            'fourth quadrant'      => [1.5, -2.5, 0.163481616851666, -1.2767950250211129],
-            'tiny real'            => [1e-20, 0.0, 1e-20, 0.0],
-            'tiny imaginary'       => [0.0, 1e-20, 0.0, 1e-20],
-            'large negative real'  => [-1e10, 0.0, -1e-10, 1.5707963267948966],
-            'large imaginary'      => [0.0, 1e10, 0.0, 1.5707963266948965],
-            'huge'                 => [1e200, 1e200, 5e-201, 1.5707963267948966],
-            'huge negative'        => [-1e300, -1e-300, -1e-300, -1.5707963267948966],
-            'real cut, upper side' => [2.0, 0.0, 0.5493061443340549, 1.5707963267948966],
-            'real cut, lower side' => [2.0, -0.0, 0.5493061443340549, -1.5707963267948966],
-            'next to 1'            => [1.0, 1e-320, 368.7601940357669, 0.7853981633974483],
+            'first quadrant'          => [1.5, 2.5, 0.163481616851666, 1.2767950250211129],
+            'second quadrant'         => [-1.5, 2.5, -0.163481616851666, 1.2767950250211129],
+            'third quadrant'          => [-1.5, -2.5, -0.163481616851666, -1.2767950250211129],
+            'fourth quadrant'         => [1.5, -2.5, 0.163481616851666, -1.2767950250211129],
+            'tiny real'               => [1e-20, 0.0, 1e-20, 0.0],
+            'tiny imaginary'          => [0.0, 1e-20, 0.0, 1e-20],
+            'large negative real'     => [-1e10, 0.0, -1e-10, 1.5707963267948966],
+            'large imaginary'         => [0.0, 1e10, 0.0, 1.5707963266948965],
+            'huge'                    => [1e200, 1e200, 5e-201, 1.5707963267948966],
+            'huge negative'           => [-1e300, -1e-300, -1e-300, -1.5707963267948966],
+            'real cut, upper side'    => [2.0, 0.0, 0.5493061443340549, 1.5707963267948966],
+            'real cut, negative zero' => [2.0, -0.0, 0.5493061443340549, 1.5707963267948966],
+            'next to 1'               => [1.0, 1e-320, 368.7601940357669, 0.7853981633974483],
         ];
     }
 

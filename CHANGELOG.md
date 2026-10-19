@@ -81,6 +81,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 - **`Matrix::copy()` and `paste()` require a valid start row and column, even for an empty region (breaking).**
   Previously a start equal to the row or column count was accepted when nothing was copied, e.g. `copy(3, 0, 0, 0)` on
   a 3×3 matrix. So they now always throw for a matrix with no rows or columns. `resize()` is unaffected.
+- **`Complex`, `Vector` and `Matrix` never hold a negative zero (breaking).** -0.0 is stored as 0.0, so `neg()` of zero
+  and products with zero print `0`, not `-0`. Values that are equal now always give the same results: on a branch cut,
+  the inverse functions return the value from the +0 side, e.g. `new Complex(2, -0.0)->asin()` is
+  `1.5707963267949 + 1.3169578969248i`, as for `new Complex(2)`.
 
 ### Fixed
 

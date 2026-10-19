@@ -138,7 +138,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             }
 
             // Set the vector element.
-            $data[] = (float) $value;
+            $data[] = Floats::normalizeZero((float) $value);
         }
 
         // Create the Vector.
@@ -250,7 +250,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new DomainException(Stringify::prepEx('Cannot set element to non-finite value: ?.', $value));
         }
 
-        $this->data[$index] = $value;
+        $this->data[$index] = Floats::normalizeZero($value);
     }
 
     #endregion
@@ -637,7 +637,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         $vector = new self(3);
-        $vector->data = $result;
+        $vector->data = array_map(Floats::normalizeZero(...), $result);
         return $vector;
     }
 
@@ -849,14 +849,14 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     }
 
     /**
-     * Check a calculated value is representable.
+     * Check a calculated value is representable, and normalize a negative zero.
      *
      * With finite operands, a non-finite result means it overflowed. A NAN result means an intermediate value
      * overflowed (e.g. INF - INF or 0 × INF), so it's reported as an overflow too.
      *
      * @param float $value The calculated value.
      * @param string $operation The operation, for the exception message, e.g. 'add the given Vectors'.
-     * @return float The value.
+     * @return float The value, with -0.0 replaced by 0.0.
      * @throws OverflowException If the value is not finite.
      */
     private static function checkResult(float $value, string $operation): float
@@ -865,7 +865,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new OverflowException("Cannot $operation. The result would overflow.");
         }
 
-        return $value;
+        return Floats::normalizeZero($value);
     }
 
     /**
