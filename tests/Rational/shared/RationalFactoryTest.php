@@ -180,24 +180,15 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Test fromString() trims the same characters as trim(): space, \t, \n, \r, \v and NUL, but not \f. Both the
+     * Test fromString() trims the characters PHP 8.6's trim() does: space, \t, \n, \r, \v, \f and NUL. Both the
      * whole string and each side of the slash are trimmed.
      */
     public function testFromStringTrimsLikeTrim(): void
     {
-        foreach (["\0 \t\n\r\v1/2\0 \t\n\r\v", "1/2\0", "1\0/\0002"] as $str) {
+        foreach (["\0\f \t\n\r\v1/2\0\f \t\n\r\v", "1/2\0", "1\f/\f2", "1\0/\0002"] as $str) {
             $r = Rational::fromString($str);
             $this->assertSame(1, $r->numerator);
             $this->assertSame(2, $r->denominator);
-        }
-
-        foreach (["\f1/2", "1/2\f"] as $str) {
-            try {
-                Rational::fromString($str);
-                $this->fail('Expected FormatException for ' . json_encode($str) . '.');
-            } catch (FormatException) {
-                $this->addToAssertionCount(1);
-            }
         }
     }
 

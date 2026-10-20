@@ -145,6 +145,9 @@ Create a Rational from a string.
 - Floats: `"3.14"`, `"-0.25"`
 - Fractions: `"3/4"`, `"-5/6"`, `" 7 / 8 "`
 
+Whitespace at the start or end of the string, and around the `/`, is trimmed off: space, `\t`, `\n`, `\r`, `\v`,
+`\f` and NUL, as PHP 8.6's `trim()` does.
+
 **Examples:**
 
 ```php

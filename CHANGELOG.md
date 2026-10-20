@@ -23,6 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **`Complex::fromString()` and `Rational::fromString()` also trim `\f`,** as PHP 8.6's `trim()` does, on any PHP
+  version. `Rational::fromString()` trims it around the `/` too.
 - **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and returns
   a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
 - **`Complex::inv()` and `Rational::inv()` are renamed `recip()` (breaking).** `inv()` is now only the matrix inverse,

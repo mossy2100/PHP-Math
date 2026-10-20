@@ -121,7 +121,8 @@ Create a Complex from a string. Supports various formats.
 There can be spaces around a `+` or `-` operator separating the real and imaginary parts. There cannot be a space
 between an initial `-` and the number it relates to, indicating a negative number. You can have an `i` by itself
 (meaning `1i`), but there cannot be a space between the number and the `i` it relates to; for example, `5.67i` is ok,
-`5.67 i` is not. There can be spaces at the start or end of the string; these are trimmed off.
+`5.67 i` is not. Whitespace at the start or end of the string is trimmed off: space, `\t`, `\n`, `\r`, `\v`, `\f`
+and NUL, as PHP 8.6's `trim()` does.
 
 **Examples:**
 

@@ -278,22 +278,13 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test fromString() trims the same characters as trim(): space, \t, \n, \r, \v and NUL, but not \f.
+     * Test fromString() trims the characters PHP 8.6's trim() does: space, \t, \n, \r, \v, \f and NUL.
      */
     public function testFromStringTrimsLikeTrim(): void
     {
-        $z = Complex::fromString("\0 \t\n\r\v3 + 4i\0 \t\n\r\v");
+        $z = Complex::fromString("\0\f \t\n\r\v3 + 4i\0\f \t\n\r\v");
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
-
-        foreach (["\f3", "3\f"] as $str) {
-            try {
-                Complex::fromString($str);
-                $this->fail('Expected FormatException for ' . json_encode($str) . '.');
-            } catch (FormatException) {
-                $this->addToAssertionCount(1);
-            }
-        }
     }
 
     #endregion

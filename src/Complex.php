@@ -80,6 +80,11 @@ final class Complex implements Stringable, ArrayAccess
      */
     private const float PI_2_LO = 6.1232339957367659e-17;
 
+    /**
+     * The characters fromString() trims: those PHP 8.6's trim() strips by default. Earlier versions don't strip \f.
+     */
+    private const string TRIM_CHARS = " \t\n\r\v\0\f";
+
     #endregion
 
     #region Properties
@@ -179,7 +184,7 @@ final class Complex implements Stringable, ArrayAccess
     public static function fromString(string $str): self
     {
         // Trim whitespace.
-        $str = trim($str);
+        $str = trim($str, self::TRIM_CHARS);
 
         // Handle empty string
         if ($str === '') {

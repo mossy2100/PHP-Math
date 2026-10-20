@@ -38,6 +38,15 @@ final class Rational implements Stringable
 {
     use ApproxComparable;
 
+    #region Constants
+
+    /**
+     * The characters fromString() trims: those PHP 8.6's trim() strips by default. Earlier versions don't strip \f.
+     */
+    private const string TRIM_CHARS = " \t\n\r\v\0\f";
+
+    #endregion
+
     #region Properties
 
     /**
@@ -260,7 +269,7 @@ final class Rational implements Stringable
     public static function fromString(string $str): self
     {
         // Trim whitespace.
-        $str = trim($str);
+        $str = trim($str, self::TRIM_CHARS);
 
         // Handle empty string
         if ($str === '') {
@@ -302,8 +311,8 @@ final class Rational implements Stringable
         // Check for a string that looks like a fraction (int/int).
         $parts = explode('/', $str);
         if (count($parts) === 2) {
-            $n = filter_var(trim($parts[0]), FILTER_VALIDATE_INT);
-            $d = filter_var(trim($parts[1]), FILTER_VALIDATE_INT);
+            $n = filter_var(trim($parts[0], self::TRIM_CHARS), FILTER_VALIDATE_INT);
+            $d = filter_var(trim($parts[1], self::TRIM_CHARS), FILTER_VALIDATE_INT);
             if (is_int($n) && is_int($d)) {
                 return new self($n, $d);
             }
