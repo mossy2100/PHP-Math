@@ -98,7 +98,8 @@ public static function fromFloat(float $value): self
 ```
 
 Create a Rational from a float, approximating it if necessary. A float that's actually a whole number (e.g. `3.0`)
-converts directly and exactly; otherwise, it's approximated using continued fractions.
+converts directly and exactly. Otherwise, the result is the simplest Rational (the one with the smallest denominator)
+whose `toFloat()` is the float, found from the continued fraction of the float's exact value.
 
 **Examples:**
 
@@ -108,19 +109,22 @@ $r2 = Rational::fromFloat(0.75);        // 3/4
 $r3 = Rational::fromFloat(1 / 3);       // 1/3 (exact despite 0.333... input)
 ```
 
-Irrational numbers are approximated as closely as possible within the integer range:
+An irrational number gives the simplest Rational that converts back to the same float:
 
 ```php
 $r = Rational::fromFloat(M_PI);
 echo $r;                          // "245850922/78256779"
-echo $r->toFloat();               // 3.1415926535898 (indistinguishable from M_PI)
+var_dump($r->toFloat() === M_PI); // true
 ```
+
+If there's no such Rational in range, the result is the closest one to the float's exact value. This only happens for
+some floats below about 1e-16, which need a denominator over 2^53, so `toFloat()` rounds twice and can be an ulp out.
 
 **Throws:** `DomainException` if the value is not finite (±INF or NAN), or is outside the representable range (too large
 or too small, but non-zero).
 
-As the result is the closest Rational, a float that only rounding takes outside the range gives the limit:
-`(float) PHP_INT_MAX` is 2^63, which gives `PHP_INT_MAX`, and `1.0 / PHP_INT_MAX` gives `1/PHP_INT_MAX`.
+A float that only rounding takes outside the range gives the limit: `(float) PHP_INT_MAX` is 2^63, which gives
+`PHP_INT_MAX`, and `1.0 / PHP_INT_MAX` gives `1/PHP_INT_MAX`.
 
 **Examples:**
 

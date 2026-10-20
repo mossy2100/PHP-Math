@@ -126,17 +126,19 @@ final class Rational implements Stringable
     /**
      * Create a Rational from a float, approximating it if necessary.
      *
-     * If the float is actually a whole number (e.g. 3.0), it's converted directly.
-     * Otherwise, it's approximated using continued fractions.
-     * This finds the simplest rational that equals the provided number (or is as close as is practical).
+     * If the float is actually a whole number (e.g. 3.0), it's converted directly. Otherwise, the result is the
+     * simplest Rational (the one with the smallest denominator) whose toFloat() is the float, found from the continued
+     * fraction of the float's exact value.
      * @see https://en.wikipedia.org/wiki/Simple_continued_fraction
      *
-     * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
-     * This method will throw an exception if the absolute value of $value is non-zero and outside that range. As the
-     * result is the closest Rational, a float that only rounding takes outside it gives the limit: (float) PHP_INT_MAX
-     * is 2^63, which gives PHP_INT_MAX, and 1.0 / PHP_INT_MAX is 2^-63, which gives 1/PHP_INT_MAX.
+     * If there's no such Rational in range, the result is the closest one to the float's exact value. This only
+     * happens for some floats below about 1e-16, which need a denominator over 2^53, so toFloat() rounds twice and can
+     * be an ulp out.
      *
-     * Float representation limits can cause inexact round-trip conversions for values very close to integers.
+     * The valid range for the absolute value of a Rational is 1/PHP_INT_MAX to PHP_INT_MAX/1.
+     * This method will throw an exception if the absolute value of $value is non-zero and outside that range. A float
+     * that only rounding takes outside it gives the limit: (float) PHP_INT_MAX is 2^63, which gives PHP_INT_MAX, and
+     * 1.0 / PHP_INT_MAX is 2^-63, which gives 1/PHP_INT_MAX.
      *
      * @param float $value The float to convert.
      * @return self The equivalent (or closest approximating) Rational.
@@ -180,68 +182,9 @@ final class Rational implements Stringable
             return new self($sign * PHP_INT_MAX, 1);
         }
 
-        // Use the continued fractions algorithm to convert the float to the closest possible Rational.
-
-        // Track the best approximation found so far. Initialize to the nearest integer.
-        $hBest = (int) round($absValue);
-        $kBest = 1;
-
-        // Initialize convergents.
-        $h0 = 1;
-        $h1 = 0;
-        $k0 = 0;
-        $k1 = 1;
-
-        // Get the initial approximation and minimum error.
-        $x = $absValue;
-        $minErr = abs($hBest - $absValue);
-
-        // Loop until done.
-        while (true) {
-            // Extract integer part.
-            $a = (int) $x;
-
-            // Calculate next convergent.
-            $hNew = $a * $h0 + $h1;
-            $kNew = $a * $k0 + $k1;
-
-            // If the numerator or the denominator overflows the range for integers, cease the loop and return the best
-            // approximation found so far.
-            // @phpstan-ignore-next-line
-            if (is_float($hNew) || is_float($kNew)) {
-                return new self($sign * $hBest, $kBest);
-            }
-
-            // Check if we've found an exact representation.
-            $err = (float) abs($hNew / $kNew - $absValue);
-            if ($err === 0.0) {
-                return new self($sign * $hNew, $kNew);
-            }
-
-            // Check if this convergent is better than the best so far.
-            if ($err < $minErr) {
-                $hBest = $hNew;
-                $kBest = $kNew;
-                $minErr = $err;
-            }
-
-            // Update convergents.
-            $h1 = $h0;
-            $h0 = $hNew;
-            $k1 = $k0;
-            $k0 = $kNew;
-
-            // Calculate remainder.
-            $rem = $x - $a;
-
-            // If the remainder is 0, we're done.
-            if ($rem === 0.0) {
-                return new self($sign * $h0, $k0);
-            }
-
-            // Calculate next approximation.
-            $x = 1.0 / $rem;
-        }
+        // Find the simplest Rational that converts back to the float, or failing that, the closest.
+        [$num, $den] = self::approximateFloat($absValue);
+        return new self($sign * $num, $den);
     }
 
     /**
@@ -252,8 +195,7 @@ final class Rational implements Stringable
      * - float, e.g. "123.456", "-456.789"
      * - fraction, e.g. "1/2", "-3/4"
      *
-     * If the string represents a float, it will be converted to the closest Rational if it's within the valid
-     * range.
+     * If the string represents a float, it's converted with fromFloat(), if it's within the valid range.
      *
      * The input string is trimmed, including fraction parts. Therefore, the following examples are all allowed:
      * - " 123", "-456 ", etc.
@@ -1245,6 +1187,228 @@ final class Rational implements Stringable
             $power *= $k;
         }
         return $power <=> $n;
+    }
+
+    /**
+     * Find the simplest fraction num/den, with both in the int range, whose float value is $x, or the closest if
+     * there's none.
+     *
+     * Walks the continued fraction of $x's exact value, from cfTerms(). The first convergent whose float value is $x
+     * is close enough, but a semiconvergent before it, with a smaller denominator, may be too, so the smallest one is
+     * found by binary search. If the convergents overflow first, the best semiconvergent that fits is tried the same
+     * way. If neither converts back to $x, the closer of it and the last convergent is returned. These two lie on
+     * opposite sides of $x, and one of them is the closest fraction in range.
+     * @see https://en.wikipedia.org/wiki/Simple_continued_fraction#Best_rational_approximations
+     *
+     * @param float $x A positive, finite float that isn't an integer, within the range of Rational.
+     * @return array{int, int} The numerator and denominator.
+     */
+    private static function approximateFloat(float $x): array
+    {
+        $terms = self::cfTerms($x);
+
+        // The two most recent convergents, h0/k0 and h1/k1. Initially, the convergents before the first: 1/0 and 0/1.
+        $h0 = 1;
+        $k0 = 0;
+        $h1 = 0;
+        $k1 = 1;
+
+        foreach ($terms as $n => $a) {
+            $h = $a * $h0 + $h1;
+            $k = $a * $k0 + $k1;
+
+            // If the next convergent overflows, try the best semiconvergent that fits: the largest t such that
+            // (h1 + t * h0) / (k1 + t * k0) is in range. It's less than $a, as t = $a gives the convergent.
+            if (is_float($h) || is_float($k)) {
+                $t = min(
+                    $a - 1,
+                    $k0 === 0 ? PHP_INT_MAX : intdiv(PHP_INT_MAX - $k1, $k0),
+                    $h0 === 0 ? PHP_INT_MAX : intdiv(PHP_INT_MAX - $h1, $h0)
+                );
+                if ($t >= 1) {
+                    if (self::floatValueIs($h1 + $t * $h0, $k1 + $t * $k0, $x)) {
+                        return self::simplestSemiconvergent($h0, $k0, $h1, $k1, $t, $x);
+                    }
+                    if (self::semiconvergentIsCloser($terms, $n, $t)) {
+                        return [
+                            $h1 + $t * $h0,
+                            $k1 + $t * $k0,
+                        ];
+                    }
+                }
+                return [$h0, $k0];
+            }
+
+            if (self::floatValueIs($h, $k, $x)) {
+                return self::simplestSemiconvergent($h0, $k0, $h1, $k1, $a, $x);
+            }
+
+            $h1 = $h0;
+            $k1 = $k0;
+            $h0 = $h;
+            $k0 = $k;
+        }
+
+        // Not reached: the last convergent is $x exactly, and so converts back to it.
+        return [$h0, $k0];
+    }
+
+    /**
+     * Get the terms of the continued fraction of a float's exact value, using integer arithmetic only.
+     *
+     * The float is M / 2^s, with M odd and less than 2^53, so the terms come from Euclid's algorithm. 2^s is too large
+     * for an int when s > 62, which only happens when the float is less than 2^-9. Its first term is then 0, and the
+     * second, floor(2^s / M), is found one bit at a time, with the remainder. The rest only involve ints below 2^53.
+     *
+     * @param float $x A positive, finite float that isn't an integer, at least 2^-63.
+     * @return list<int> The terms.
+     */
+    private static function cfTerms(float $x): array
+    {
+        // Get M and s, with x = M / 2^s. A float in range is normal, so its significand has the implicit leading 1.
+        $parts = Floats::disassemble($x);
+        $m = $parts['fraction'] | (1 << 52);
+        $s = 1075 - $parts['exponent'];
+        while (($m & 1) === 0) {
+            $m >>= 1;
+            $s--;
+        }
+
+        $terms = [];
+        if ($s <= 62) {
+            $p = $m;
+            $q = 1 << $s;
+        } else {
+            $a = 0;
+            $r = 1;
+            for ($i = 0; $i < $s; $i++) {
+                $a += $a;
+                $r += $r;
+                if ($r >= $m) {
+                    $r -= $m;
+                    $a++;
+                }
+            }
+            $terms = [0, $a];
+            $p = $m;
+            $q = $r;
+        }
+
+        // Euclid's algorithm.
+        while ($q !== 0) {
+            $a = intdiv($p, $q);
+            $terms[] = $a;
+            $rem = $p - $a * $q;
+            $p = $q;
+            $q = $rem;
+        }
+
+        return $terms;
+    }
+
+    /**
+     * Check if num/den converts to the float $x, as toFloat() would convert it.
+     *
+     * @param int $num The numerator.
+     * @param int $den The denominator.
+     * @param float $x The float.
+     * @return bool True if num/den converts to $x.
+     */
+    private static function floatValueIs(int $num, int $den, float $x): bool
+    {
+        return $num / $den === $x;
+    }
+
+    /**
+     * Find the semiconvergent with the smallest t from 1 to $tMax, (h1 + t * h0) / (k1 + t * k0), whose float value is
+     * $x. The one with $tMax must be.
+     *
+     * As t increases, the semiconvergents approach $x from one side, so once one converts to $x, the rest do too, and
+     * a binary search finds the first.
+     *
+     * @param int $h0 The numerator of the most recent convergent.
+     * @param int $k0 The denominator of the most recent convergent.
+     * @param int $h1 The numerator of the convergent before it.
+     * @param int $k1 The denominator of the convergent before it.
+     * @param int $tMax The largest t to consider.
+     * @param float $x The float.
+     * @return array{int, int} The numerator and denominator.
+     */
+    private static function simplestSemiconvergent(int $h0, int $k0, int $h1, int $k1, int $tMax, float $x): array
+    {
+        $low = 1;
+        $high = $tMax;
+        while ($low < $high) {
+            $mid = $low + intdiv($high - $low, 2);
+            if (self::floatValueIs($h1 + $mid * $h0, $k1 + $mid * $k0, $x)) {
+                $high = $mid;
+            } else {
+                $low = $mid + 1;
+            }
+        }
+        return [
+            $h1 + $high * $h0,
+            $k1 + $high * $k0,
+        ];
+    }
+
+    /**
+     * Check if the semiconvergent with t, (h1 + t * h0) / (k1 + t * k0), is closer to x than the convergent h0/k0,
+     * where h0/k0 and h1/k1 are the convergents before term n.
+     *
+     * With a the nth term, it's closer if t > a/2, and not if t < a/2. If t = a/2, it's closer if
+     * [a(n+1); a(n+2), ...] > [a(n-1); a(n-2), ..., a(1)], which compares the rest of the continued fraction after
+     * term n with k0/k1. On a tie, the convergent, with the smaller denominator, is kept.
+     *
+     * @param list<int> $terms The continued fraction terms of x.
+     * @param int $n The index of the term whose convergent overflowed.
+     * @param int $t The semiconvergent's t, from 1 to the term minus 1.
+     * @return bool True if the semiconvergent is closer.
+     */
+    private static function semiconvergentIsCloser(array $terms, int $n, int $t): bool
+    {
+        $a = $terms[$n];
+        if ($t !== $a - $t) {
+            return $t > $a - $t;
+        }
+
+        // The rest of the continued fraction after term n, and k0/k1 = [a(n-1); a(n-2), ..., a(1)]. A trailing term
+        // of 1 is folded into the one before, so equal values compare as equal.
+        $rest = array_slice($terms, $n + 1);
+        $ratio = array_reverse(array_slice($terms, 1, $n - 1));
+        $count = count($ratio);
+        if ($count > 1 && $ratio[$count - 1] === 1) {
+            $ratio = [
+                ...array_slice($ratio, 0, $count - 2),
+                $ratio[$count - 2] + 1,
+            ];
+        }
+
+        return self::compareContinuedFractions($rest, $ratio) > 0;
+    }
+
+    /**
+     * Compare two continued fractions, given as their terms. An empty list is infinity, as is any term past the end.
+     *
+     * The first differing term decides it. A larger term at an even position makes its fraction larger, and at an odd
+     * position, smaller.
+     *
+     * @param list<int> $a The terms of the first continued fraction.
+     * @param list<int> $b The terms of the second continued fraction.
+     * @return int -1, 0, or 1 if the first is less than, equal to, or greater than the second.
+     */
+    private static function compareContinuedFractions(array $a, array $b): int
+    {
+        $count = max(count($a), count($b));
+        for ($i = 0; $i < $count; $i++) {
+            $termA = $a[$i] ?? INF;
+            $termB = $b[$i] ?? INF;
+            if ($termA !== $termB) {
+                $cmp = $termA <=> $termB;
+                return $i % 2 === 0 ? $cmp : -$cmp;
+            }
+        }
+        return 0;
     }
 
     #endregion

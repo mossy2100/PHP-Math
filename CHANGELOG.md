@@ -23,6 +23,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **`Rational::fromFloat()` gives the simplest `Rational` whose `toFloat()` is the float (breaking).** It's found from
+  the exact continued fraction of the float, using integer arithmetic only, and tries semiconvergents as well as
+  convergents. Previously, the floating-point continued fraction drifted, and about 3% of random floats didn't
+  round-trip, e.g. `fromFloat(6.619e-18)` was `1/151080223598730912`, which converts back to `6.6190000000000008e-18`.
+  It's now `3/453240670796192779`. Some other results change to a simpler fraction, e.g.
+  `fromFloat(0.019470818223376714)` is `13725930/704948803`, not `16852717/865537175`. If no `Rational` in range
+  round-trips, which only happens for some floats below about 1e-16, the result is the closest one.
 - **`Complex::fromString()` and `Rational::fromString()` also trim `\f`,** as PHP 8.6's `trim()` does, on any PHP
   version. `Rational::fromString()` trims it around the `/` too.
 - **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and returns

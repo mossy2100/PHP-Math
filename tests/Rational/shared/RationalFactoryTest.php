@@ -132,7 +132,7 @@ class RationalFactoryTest extends TestCase
     public function testFromStringInvalidMessageKeepsNul(): void
     {
         $cases = [
-            "ab\0cd" => "'ab\0cd'",
+            "ab\0cd"                       => "'ab\0cd'",
             "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'",
         ];
 
@@ -342,29 +342,61 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Test fromFloat with a value that triggers convergent overflow in continued fractions.
+     * Floats, and the simplest Rationals whose float value is the float. The old algorithm missed these, as its
+     * floating-point continued fraction overflowed or stopped early.
+     *
+     * @return list<array{float, int, int}>
      */
-    public function testFromFloatConvergentOverflow(): void
+    public static function fromFloatRoundTripProvider(): array
     {
-        $f = 2.1213650134300899e-10;
-        $r = Rational::fromFloat($f);
-
-        $this->assertSame(431, $r->numerator);
-        $this->assertSame(2031710701701, $r->denominator);
-        $this->assertEqualsWithDelta($f, $r->numerator / $r->denominator, 1e-15);
+        return [
+            [2.1213650134300899e-10, 2430, 11454888643001],
+            [2.176543618258578e-17, 5, 229722021560056299],
+            [6.619e-18, 3, 453240670796192779],
+            [0.019470818223376714, 13725930, 704948803],
+        ];
     }
 
     /**
-     * Test fromFloat with a value that triggers zero remainder in continued fractions.
+     * Test fromFloat() gives the simplest Rational whose float value is the float.
      */
-    public function testFromFloatZeroRemainder(): void
+    #[DataProvider('fromFloatRoundTripProvider')]
+    public function testFromFloatRoundTrips(float $f, int $num, int $den): void
     {
-        $f = 2.176543618258578e-17;
         $r = Rational::fromFloat($f);
 
-        $this->assertSame(1, $r->numerator);
-        $this->assertSame(45944404312011256, $r->denominator);
-        $this->assertEqualsWithDelta($f, $r->numerator / $r->denominator, 1e-25);
+        $this->assertSame($num, $r->numerator);
+        $this->assertSame($den, $r->denominator);
+        $this->assertSame($f, $r->toFloat());
+    }
+
+    /**
+     * Floats whose closest Rational, by exact comparison, has a denominator over 2^53, so toFloat() rounds twice and
+     * doesn't give the float back. Covers the closest being the last convergent or the best semiconvergent, both by
+     * the half rule and by its tie-break, which compares continued fractions.
+     *
+     * @return array<string, array{float, int, int}>
+     */
+    public static function fromFloatClosestProvider(): array
+    {
+        return [
+            'convergent'                   => [4.2968161631783745e-19, 2, 4654609189797384543],
+            'semiconvergent'               => [4.113853429204107e-19, 3, 7292432877416344060],
+            'convergent, by tie-break'     => [2.111472453315322e-19, 1, 4736031476185507471],
+            'semiconvergent, by tie-break' => [3.9465414738445046e-19, 3, 7601592482639145431],
+        ];
+    }
+
+    /**
+     * Test fromFloat() gives the closest Rational when none has the float as its float value.
+     */
+    #[DataProvider('fromFloatClosestProvider')]
+    public function testFromFloatClosest(float $f, int $num, int $den): void
+    {
+        $r = Rational::fromFloat($f);
+
+        $this->assertSame($num, $r->numerator);
+        $this->assertSame($den, $r->denominator);
     }
 
     /**
