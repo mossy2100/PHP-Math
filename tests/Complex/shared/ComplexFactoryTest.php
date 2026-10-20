@@ -247,6 +247,36 @@ class ComplexFactoryTest extends TestCase
         Complex::fromString("\xff\xfe");
     }
 
+    /**
+     * Test fromString() parses a decimal point the same way under a locale whose decimal separator is a comma.
+     */
+    public function testFromStringIgnoresLocale(): void
+    {
+        $original = setlocale(LC_NUMERIC, '0');
+        if (setlocale(LC_NUMERIC, 'de_DE.UTF-8', 'de_DE', 'fr_FR.UTF-8', 'fr_FR') === false) {
+            $this->markTestSkipped('No locale with a comma decimal separator is installed.');
+        }
+
+        try {
+            $z = Complex::fromString('1.5+2.5i');
+            $this->assertSame(1.5, $z->real);
+            $this->assertSame(2.5, $z->imaginary);
+            $this->assertSame(-0.0005, Complex::fromString('-.5e-3')->real);
+        } finally {
+            setlocale(LC_NUMERIC, $original === false ? 'C' : $original);
+        }
+    }
+
+    /**
+     * Test fromString() parses a number of any length.
+     */
+    public function testFromStringLongNumber(): void
+    {
+        $z = Complex::fromString('1.' . str_repeat('0', 70) . '1 + 2.' . str_repeat('5', 100) . 'i');
+        $this->assertSame(1.0, $z->real);
+        $this->assertSame(2.5555555555555554, $z->imaginary);
+    }
+
     #endregion
 
     #region Method fromPolar() tests.
