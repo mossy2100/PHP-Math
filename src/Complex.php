@@ -742,6 +742,13 @@ final class Complex implements Stringable, ArrayAccess
             return new self();
         }
 
+        // If both parts are subnormal, |z| has lost bits that scaling $sum can't recover. Scale z up by 2^106 instead,
+        // exactly, and the root back down by 2^53.
+        if (abs($this->real) < PHP_FLOAT_MIN && abs($this->imaginary) < PHP_FLOAT_MIN) {
+            $root = new self($this->real * 2 ** 106, $this->imaginary * 2 ** 106)->sqrt();
+            return new self($root->real * 2 ** -53, $root->imaginary * 2 ** -53);
+        }
+
         // With z = a + bi, calculate t = √((|z| + |a|) / 2).
         $absReal = abs($this->real);
         $sum = $this->magnitude + $absReal;

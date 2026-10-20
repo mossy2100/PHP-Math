@@ -282,6 +282,38 @@ class ComplexRootTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $result->imaginary / $expected, 1e-15);
     }
 
+    /**
+     * Inputs with both parts subnormal (or zero), and their square roots, from Python's cmath.sqrt().
+     *
+     * @return list<array{float, float, float, float}>
+     */
+    public static function sqrtSubnormalProvider(): array
+    {
+        return [
+            [3.4099830507e-314, -1.53760452e-315, 1.8470829661634615e-157, -4.16225083123664e-159],
+            [-5e-324, 5e-324, 1.0115549693666347e-162, 2.4421097261308304e-162],
+            [1e-310, 0.0, 9.999999999999986e-156, 0.0],
+            [-1e-310, -2e-315, 1.0000000009020136e-160, -1.0000000000499984e-155],
+            [4.9e-322, -1e-320, 7.24602263686294e-161, -6.9002604414689885e-161],
+        ];
+    }
+
+    /**
+     * Test sqrt() is accurate when both parts are subnormal, so |z| itself has lost precision.
+     */
+    #[DataProvider('sqrtSubnormalProvider')]
+    public function testSqrtBothPartsSubnormal(float $real, float $imag, float $expectedReal, float $expectedImag): void
+    {
+        $result = new Complex($real, $imag)->sqrt();
+
+        $this->assertEqualsWithDelta(1.0, $result->real / $expectedReal, 1e-15);
+        if ($expectedImag === 0.0) {
+            $this->assertSame(0.0, $result->imaginary);
+        } else {
+            $this->assertEqualsWithDelta(1.0, $result->imaginary / $expectedImag, 1e-15);
+        }
+    }
+
     #endregion
 
     #region Helper methods

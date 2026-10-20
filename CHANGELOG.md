@@ -95,6 +95,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- **`Complex::sqrt()` was inaccurate when both parts are subnormal,** by up to about 4e10 ulps, e.g. for
+  `new Complex(3.4e-314, -1.5e-315)`. It's now within 2 ulps.
 - **`Matrix::inv()` inverted some exactly singular matrices (breaking),** e.g. a 4×4 or larger one with a row that's a
   combination of two others, giving elements around 1e15. Rounding left the last pivot just above the singularity
   threshold. The inverse is now also rejected if the condition number shows it has no correct digits. That also
