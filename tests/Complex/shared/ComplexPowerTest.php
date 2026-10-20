@@ -317,7 +317,18 @@ class ComplexPowerTest extends TestCase
     }
 
     /**
-     * Test sqr() matches mul() exactly when the product of the parts is subnormal.
+     * Test sqr() gives an accurate real part when the parts are close in size, where a² - b² loses digits.
+     */
+    public function testSqrPartsCloseInSize(): void
+    {
+        // The exact real part is 1366.98719999999150..., which a² - b² gives as 1366.9871999999887.
+        $result = new Complex(266.21, -263.63)->sqr();
+
+        $this->assertSame(1366.9871999999914, $result->real);
+    }
+
+    /**
+     * Test sqr()'s imaginary part matches mul() exactly when the product of the parts is subnormal.
      */
     public function testSqrMatchesMulForSubnormalProduct(): void
     {

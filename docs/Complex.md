@@ -529,7 +529,10 @@ $result = M_I->pow(2);  // -1, using the imaginary unit constant - see Globals.m
 public function sqr(): self
 ```
 
-Calculate the square of the complex number.
+Calculate the square of the complex number. Equivalent to `pow(2)`.
+
+It's as quick as `$z->mul($z)`, but slightly more accurate. With z = a + bi, the real part is calculated as
+(a - b)(a + b) rather than a² - b², which loses most of its digits when |a| ≈ |b|.
 
 **Throws:** `OverflowException` if the result is too large to represent as a float.
 
@@ -629,13 +632,17 @@ $result = $z->exp();  // -1 (Euler's identity)
 public function ln(): self
 ```
 
-Calculate the natural logarithm.
+Calculate the natural logarithm: ln(z) = ln|z| + i·arg(z).
+
+The real part is accurate near |z| = 1, where `log($z->magnitude)` would lose most of its digits, as the magnitude is
+rounded first. For example, `new Complex(1, 1e-10)` has |z| = 1 + 5e-21, which rounds to 1.
 
 **Example:**
 
 ```php
 $z = new Complex(3, 4);
 $result = $z->ln();
+$result = new Complex(1, 1e-10)->ln();  // 5.0E-21 + 1.0E-10i, not 0 + 1.0E-10i
 ```
 
 **Throws:** `ArithmeticException` if the number is zero.

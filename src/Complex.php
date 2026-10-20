@@ -632,14 +632,17 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Square this complex number.
      *
-     * Equivalent to pow(2), but more readable as a standalone call.
+     * Equivalent to pow(2), and as fast as $z->mul($z), but slightly more accurate. With z = a + bi, the real part is
+     * calculated as (a - b)(a + b) rather than a² - b², which loses most of its digits when |a| ≈ |b|.
      *
      * @return self A new complex number representing the square of this number.
      * @throws OverflowException If the result is too large to represent as a float.
      */
     public function sqr(): self
     {
-        return self::calcWithOverflowMessage('square the given Complex', fn () => $this->mul($this));
+        $a = $this->real;
+        $b = $this->imaginary;
+        return self::fromResult(($a - $b) * ($a + $b), 2 * ($a * $b), 'square the given Complex');
     }
 
     #endregion
@@ -827,6 +830,9 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * Calculate the natural logarithm of a complex number.
      *
+     * The real part, ln|z|, is accurate near |z| = 1, where log(|z|) would lose most of its digits. See
+     * calcLnMagnitude().
+     *
      * @return self A new complex number representing ln(z).
      * @throws ArithmeticException If the complex number is 0.
      */
@@ -859,7 +865,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // General solution. Calculate ln(z) = ln|z| + i*arg(z)
-        return new self(log($this->magnitude), $this->phase);
+        return new self(self::calcLnMagnitude($this->real, $this->imaginary, $this->magnitude), $this->phase);
     }
 
     /**
@@ -1249,9 +1255,9 @@ final class Complex implements Stringable, ArrayAccess
      */
     private function calcPow(self $exp): self
     {
-        // Handle exponent = 2.
+        // Handle exponent = 2. Delegate to sqr(), which is more accurate.
         if ($exp->equal(2)) {
-            return $this->mul($this);
+            return $this->sqr();
         }
 
         // Handle exponent = 0.5. Delegate to sqrt(), which is more accurate.
@@ -1690,6 +1696,77 @@ final class Complex implements Stringable, ArrayAccess
 
         // The constructor throws if the magnitude overflows.
         return self::calcWithOverflowMessage($operation, static fn () => new self($real, $imag));
+    }
+
+    /**
+     * Calculate ln|z|, the real part of ln(z).
+     *
+     * Near |z| = 1, log(|z|) loses most of its digits, as |z| is rounded before the log is taken: for 1 + 1e-10i, |z|
+     * rounds to 1, giving 0 instead of 5e-21. Between 0.5 and 2, it's calculated as log1p(|z|² - 1) / 2 instead, with
+     * |z|² - 1 = x² + y² - 1 calculated almost exactly: x² and y² are each the exact sum of two floats, from
+     * squareExact(), and the five terms are added with sumExact(), keeping each rounding error.
+     *
+     * @param float $real The real part.
+     * @param float $imag The imaginary part.
+     * @param float $magnitude The magnitude, |z|.
+     * @return float ln|z|.
+     */
+    private static function calcLnMagnitude(float $real, float $imag, float $magnitude): float
+    {
+        if ($magnitude <= 0.5 || $magnitude >= 2) {
+            return log($magnitude);
+        }
+
+        // Add the terms from largest to smallest: the two squares, then -1, then the squares' rounding errors.
+        [$x2, $x2Err] = self::squareExact(max(abs($real), abs($imag)));
+        [$y2, $y2Err] = self::squareExact(min(abs($real), abs($imag)));
+        [$sum, $err1] = self::sumExact($x2, -1.0);
+        [$sum, $err2] = self::sumExact($sum, $y2);
+        [$sum, $err3] = self::sumExact($sum, $x2Err);
+        [$sum, $err4] = self::sumExact($sum, $y2Err);
+
+        return log1p($sum + (($err1 + $err2) + ($err3 + $err4))) / 2;
+    }
+
+    /**
+     * Add two floats exactly, as the sum of two floats: the rounded sum and its rounding error (Knuth's two-sum).
+     *
+     * @param float $a The first float.
+     * @param float $b The second float.
+     * @return array{float, float} The rounded sum and its rounding error, which sum to a + b exactly.
+     */
+    private static function sumExact(float $a, float $b): array
+    {
+        $sum = $a + $b;
+        $bVirtual = $sum - $a;
+        return [
+            $sum,
+            ($a - ($sum - $bVirtual)) + ($b - $bVirtual),
+        ];
+    }
+
+    /**
+     * Square a float exactly, as the sum of two floats: the rounded square and its rounding error.
+     *
+     * Uses Dekker's product, which splits x into two halves of 26 bits each, so their products are exact. It doesn't
+     * need a fused multiply-add, which PHP doesn't have. Valid when the square doesn't overflow.
+     *
+     * @param float $x The float to square.
+     * @return array{float, float} The rounded square and its rounding error, which sum to x² exactly.
+     */
+    private static function squareExact(float $x): array
+    {
+        $square = $x * $x;
+
+        // Veltkamp's split: x = high + low, with each having at most 26 significant bits.
+        $c = 134217729.0 * $x;
+        $high = $c - ($c - $x);
+        $low = $x - $high;
+
+        return [
+            $square,
+            (($high * $high - $square) + 2 * $high * $low) + $low * $low,
+        ];
     }
 
     /**

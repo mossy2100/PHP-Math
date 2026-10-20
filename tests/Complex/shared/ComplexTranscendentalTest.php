@@ -9,6 +9,7 @@ use OceanMoon\Core\Exceptions\ArithmeticException;
 use OceanMoon\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 use const OceanMoon\Core\M_TAU;
@@ -146,6 +147,33 @@ class ComplexTranscendentalTest extends TestCase
         $result = new Complex(-1, -1e-17)->ln();
         $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
         $this->assertSame(-M_PI, $result->imaginary);
+    }
+
+    /**
+     * Inputs with |z| close to 1, where log(|z|) loses most of its digits, and ln|z| to 80 digits.
+     *
+     * @return list<array{float, float, float}>
+     */
+    public static function lnNearUnitCircleProvider(): array
+    {
+        return [
+            [1.0, 1e-10, 5.0000000000000005e-21],
+            [0.6, 0.8, 2.2204460492503132e-17],
+            [-0.6, 0.8, 2.2204460492503132e-17],
+            [0.7071067811865476, -0.7071067811865475, -1.014653635756952e-17],
+            [0.9999999999, 1e-5, -5.0000008271537093e-11],
+        ];
+    }
+
+    /**
+     * Test ln() gives an accurate real part when |z| is close to 1.
+     */
+    #[DataProvider('lnNearUnitCircleProvider')]
+    public function testLnNearUnitCircle(float $real, float $imag, float $expected): void
+    {
+        $result = new Complex($real, $imag)->ln();
+
+        $this->assertEqualsWithDelta(1.0, $result->real / $expected, 1e-15);
     }
 
     #endregion
