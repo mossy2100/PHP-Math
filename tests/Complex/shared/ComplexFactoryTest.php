@@ -238,6 +238,26 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
+     * Test the invalid-format message keeps a NUL in the string, including when the string is abbreviated.
+     */
+    public function testFromStringInvalidMessageKeepsNul(): void
+    {
+        $cases = [
+            "ab\0cd" => "'ab\0cd'",
+            "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'",
+        ];
+
+        foreach ($cases as $str => $quoted) {
+            try {
+                Complex::fromString((string) $str);
+                $this->fail('Expected FormatException.');
+            } catch (FormatException $e) {
+                $this->assertSame("Cannot convert string $quoted to Complex. Invalid format.", $e->getMessage());
+            }
+        }
+    }
+
+    /**
      * Test the invalid-format message leaves out a string that isn't valid UTF-8.
      */
     public function testFromStringInvalidUtf8MessageOmitsString(): void
