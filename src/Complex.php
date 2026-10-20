@@ -102,7 +102,8 @@ final class Complex implements Stringable, ArrayAccess
     /**
      * The phase (a.k.a. argument) of this complex number in radians.
      *
-     * The value is normalized to the range (-π, π]. This is known as the principal value.
+     * The value is the principal value, in the range [-π, π]. It's -π only for a point just below the negative real
+     * axis, whose imaginary part is negative but too small to change the result of atan2(), as in C99.
      * @see https://en.wikipedia.org/wiki/Principal_value#Complex_argument
      */
     private(set) float $phase;
@@ -150,11 +151,9 @@ final class Complex implements Stringable, ArrayAccess
                     $imag
                 ));
             }
-            // The phase must be in the range (-π, π].
-            // In this branch, we know the imaginary part is not 0, so the result of atan2() should theoretically never
-            // equal π or -π. In practice, however, it can be, if the imaginary part is very close to 0.
-            // So, we call wrap().
-            $this->phase = Floats::wrap(atan2($imag, $real));
+            // atan2() gives the principal value. With a tiny imaginary part, it rounds to ±π, keeping the sign of the
+            // imaginary part, which is correct, so don't wrap -π to π. It gives -0.0 if the result underflows.
+            $this->phase = Floats::normalizeZero(atan2($imag, $real));
         }
     }
 

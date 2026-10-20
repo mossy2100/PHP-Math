@@ -114,7 +114,7 @@ class ComplexPropertiesTest extends TestCase
 
     /**
      * Test phase property for complex numbers in each quadrant, and that it stays within the
-     * principal range (-π, π].
+     * principal range [-π, π].
      */
     public function testPhaseQuadrants(): void
     {
@@ -255,7 +255,7 @@ class ComplexPropertiesTest extends TestCase
             'quadrant 4'              => [
                 new Complex(1, -1),
             ],
-            'angle -π wraps to π'     => [
+            'angle -π'                => [
                 Complex::fromPolar(1, -M_PI),
             ],
             'angle 5π wraps to π'     => [
@@ -265,13 +265,32 @@ class ComplexPropertiesTest extends TestCase
     }
 
     /**
-     * Test that phase is always in the principal range (-π, π], across a variety of constructions.
+     * Test that phase is always in the principal range [-π, π], across a variety of constructions.
      */
     #[DataProvider('phaseBoundaryProvider')]
     public function testPhaseAlwaysInPrincipalRange(Complex $z): void
     {
-        $this->assertGreaterThan(-M_PI, $z->phase, "Phase should be > -π for $z");
+        $this->assertGreaterThanOrEqual(-M_PI, $z->phase, "Phase should be >= -π for $z");
         $this->assertLessThanOrEqual(M_PI, $z->phase, "Phase should be <= π for $z");
+    }
+
+    /**
+     * Test the phase just below the negative real axis is -π, not π, since the imaginary part is negative.
+     */
+    public function testPhaseJustBelowNegativeRealAxis(): void
+    {
+        $this->assertSame(-M_PI, new Complex(-1, -1e-17)->phase);
+        $this->assertSame(M_PI, new Complex(-1, 1e-17)->phase);
+        $this->assertSame(M_PI, new Complex(-1)->phase);
+    }
+
+    /**
+     * Test the phase is 0, not -0, when atan2() underflows.
+     */
+    public function testPhaseUnderflowIsPositiveZero(): void
+    {
+        $this->assertSame(0.0, new Complex(1e300, -1e-300)->phase);
+        $this->assertSame('0', (string) new Complex(1e300, -1e-300)->phase);
     }
 
     #endregion

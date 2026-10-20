@@ -376,7 +376,7 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Test that angles > π wrap to the principal range (-π, π].
+     * Test that angles > π wrap to the principal range [-π, π].
      */
     public function testFromPolarLargePositivePhaseNormalized(): void
     {
@@ -493,7 +493,7 @@ class ComplexFactoryTest extends TestCase
     }
 
     /**
-     * Data provider for angles already within, or wrapping into, the principal phase range (-π, π].
+     * Data provider for angles already within, or wrapping into, the principal phase range [-π, π].
      *
      * @return array<string, list<float>>
      */
@@ -522,13 +522,13 @@ class ComplexFactoryTest extends TestCase
                 -M_PI / 2,
                 -M_PI / 2,
             ],
-            '-π wraps to π (excluded lower bound)' => [-M_PI, M_PI],
+            '-π stays -π (imaginary part below 0)' => [-M_PI, -M_PI],
         ];
     }
 
     /**
      * Test that fromPolar preserves phase correctly for angles already in the principal range
-     * (-π, π], including the -π wrap-to-π boundary case.
+     * [-π, π], including -π, whose imaginary part, sin(-π), is just below 0.
      */
     #[DataProvider('polarPhaseProvider')]
     public function testFromPolarWithVariousAnglesPhase(float $inputAngle, float $expectedPhase): void

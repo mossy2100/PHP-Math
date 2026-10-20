@@ -242,6 +242,16 @@ class ComplexPowerTest extends TestCase
         $this->assertTrue($z->pow(-2)->equal($recip->mul($recip)));
     }
 
+    /**
+     * Test pow() just below the negative real axis gives the principal value from the -π side.
+     */
+    public function testPowJustBelowNegativeRealAxis(): void
+    {
+        $result = new Complex(-1, -1e-17)->pow(1 / 3);
+        $this->assertEqualsWithDelta(0.5, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-sqrt(3) / 2, $result->imaginary, EPSILON);
+    }
+
     #endregion
 
     #region Method sqr() tests.

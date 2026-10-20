@@ -173,6 +173,20 @@ class ComplexRootTest extends TestCase
         }
     }
 
+    /**
+     * Test roots() just below the negative real axis starts from the -π side.
+     */
+    public function testRootsJustBelowNegativeRealAxis(): void
+    {
+        $roots = new Complex(-1, -1e-17)->roots(3);
+        $this->assertEqualsWithDelta(0.5, $roots[0]->real, EPSILON);
+        $this->assertEqualsWithDelta(-sqrt(3) / 2, $roots[0]->imaginary, EPSILON);
+        $this->assertEqualsWithDelta(0.5, $roots[1]->real, EPSILON);
+        $this->assertEqualsWithDelta(sqrt(3) / 2, $roots[1]->imaginary, EPSILON);
+        $this->assertEqualsWithDelta(-1.0, $roots[2]->real, EPSILON);
+        $this->assertEqualsWithDelta(0.0, $roots[2]->imaginary, EPSILON);
+    }
+
     #endregion
 
     #region Method sqrt() tests.

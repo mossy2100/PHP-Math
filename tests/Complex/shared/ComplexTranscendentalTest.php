@@ -138,6 +138,16 @@ class ComplexTranscendentalTest extends TestCase
         new Complex(0)->ln();
     }
 
+    /**
+     * Test ln() just below the negative real axis gives an imaginary part of -π, not π.
+     */
+    public function testLnJustBelowNegativeRealAxis(): void
+    {
+        $result = new Complex(-1, -1e-17)->ln();
+        $this->assertEqualsWithDelta(0.0, $result->real, EPSILON);
+        $this->assertSame(-M_PI, $result->imaginary);
+    }
+
     #endregion
 
     #region Method log() tests.
@@ -281,6 +291,16 @@ class ComplexTranscendentalTest extends TestCase
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute logarithm of the given Complex. The result would overflow.');
         new Complex(1e300)->log(new Complex(1, 1e-310));
+    }
+
+    /**
+     * Test log() just below the negative real axis gives a negative imaginary part.
+     */
+    public function testLogJustBelowNegativeRealAxis(): void
+    {
+        $result = new Complex(-8, -1e-16)->log(2);
+        $this->assertEqualsWithDelta(3.0, $result->real, EPSILON);
+        $this->assertEqualsWithDelta(-M_PI / M_LN2, $result->imaginary, EPSILON);
     }
 
     #endregion

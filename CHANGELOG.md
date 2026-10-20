@@ -93,6 +93,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- **`Complex` gave a phase of π just below the negative real axis (breaking),** e.g. for `new Complex(-1, -1e-17)`,
+  whose imaginary part is negative. It's now -π, as in C99, Python and NumPy, so `ln()`, `log()`, `pow()` and `roots()`
+  give the principal value from the correct side. The phase range is now [-π, π], not (-π, π].
 - **`Matrix::pow()` gave the wrong result for an exponent above 2^53**, including `PHP_INT_MAX` and `PHP_INT_MIN`,
   because it halved the exponent with float division.
 - **`Complex::div()`/`recip()` gave wrong results or threw for a very small or large divisor**, even when the result

@@ -53,11 +53,12 @@ private(set) float $phase
 ```
 
 The phase (argument or angle) of the complex number in radians, normalized to the [principal value](<https://en.wikipedia.org/wiki/Argument_(complex_analysis)#Principal_value>),
-which is in the range **(-π, π]**. (This means the range excludes -π but includes π.)
+which is in the range **[-π, π]**. It's -π only for a point just below the negative real axis, whose imaginary part is
+negative but too small to change the result, e.g. `new Complex(-1, -1e-17)`. That matches C99, Python and NumPy.
 
 Automatically computed during object creation.
 
-For z = a + bi: arg(z) = atan2(b, a), then wrapped to (-π, π]
+For z = a + bi: arg(z) = atan2(b, a), or π for a negative real number.
 
 ---
 
