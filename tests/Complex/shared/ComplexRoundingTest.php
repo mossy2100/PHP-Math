@@ -204,5 +204,26 @@ class ComplexRoundingTest extends TestCase
         $z->round(1, null); // @phpstan-ignore argument.type
     }
 
+    /**
+     * Test round() with a precision beyond the int range clamps it, as PHP's round() does, rather than truncating it.
+     */
+    public function testRoundWithHugePrecision(): void
+    {
+        $z = new Complex(1.234, 5.678);
+        $cases = [
+            [PHP_INT_MAX, 1.234, 5.678],
+            [2 ** 32, 1.234, 5.678],
+            [2 ** 32 + 1, 1.234, 5.678],
+            [PHP_INT_MIN, 0.0, 0.0],
+            [-(2 ** 32), 0.0, 0.0],
+        ];
+
+        foreach ($cases as [$precision, $real, $imag]) {
+            $result = $z->round($precision);
+            $this->assertSame($real, $result->real, "Real part for precision $precision");
+            $this->assertSame($imag, $result->imaginary, "Imaginary part for precision $precision");
+        }
+    }
+
     #endregion
 }
