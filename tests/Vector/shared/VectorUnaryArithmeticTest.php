@@ -47,36 +47,36 @@ class VectorUnaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method reciprocal() tests.
+    #region Method hadamardInv() tests.
 
     /**
-     * Test the element-wise reciprocal of a vector.
+     * Test the Hadamard inverse (element-wise reciprocal) of a vector.
      */
-    public function testReciprocal(): void
+    public function testHadamardInv(): void
     {
         $v = Vector::fromArray([2, 4, 5]);
-        $result = $v->reciprocal();
+        $result = $v->hadamardInv();
         $this->assertEqualsWithDelta([0.5, 0.25, 0.2], $result->toArray(), EPSILON);
     }
 
     /**
-     * Test the reciprocal of a vector containing a zero element throws ArithmeticException.
+     * Test the Hadamard inverse of a vector containing a zero element throws ArithmeticException.
      */
-    public function testReciprocalOfZeroElementThrows(): void
+    public function testHadamardInvOfZeroElementThrows(): void
     {
         $v = Vector::fromArray([1, 0, 2]);
         $this->expectException(ArithmeticException::class);
-        $v->reciprocal();
+        $v->hadamardInv();
     }
 
     /**
-     * Test reciprocal() throws when the result overflows.
+     * Test hadamardInv() throws when the result overflows.
      */
-    public function testReciprocalOverflowThrows(): void
+    public function testHadamardInvOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute reciprocal of the given Vector. The result would overflow.');
-        Vector::fromArray([1e-320])->reciprocal();
+        Vector::fromArray([1e-320])->hadamardInv();
     }
 
     #endregion

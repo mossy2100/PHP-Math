@@ -64,18 +64,18 @@ class MatrixUnaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method reciprocal() tests.
+    #region Method hadamardInv() tests.
 
     /**
-     * Test the element-wise reciprocal of a matrix.
+     * Test the Hadamard inverse (element-wise reciprocal) of a matrix.
      */
-    public function testReciprocal(): void
+    public function testHadamardInv(): void
     {
         $m = Matrix::fromArray([
             [2, 4],
             [5, 10],
         ]);
-        $result = $m->reciprocal();
+        $result = $m->hadamardInv();
         $this->assertEqualsWithDelta(0.5, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.25, $result->get(0, 1), EPSILON);
         $this->assertEqualsWithDelta(0.2, $result->get(1, 0), EPSILON);
@@ -83,28 +83,28 @@ class MatrixUnaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test the reciprocal of a matrix containing a zero element throws ArithmeticException.
+     * Test the Hadamard inverse of a matrix containing a zero element throws ArithmeticException.
      */
-    public function testReciprocalOfZeroElementThrows(): void
+    public function testHadamardInvOfZeroElementThrows(): void
     {
         $m = Matrix::fromArray([
             [1, 0],
             [2, 3],
         ]);
         $this->expectException(ArithmeticException::class);
-        $m->reciprocal();
+        $m->hadamardInv();
     }
 
     /**
-     * Test reciprocal() throws when the result overflows.
+     * Test hadamardInv() throws when the result overflows.
      */
-    public function testReciprocalOverflowThrows(): void
+    public function testHadamardInvOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute reciprocal of the given Matrix. The result would overflow.');
         Matrix::fromArray([
             [1e-320],
-        ])->reciprocal();
+        ])->hadamardInv();
     }
 
     #endregion

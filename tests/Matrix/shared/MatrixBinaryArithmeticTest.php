@@ -404,7 +404,9 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testHadamardMulOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply the given Matrices element-wise. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute Hadamard product of the given Matrices. The result would overflow.'
+        );
         Matrix::fromArray([
             [1e200],
         ])->hadamardMul(Matrix::fromArray([
@@ -470,7 +472,9 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testHadamardDivOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide the given Matrices element-wise. The result would overflow.');
+        $this->expectExceptionMessage(
+            'Cannot compute Hadamard quotient of the given Matrices. The result would overflow.'
+        );
         Matrix::fromArray([
             [1e200],
         ])->hadamardDiv(Matrix::fromArray([

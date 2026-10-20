@@ -557,7 +557,7 @@ final class Rational implements Stringable
      * @return self A new Rational representing the reciprocal.
      * @throws ArithmeticException If the value is zero.
      */
-    public function inv(): self
+    public function recip(): self
     {
         // Guard.
         if ($this->numerator === 0) {
@@ -983,19 +983,19 @@ final class Rational implements Stringable
             return $this->mul($this);
         }
 
-        // Handle exponent = -1. Delegate to inv().
+        // Handle exponent = -1. Delegate to recip().
         if ($exp === -1) {
-            return $this->inv();
+            return $this->recip();
         }
 
         // Handle exponent = PHP_INT_MIN.
         if ($exp === PHP_INT_MIN) {
-            return $this->calcPow(PHP_INT_MAX)->mul($this)->inv();
+            return $this->calcPow(PHP_INT_MAX)->mul($this)->recip();
         }
 
         // Handle negative exponents by taking reciprocal.
         if ($exp < 0) {
-            return $this->inv()->calcPow(-$exp);
+            return $this->recip()->calcPow(-$exp);
         }
 
         // General solution. Calculate the new numerator and denominator with overflow checks.

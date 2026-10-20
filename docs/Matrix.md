@@ -9,8 +9,7 @@ Mutable class representing a two-dimensional matrix of numbers with comprehensiv
 The `Matrix` class provides a complete implementation of matrix arithmetic with support for:
 
 - Basic arithmetic (addition, subtraction, scalar/matrix multiplication, division)
-- Element-wise (Hadamard) product and division via `hadamardMul()` and `hadamardDiv()`, since `mul()` with a `Matrix`
-  is the matrix product
+- Element-wise (Hadamard) product, division and inverse via `hadamardMul()`, `hadamardDiv()` and `hadamardInv()`
 - Matrix-vector multiplication using column vector convention
 - Matrix power with binary exponentiation (including negative powers via inverse)
 - Transpose, determinant, and inverse operations
@@ -594,14 +593,15 @@ $result = $m->neg();
 // [[-1, 2], [-3, 4]]
 ```
 
-### reciprocal()
+### hadamardInv()
 
 ```php
-public function reciprocal(): self
+public function hadamardInv(): self
 ```
 
-Calculate the element-wise reciprocal of the matrix. Not to be confused with `inv()`, the matrix inverse -
-`reciprocal()` simply replaces each element with its own reciprocal, with no relationship to matrix multiplication.
+Calculate the Hadamard inverse (element-wise reciprocal) of the matrix. Not to be confused with `inv()`, the matrix
+inverse - `hadamardInv()` simply replaces each element with its own reciprocal, with no relationship to matrix
+multiplication.
 
 **Returns:** `self` - A new matrix with each element replaced by its reciprocal.
 
@@ -614,7 +614,7 @@ Calculate the element-wise reciprocal of the matrix. Not to be confused with `in
 
 ```php
 $m = Matrix::fromArray([[2, 4], [5, 10]]);
-$result = $m->reciprocal();
+$result = $m->hadamardInv();
 // [[0.5, 0.25], [0.2, 0.1]]
 ```
 

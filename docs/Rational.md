@@ -566,22 +566,22 @@ $r = new Rational(3, 4);
 $result = $r->neg();  // -3/4
 ```
 
-### inv()
+### recip()
 
 ```php
-public function inv(): self
+public function recip(): self
 ```
 
-Calculate the multiplicative inverse (reciprocal).
+Calculate the reciprocal (multiplicative inverse).
 
 **Example:**
 
 ```php
 $r1 = new Rational(3, 4);
-$result = $r1->inv();  // 4/3
+$result = $r1->recip();  // 4/3
 
 $r2 = new Rational(-2, 5);
-$result2 = $r2->inv();  // -5/2
+$result2 = $r2->recip();  // -5/2
 ```
 
 **Throws:** `ArithmeticException` if the numerator is zero.

@@ -96,30 +96,30 @@ class RationalUnaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method inv() tests.
+    #region Method recip() tests.
 
     /**
      * Test reciprocal (inverse).
      */
-    public function testInv(): void
+    public function testRecip(): void
     {
-        // inv(3/4) = 4/3
+        // recip(3/4) = 4/3
         $r1 = new Rational(3, 4);
-        $result = $r1->inv();
+        $result = $r1->recip();
 
         $this->assertSame(4, $result->numerator);
         $this->assertSame(3, $result->denominator);
 
-        // inv(-2/5) = -5/2
+        // recip(-2/5) = -5/2
         $r2 = new Rational(-2, 5);
-        $result2 = $r2->inv();
+        $result2 = $r2->recip();
 
         $this->assertSame(-5, $result2->numerator);
         $this->assertSame(2, $result2->denominator);
 
-        // inv(5) = 1/5
+        // recip(5) = 1/5
         $r3 = new Rational(5);
-        $result3 = $r3->inv();
+        $result3 = $r3->recip();
 
         $this->assertSame(1, $result3->numerator);
         $this->assertSame(5, $result3->denominator);
@@ -128,21 +128,21 @@ class RationalUnaryArithmeticTest extends TestCase
     /**
      * Test reciprocal of zero throws exception.
      */
-    public function testInvZeroThrows(): void
+    public function testRecipZeroThrows(): void
     {
         $this->expectException(ArithmeticException::class);
         $r = new Rational(0);
-        $r->inv();
+        $r->recip();
     }
 
     /**
-     * Test inv() does not modify the original (immutability).
+     * Test recip() does not modify the original (immutability).
      */
-    public function testInvDoesNotMutate(): void
+    public function testRecipDoesNotMutate(): void
     {
         $r = new Rational(3, 4);
 
-        $r->inv();
+        $r->recip();
 
         $this->assertSame(3, $r->numerator);
         $this->assertSame(4, $r->denominator);

@@ -113,14 +113,14 @@ class ComplexPowerTest extends TestCase
     }
 
     /**
-     * Test pow(-1) delegates to inv().
+     * Test pow(-1) delegates to recip().
      */
     public function testPowNegativeOne(): void
     {
         // (3 + 4i)^(-1) = 1/(3 + 4i) = (3 - 4i)/25
         $z = new Complex(3, 4);
         $result = $z->pow(-1);
-        $expected = $z->inv();
+        $expected = $z->recip();
 
         $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
@@ -145,7 +145,7 @@ class ComplexPowerTest extends TestCase
         $this->assertEqualsWithDelta(-0.25, $result->imaginary, EPSILON);
 
         // Also verify it equals the reciprocal of the corresponding positive-exponent result.
-        $expected = $z->pow(3)->inv();
+        $expected = $z->pow(3)->recip();
         $this->assertEqualsWithDelta($expected->real, $result->real, EPSILON);
         $this->assertEqualsWithDelta($expected->imaginary, $result->imaginary, EPSILON);
     }
@@ -236,10 +236,10 @@ class ComplexPowerTest extends TestCase
     public function testPowIntegerUsesSquaring(): void
     {
         $z = new Complex(1.5, -2.25);
-        $inv = $z->inv();
+        $recip = $z->recip();
 
         $this->assertTrue($z->pow(3)->equal($z->mul($z->mul($z))));
-        $this->assertTrue($z->pow(-2)->equal($inv->mul($inv)));
+        $this->assertTrue($z->pow(-2)->equal($recip->mul($recip)));
     }
 
     #endregion

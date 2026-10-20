@@ -191,28 +191,6 @@ class VectorBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test multiplying by a vector is the Hadamard (element-wise) product.
-     */
-    public function testMulByVector(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([4, 5, 6]);
-        $this->assertSame([4.0, 10.0, 18.0], $v1->mul($v2)->toArray());
-    }
-
-    /**
-     * Test multiplying by a vector with a different count throws LengthException.
-     */
-    public function testMulByVectorWithDifferentCountsThrows(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([1, 2]);
-        $this->expectException(LengthException::class);
-        $this->expectExceptionMessage('Cannot multiply by Vector of incorrect count: 2. Expected 3.');
-        $v1->mul($v2);
-    }
-
-    /**
      * Test mul() by a scalar throws when the result overflows.
      */
     public function testMulByScalarOverflowThrows(): void
@@ -233,16 +211,6 @@ class VectorBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test mul() by a vector throws when the result overflows.
-     */
-    public function testMulByVectorOverflowThrows(): void
-    {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot multiply the given Vectors. The result would overflow.');
-        Vector::fromArray([1e200])->mul(Vector::fromArray([1e200]));
-    }
-
-    /**
      * Test mul() by a matrix throws when the result overflows.
      */
     public function testMulByMatrixOverflowThrows(): void
@@ -260,12 +228,21 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulInvalidTypeThrows(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage(
-            'must be of type OceanMoon\\Math\\Vector|OceanMoon\\Math\\Matrix|float, string given'
-        );
+        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Matrix|float, string given');
 
         $x = Vector::fromArray([1, 2]);
         $x->mul('x'); // @phpstan-ignore argument.type
+    }
+
+    /**
+     * Test mul() rejects a vector, since the element-wise product is hadamardMul().
+     */
+    public function testMulByVectorThrows(): void
+    {
+        $this->expectException(TypeError::class);
+
+        $x = Vector::fromArray([1, 2]);
+        $x->mul($x); // @phpstan-ignore argument.type
     }
 
     #endregion
@@ -309,40 +286,6 @@ class VectorBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test dividing by a vector is Hadamard (element-wise) division.
-     */
-    public function testDivByVector(): void
-    {
-        $v1 = Vector::fromArray([4, 10, 18]);
-        $v2 = Vector::fromArray([4, 5, 6]);
-        $this->assertSame([1.0, 2.0, 3.0], $v1->div($v2)->toArray());
-    }
-
-    /**
-     * Test dividing by a vector with a different count throws LengthException.
-     */
-    public function testDivByVectorWithDifferentCountsThrows(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([1, 2]);
-        $this->expectException(LengthException::class);
-        $this->expectExceptionMessage('Cannot divide by Vector of incorrect count: 2. Expected 3.');
-        $v1->div($v2);
-    }
-
-    /**
-     * Test dividing by a vector with a zero element throws ArithmeticException.
-     */
-    public function testDivByVectorWithZeroElementThrows(): void
-    {
-        $v1 = Vector::fromArray([1, 2, 3]);
-        $v2 = Vector::fromArray([1, 0, 1]);
-        $this->expectException(ArithmeticException::class);
-        $this->expectExceptionMessage('Cannot divide by zero at index 1.');
-        $v1->div($v2);
-    }
-
-    /**
      * Test div() by a scalar throws when the result overflows.
      */
     public function testDivByScalarOverflowThrows(): void
@@ -353,25 +296,116 @@ class VectorBinaryArithmeticTest extends TestCase
     }
 
     /**
-     * Test div() by a vector throws when the result overflows.
-     */
-    public function testDivByVectorOverflowThrows(): void
-    {
-        $this->expectException(OverflowException::class);
-        $this->expectExceptionMessage('Cannot divide the given Vectors. The result would overflow.');
-        Vector::fromArray([1e200])->div(Vector::fromArray([1e-200]));
-    }
-
-    /**
      * Test div() with an argument of the wrong type throws TypeError, naming the accepted types.
      */
     public function testDivInvalidTypeThrows(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Vector|float, string given');
+        $this->expectExceptionMessage('must be of type float, string given');
 
         $x = Vector::fromArray([1, 2]);
         $x->div('x'); // @phpstan-ignore argument.type
+    }
+
+    /**
+     * Test div() rejects a vector, since element-wise division is hadamardDiv().
+     */
+    public function testDivByVectorThrows(): void
+    {
+        $this->expectException(TypeError::class);
+
+        $x = Vector::fromArray([1, 2]);
+        $x->div($x); // @phpstan-ignore argument.type
+    }
+
+    #endregion
+
+    #region Method hadamardMul() tests.
+
+    /**
+     * Test the Hadamard (element-wise) product of two vectors.
+     */
+    public function testHadamardMul(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $this->assertSame([4.0, 10.0, 18.0], $v1->hadamardMul($v2)->toArray());
+    }
+
+    /**
+     * Test the Hadamard product of vectors with different counts throws LengthException.
+     */
+    public function testHadamardMulWithDifferentCountsThrows(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
+        $this->expectException(LengthException::class);
+        $this->expectExceptionMessage('Cannot compute Hadamard product with Vector of incorrect count: 2. Expected 3.');
+        $v1->hadamardMul($v2);
+    }
+
+    /**
+     * Test hadamardMul() throws when the result overflows.
+     */
+    public function testHadamardMulOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot compute Hadamard product of the given Vectors. The result would overflow.'
+        );
+        Vector::fromArray([1e200])->hadamardMul(Vector::fromArray([1e200]));
+    }
+
+    #endregion
+
+    #region Method hadamardDiv() tests.
+
+    /**
+     * Test the Hadamard (element-wise) division of two vectors.
+     */
+    public function testHadamardDiv(): void
+    {
+        $v1 = Vector::fromArray([4, 10, 18]);
+        $v2 = Vector::fromArray([4, 5, 6]);
+        $this->assertSame([1.0, 2.0, 3.0], $v1->hadamardDiv($v2)->toArray());
+    }
+
+    /**
+     * Test the Hadamard division of vectors with different counts throws LengthException.
+     */
+    public function testHadamardDivWithDifferentCountsThrows(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 2]);
+        $this->expectException(LengthException::class);
+        $this->expectExceptionMessage(
+            'Cannot compute Hadamard quotient with Vector of incorrect count: 2. Expected 3.'
+        );
+        $v1->hadamardDiv($v2);
+    }
+
+    /**
+     * Test the Hadamard division by a vector containing a zero element throws ArithmeticException.
+     */
+    public function testHadamardDivWithZeroElementThrows(): void
+    {
+        $v1 = Vector::fromArray([1, 2, 3]);
+        $v2 = Vector::fromArray([1, 0, 1]);
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage('Cannot divide by zero at index 1.');
+        $v1->hadamardDiv($v2);
+    }
+
+    /**
+     * Test hadamardDiv() throws when the result overflows.
+     */
+    public function testHadamardDivOverflowThrows(): void
+    {
+        $this->expectException(OverflowException::class);
+        $this->expectExceptionMessage(
+            'Cannot compute Hadamard quotient of the given Vectors. The result would overflow.'
+        );
+        Vector::fromArray([1e200])->hadamardDiv(Vector::fromArray([1e-200]));
     }
 
     #endregion

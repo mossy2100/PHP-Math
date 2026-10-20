@@ -68,69 +68,69 @@ class ComplexUnaryArithmeticTest extends TestCase
 
     #endregion
 
-    #region Method inv() tests.
+    #region Method recip() tests.
 
     /**
      * Test reciprocal (multiplicative inverse).
      */
-    public function testInv(): void
+    public function testRecip(): void
     {
         // 1 / (3 + 4i) = (3 - 4i) / 25 = 0.12 - 0.16i
         $z = new Complex(3, 4);
-        $result = $z->inv();
+        $result = $z->recip();
 
         $this->assertEqualsWithDelta(0.12, $result->real, EPSILON);
         $this->assertEqualsWithDelta(-0.16, $result->imaginary, EPSILON);
 
-        // Verify z * inv(z) = 1
+        // Verify z * recip(z) = 1
         $product = $z->mul($result);
         $this->assertEqualsWithDelta(1.0, $product->real, EPSILON);
         $this->assertEqualsWithDelta(0.0, $product->imaginary, EPSILON);
     }
 
     /**
-     * Test inv() of a tiny complex number, whose components would underflow to zero if squared.
+     * Test recip() of a tiny complex number, whose components would underflow to zero if squared.
      */
-    public function testInvTiny(): void
+    public function testRecipTiny(): void
     {
         // 1 / (1e-300 + 1e-300i) = 5e299 - 5e299i
-        $result = new Complex(1e-300, 1e-300)->inv();
+        $result = new Complex(1e-300, 1e-300)->recip();
 
         $this->assertApproxEqual(5e299, $result->real);
         $this->assertApproxEqual(-5e299, $result->imaginary);
     }
 
     /**
-     * Test inv() does not modify the original (immutability).
+     * Test recip() does not modify the original (immutability).
      */
-    public function testInvDoesNotMutate(): void
+    public function testRecipDoesNotMutate(): void
     {
         $z = new Complex(3, 4);
 
-        $z->inv();
+        $z->recip();
 
         $this->assertSame(3.0, $z->real);
         $this->assertSame(4.0, $z->imaginary);
     }
 
     /**
-     * Test inv() throws when the result overflows.
+     * Test recip() throws when the result overflows.
      */
-    public function testInvOverflowThrows(): void
+    public function testRecipOverflowThrows(): void
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot invert the given Complex. The result would overflow.');
-        new Complex(1e-320)->inv();
+        new Complex(1e-320)->recip();
     }
 
     /**
-     * Test inv() throws for zero.
+     * Test recip() throws for zero.
      */
-    public function testInvZeroThrows(): void
+    public function testRecipZeroThrows(): void
     {
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage('Cannot divide by zero.');
-        new Complex()->inv();
+        new Complex()->recip();
     }
 
     #endregion

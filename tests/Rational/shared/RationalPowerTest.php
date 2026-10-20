@@ -72,7 +72,7 @@ class RationalPowerTest extends TestCase
     }
 
     /**
-     * Test power with exponent -1 delegates to inv().
+     * Test power with exponent -1 delegates to recip().
      */
     public function testPowNegativeOne(): void
     {
@@ -107,7 +107,7 @@ class RationalPowerTest extends TestCase
     /**
      * Test power with exponent PHP_INT_MIN doesn't overflow when negating the exponent.
      *
-     * Negative exponents are normally handled via inv()->pow(-$exponent), but negating PHP_INT_MIN overflows to a
+     * Negative exponents are normally handled via recip()->pow(-$exponent), but negating PHP_INT_MIN overflows to a
      * float in PHP, which would previously cause a TypeError when passed to the int-typed recursive pow() call.
      * Base ±1 is used because any other base would genuinely overflow an int at this magnitude of exponent.
      */

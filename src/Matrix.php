@@ -621,7 +621,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     }
 
     /**
-     * Calculate the element-wise reciprocal of this matrix.
+     * Calculate the Hadamard inverse (element-wise reciprocal) of this matrix.
      *
      * Not to be confused with `inv()`, the matrix inverse - this simply replaces each element with its own
      * reciprocal, with no relationship to matrix multiplication.
@@ -630,7 +630,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @throws ArithmeticException If any element is zero.
      * @throws OverflowException If the result is too large to represent as a float.
      */
-    public function reciprocal(): self
+    public function hadamardInv(): self
     {
         $rows = [];
         foreach ($this->toArray() as $i => $row) {
@@ -940,7 +940,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         foreach ($this->toArray() as $i => $row) {
             foreach ($row as $j => $value) {
                 $product = $value * $otherRows[$i][$j];
-                $row[$j] = self::checkResult($product, 'multiply the given Matrices element-wise');
+                $row[$j] = self::checkResult($product, 'compute Hadamard product of the given Matrices');
             }
             $rows[] = $row;
         }
@@ -976,7 +976,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 if ($divisor === 0.0) {
                     throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
                 }
-                $row[$j] = self::checkResult($value / $divisor, 'divide the given Matrices element-wise');
+                $row[$j] = self::checkResult($value / $divisor, 'compute Hadamard quotient of the given Matrices');
             }
             $rows[] = $row;
         }

@@ -25,9 +25,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **`Matrix::mul()` accepts a `Vector`, replacing `Matrix::mulVector()` (breaking).** `$m->mul($v)` is _Ax_ and returns
   a `Vector`. PHPStan infers the return type from the argument type, which is what `mulVector()` existed for.
-- **`Vector::mul()` and `Vector::div()` accept a `Vector`, replacing `hadamardMul()` and `hadamardDiv()` (breaking).**
-  `$v1->mul($v2)` and `$v1->div($v2)` are element-wise. `div()`'s parameter is renamed from `$scalar` to `$other`.
-  `Matrix::hadamardMul()` and `Matrix::hadamardDiv()` are unchanged.
+- **`Complex::inv()` and `Rational::inv()` are renamed `recip()` (breaking).** `inv()` is now only the matrix inverse,
+  `Matrix::inv()`.
+- **`Vector::reciprocal()` and `Matrix::reciprocal()` are renamed `hadamardInv()` (breaking),** matching
+  `hadamardMul()` and `hadamardDiv()`. It's the element-wise reciprocal, not the matrix inverse.
+- **`Vector::mul()`'s parameter is renamed from `$other` to `$multiplier` (breaking),** since it's a scalar or a
+  `Matrix`, never a `Vector`.
 - **`Vector::fromArray()`/`Matrix::fromArray()` (breaking):** a non-numeric element now throws
   `InvalidArgumentException` instead of `DomainException`, and the message no longer includes the value, e.g. "Cannot
   create Vector from array. Element at index 1 must be an int or float." A non-finite element still throws
@@ -92,11 +95,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 - **`Matrix::pow()` gave the wrong result for an exponent above 2^53**, including `PHP_INT_MAX` and `PHP_INT_MIN`,
   because it halved the exponent with float division.
-- **`Complex::div()`/`inv()` gave wrong results or threw for a very small or large divisor**, even when the result was
-  representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to 1e154.
-  Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and `1 / 1e200` gave
-  `0`.
-- **`Complex::div()`/`inv()`** throw `OverflowException` when the result is too large to represent, e.g. `1 / 1e-320`.
+- **`Complex::div()`/`recip()` gave wrong results or threw for a very small or large divisor**, even when the result
+  was representable. The textbook formula squares the divisor, which underflows or overflows outside about 1e-154 to
+  1e154. Now uses Smith's algorithm. For example, `1 / (1e-300 + 1e-300i)` threw `DivisionByZeroError`, and
+  `1 / 1e200` gave `0`.
+- **`Complex::div()`/`recip()`** throw `OverflowException` when the result is too large to represent, e.g. `1 / 1e-320`.
 - **`Vector::div()`/`Matrix::div()` by ±INF silently returned a zero vector or matrix.** A non-finite scalar now throws
   `DomainException`.
 - **`Vector::magnitude` and `Matrix::norm()` overflowed or underflowed when squaring the elements did**, e.g. the

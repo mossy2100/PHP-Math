@@ -354,19 +354,19 @@ $z = new Complex(3, 4);
 $result = $z->neg();  // -3 - 4i
 ```
 
-### inv()
+### recip()
 
 ```php
-public function inv(): self
+public function recip(): self
 ```
 
-Get the multiplicative inverse (reciprocal).
+Calculate the reciprocal (multiplicative inverse).
 
 **Example:**
 
 ```php
 $z = new Complex(3, 4);
-$result = $z->inv();  // 0.12 - 0.16i
+$result = $z->recip();  // 0.12 - 0.16i
 ```
 
 **Throws:**

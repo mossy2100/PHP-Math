@@ -416,7 +416,7 @@ final class Complex implements Stringable, ArrayAccess
      * @throws ArithmeticException If this Complex is zero.
      * @throws OverflowException If the result is too large to represent as a float.
      */
-    public function inv(): self
+    public function recip(): self
     {
         // Check for division by zero.
         if ($this->equal(0)) {
@@ -1248,9 +1248,9 @@ final class Complex implements Stringable, ArrayAccess
             return $this->sqrt();
         }
 
-        // Handle exponent = -1. Delegate to inv().
+        // Handle exponent = -1. Delegate to recip().
         if ($exp->equal(-1)) {
-            return $this->inv();
+            return $this->recip();
         }
 
         // Handle base = e. This saves unnecessary calls to ln() and mul().
@@ -1265,7 +1265,7 @@ final class Complex implements Stringable, ArrayAccess
             // For negative exponents, invert the base. This works better than inverting the result at the end, because
             // it avoids a possible overflow for large negative exponents.
             if ($exp->real < 0) {
-                $x = $x->inv();
+                $x = $x->recip();
             }
             $y = abs($exp->real);
             while ($y > 0) {
