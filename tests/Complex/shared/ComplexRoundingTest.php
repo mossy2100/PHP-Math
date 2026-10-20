@@ -212,10 +212,10 @@ class ComplexRoundingTest extends TestCase
         $z = new Complex(1.234, 5.678);
         $cases = [
             [PHP_INT_MAX, 1.234, 5.678],
-            [2 ** 32, 1.234, 5.678],
-            [2 ** 32 + 1, 1.234, 5.678],
+            [4294967296, 1.234, 5.678],
+            [4294967297, 1.234, 5.678],
             [PHP_INT_MIN, 0.0, 0.0],
-            [-(2 ** 32), 0.0, 0.0],
+            [-4294967296, 0.0, 0.0],
         ];
 
         foreach ($cases as [$precision, $real, $imag]) {

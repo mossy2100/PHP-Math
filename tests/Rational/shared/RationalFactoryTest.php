@@ -179,6 +179,28 @@ class RationalFactoryTest extends TestCase
         $this->assertSame(0, Rational::fromString('0e9')->numerator);
     }
 
+    /**
+     * Test fromString() trims the same characters as trim(): space, \t, \n, \r, \v and NUL, but not \f. Both the
+     * whole string and each side of the slash are trimmed.
+     */
+    public function testFromStringTrimsLikeTrim(): void
+    {
+        foreach (["\0 \t\n\r\v1/2\0 \t\n\r\v", "1/2\0", "1\0/\0002"] as $str) {
+            $r = Rational::fromString($str);
+            $this->assertSame(1, $r->numerator);
+            $this->assertSame(2, $r->denominator);
+        }
+
+        foreach (["\f1/2", "1/2\f"] as $str) {
+            try {
+                Rational::fromString($str);
+                $this->fail('Expected FormatException for ' . json_encode($str) . '.');
+            } catch (FormatException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+    }
+
     #endregion
 
     #region Method fromFloat() tests.
