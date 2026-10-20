@@ -403,6 +403,81 @@ class MatrixUnaryArithmeticTest extends TestCase
     }
 
     /**
+     * Data provider for testInvSingularAfterRoundingThrows(): singular matrices whose pivots all pass the pivot test,
+     * since rounding during elimination leaves the last one around 1e-15 rather than 0.
+     *
+     * @return array<string, array{list<list<int>>}>
+     */
+    public static function singularAfterRoundingProvider(): array
+    {
+        return [
+            '4×4, row 3 = row 0 - 2 × row 1' => [
+                [
+                    [2, -4, 3, -4],
+                    [-2, 1, -5, -3],
+                    [1, 5, 5, -1],
+                    [6, -6, 13, 2],
+                ],
+            ],
+            '5×5, row 4 = 2 × row 0 + row 3' => [
+                [
+                    [-1, -3, 5, -4, -5],
+                    [3, 4, 3, 3, -5],
+                    [-5, -4, -1, -2, 0],
+                    [5, -2, -5, -5, 5],
+                    [3, -8, 5, -13, -5],
+                ],
+            ],
+            '6×6, row 5 = row 0 + row 1'     => [
+                [
+                    [-2, 3, -2, 2, 1, -4],
+                    [1, 0, -3, 5, 1, -4],
+                    [5, -1, -3, -1, -3, 2],
+                    [0, 4, -5, 5, 0, -1],
+                    [-4, 4, 4, 1, 0, -3],
+                    [-1, 3, -5, 7, 2, -8],
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * Test inv() throws for a singular matrix that passes the pivot test, which the condition number check catches.
+     *
+     * @param list<list<int>> $rows The matrix.
+     */
+    #[DataProvider('singularAfterRoundingProvider')]
+    public function testInvSingularAfterRoundingThrows(array $rows): void
+    {
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage('Cannot invert singular Matrix.');
+        Matrix::fromArray($rows)->inv();
+    }
+
+    /**
+     * Test inv() inverts the 11×11 Hilbert matrix, but rejects the 12×12 one, whose condition number of about 1e16
+     * leaves its inverse with no correct digits.
+     */
+    public function testInvHilbert(): void
+    {
+        $hilbert = static function (int $n): Matrix {
+            $rows = [];
+            for ($i = 0; $i < $n; $i++) {
+                for ($j = 0; $j < $n; $j++) {
+                    $rows[$i][$j] = 1 / ($i + $j + 1);
+                }
+            }
+            return Matrix::fromArray($rows);
+        };
+
+        $this->assertSame(11, $hilbert(11)->inv()->rowCount);
+
+        $this->expectException(ArithmeticException::class);
+        $this->expectExceptionMessage('Cannot invert singular Matrix.');
+        $hilbert(12)->inv();
+    }
+
+    /**
      * Test inv() of a matrix larger than 3×3, inverted by LU decomposition: A × A⁻¹ = I.
      */
     public function testInvLarge(): void

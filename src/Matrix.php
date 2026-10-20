@@ -659,6 +659,12 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * arithmetic, but whose determinant comes out tiny rather than zero in floating point, whose "inverse" would be
      * meaningless. Scaling the columns means a matrix that's merely badly scaled, e.g. [[1, 1e20], [0, 1]], isn't.
      *
+     * Rounding during elimination can still leave such a matrix with pivots that pass that test. So the inverse is
+     * then checked too: the matrix is singular if its condition number, once its rows and columns are scaled the same
+     * way, is at least 1 / (n × PHP_FLOAT_EPSILON). At that point the inverse has no correct digits. That also rejects
+     * a matrix that's invertible in exact arithmetic but too ill-conditioned to invert in floating point, e.g. the
+     * 12×12 Hilbert matrix.
+     *
      * @return self New matrix representing the inverse.
      * @throws DomainException If matrix is not square.
      * @throws ArithmeticException If matrix is singular.
@@ -677,57 +683,13 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new ArithmeticException('Cannot invert singular Matrix.');
         }
 
-        // Invert a matrix larger than 3×3 by LU decomposition.
-        $n = $this->rowCount;
-        if ($n > 3) {
-            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
+        // Invert it, then check it's not too ill-conditioned for the inverse to mean anything.
+        $inverse = $this->calcInv($decomposition);
+        if (self::isIllConditioned($this->toArray(), $inverse->toArray(), $decomposition)) {
+            throw new ArithmeticException('Cannot invert singular Matrix.');
         }
 
-        // Invert a matrix up to 3×3 with the adjugate formula. Try without scaling first, so ordinary results are
-        // unchanged, and a matrix whose elements span a wide range isn't harmed by scaling its smallest elements down
-        // to 0.
-        $scale = 1.0;
-        $scaled = $this;
-        $det = self::calcDet($this->toArray());
-
-        // If the determinant underflowed to 0 or overflowed, as it can for a matrix of uniformly tiny or huge
-        // elements, scale so the largest element is in the range [1, 2) and try again. Scaling by a power of 2 is
-        // exact. inv(A) = inv(A / s) / s.
-        if ($det === 0.0 || !is_finite($det)) {
-            $elements = array_map(abs(...), array_merge(...$this->toArray()));
-            $max = $elements === [] ? 0.0 : max($elements);
-            if ($max !== 0.0) {
-                // As in Vector::powerOf2Scale(), use the power below if log() rounds up, e.g. near PHP_FLOAT_MAX.
-                $exp = floor(log($max, 2));
-                if (2 ** $exp > $max) {
-                    $exp--;
-                }
-                $scale = 2 ** $exp;
-                $scaled = $this->div($scale);
-                $det = self::calcDet($scaled->toArray());
-            }
-        }
-
-        // The determinant is finite here: either it was already, or the matrix was scaled so every element is less than
-        // 2. It can still be 0 if it underflowed even after scaling, which happens when the elements span a wide range,
-        // e.g. diag(1, 1e-200, 1e-200). The singularity check above has passed, so use the LU decomposition instead.
-        if ($det === 0.0) {
-            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
-        }
-
-        // Calculate the inverse from the cofactors.
-        $adjugate = new self($n, $n);
-
-        for ($i = 0; $i < $n; $i++) {
-            for ($j = 0; $j < $n; $j++) {
-                $minor = $scaled->getMinor($i, $j);
-                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * self::calcDet($minor);
-                // Note: transposed.
-                $adjugate->set($j, $i, self::checkResult($cofactor / $det / $scale, 'invert the given Matrix'));
-            }
-        }
-
-        return $adjugate;
+        return $inverse;
     }
 
     #endregion
@@ -1521,9 +1483,15 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * and the decomposition itself is of the matrix as given.
      *
      * @param list<list<float>> $matrix Matrix data.
-     * @return array{lu: array<int, array<int, float>>, perm: array<int, int>, sign: int, singular: bool} The packed
-     * LU, the row permutation (position to original row), the permutation's sign (1 or -1), and whether the matrix is
-     * singular.
+     * @return array{
+     *     lu: array<int, array<int, float>>,
+     *     perm: array<int, int>,
+     *     sign: int,
+     *     singular: bool,
+     *     colScales: array<int, float>,
+     *     rowScales: list<float>
+     * } The packed LU, the row permutation (position to original row), the permutation's sign (1 or -1), whether the
+     * matrix is singular, and the column and row scales used in the pivot test.
      */
     private static function luDecompose(array $matrix): array
     {
@@ -1601,11 +1569,111 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         return [
-            'lu'       => $lu,
-            'perm'     => $perm,
-            'sign'     => $sign,
-            'singular' => $singular,
+            'lu'        => $lu,
+            'perm'      => $perm,
+            'sign'      => $sign,
+            'singular'  => $singular,
+            'colScales' => $colScales,
+            'rowScales' => $rowScales,
         ];
+    }
+
+    /**
+     * Calculate the inverse of a square matrix that has passed the pivot test in luDecompose().
+     *
+     * @param array{lu: array<int, array<int, float>>, perm: array<int, int>} $decomposition Its LU decomposition.
+     * @return self The inverse.
+     * @throws OverflowException If the result is too large to represent as a float.
+     */
+    private function calcInv(array $decomposition): self
+    {
+        // Invert a matrix larger than 3×3 by LU decomposition.
+        $n = $this->rowCount;
+        if ($n > 3) {
+            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
+        }
+
+        // Invert a matrix up to 3×3 with the adjugate formula. Try without scaling first, so ordinary results are
+        // unchanged, and a matrix whose elements span a wide range isn't harmed by scaling its smallest elements down
+        // to 0.
+        $scale = 1.0;
+        $scaled = $this;
+        $det = self::calcDet($this->toArray());
+
+        // If the determinant underflowed to 0 or overflowed, as it can for a matrix of uniformly tiny or huge
+        // elements, scale so the largest element is in the range [1, 2) and try again. Scaling by a power of 2 is
+        // exact. inv(A) = inv(A / s) / s.
+        if ($det === 0.0 || !is_finite($det)) {
+            $elements = array_map(abs(...), array_merge(...$this->toArray()));
+            $max = $elements === [] ? 0.0 : max($elements);
+            if ($max !== 0.0) {
+                // As in Vector::powerOf2Scale(), use the power below if log() rounds up, e.g. near PHP_FLOAT_MAX.
+                $exp = floor(log($max, 2));
+                if (2 ** $exp > $max) {
+                    $exp--;
+                }
+                $scale = 2 ** $exp;
+                $scaled = $this->div($scale);
+                $det = self::calcDet($scaled->toArray());
+            }
+        }
+
+        // The determinant is finite here: either it was already, or the matrix was scaled so every element is less than
+        // 2. It can still be 0 if it underflowed even after scaling, which happens when the elements span a wide range,
+        // e.g. diag(1, 1e-200, 1e-200). The singularity check above has passed, so use the LU decomposition instead.
+        if ($det === 0.0) {
+            return self::invFromLu($decomposition['lu'], $decomposition['perm']);
+        }
+
+        // Calculate the inverse from the cofactors.
+        $adjugate = new self($n, $n);
+
+        for ($i = 0; $i < $n; $i++) {
+            for ($j = 0; $j < $n; $j++) {
+                $minor = $scaled->getMinor($i, $j);
+                $cofactor = (($i + $j) % 2 === 0 ? 1 : -1) * self::calcDet($minor);
+                // Note: transposed.
+                $adjugate->set($j, $i, self::checkResult($cofactor / $det / $scale, 'invert the given Matrix'));
+            }
+        }
+
+        return $adjugate;
+    }
+
+    /**
+     * Check whether a matrix is too ill-conditioned for its computed inverse to have any correct digits.
+     *
+     * Calculates the 1-norm condition number, ‖A‖₁ × ‖A⁻¹‖₁, of the matrix with its columns and rows scaled as in
+     * luDecompose(), so a matrix that's merely badly scaled, e.g. [[1, 1e20], [0, 1]], isn't penalised. For scaled
+     * B = R⁻¹AC⁻¹, where R and C are the diagonal matrices of row and column scales, B⁻¹ = CA⁻¹R. A condition number
+     * of at least 1 / (n × PHP_FLOAT_EPSILON) means the inverse is meaningless.
+     *
+     * @param list<list<float>> $matrix The matrix.
+     * @param list<list<float>> $inverse Its computed inverse.
+     * @param array{colScales: array<int, float>, rowScales: list<float>} $decomposition The scales, from luDecompose().
+     * @return bool True if the matrix is too ill-conditioned.
+     */
+    private static function isIllConditioned(array $matrix, array $inverse, array $decomposition): bool
+    {
+        $n = count($matrix);
+        $colScales = $decomposition['colScales'];
+        $rowScales = $decomposition['rowScales'];
+
+        // Calculate the 1-norm (largest absolute column sum) of the scaled matrix and of its inverse.
+        $norm = 0.0;
+        $inverseNorm = 0.0;
+        for ($j = 0; $j < $n; $j++) {
+            $sum = 0.0;
+            $inverseSum = 0.0;
+            for ($i = 0; $i < $n; $i++) {
+                $sum += abs($matrix[$i][$j]) / ($rowScales[$i] * $colScales[$j]);
+                $inverseSum += abs($inverse[$i][$j]) * $colScales[$i] * $rowScales[$j];
+            }
+            $norm = max($norm, $sum);
+            $inverseNorm = max($inverseNorm, $inverseSum);
+        }
+
+        return $norm * $inverseNorm * $n * PHP_FLOAT_EPSILON >= 1.0;
     }
 
     /**

@@ -93,6 +93,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Fixed
 
+- **`Matrix::inv()` inverted some exactly singular matrices (breaking),** e.g. a 4×4 or larger one with a row that's a
+  combination of two others, giving elements around 1e15. Rounding left the last pivot just above the singularity
+  threshold. The inverse is now also rejected if the condition number shows it has no correct digits. That also
+  rejects a matrix too ill-conditioned to invert in floating point, e.g. the 12×12 Hilbert matrix.
 - **`Complex` gave a phase of π just below the negative real axis (breaking),** e.g. for `new Complex(-1, -1e-17)`,
   whose imaginary part is negative. It's now -π, as in C99, Python and NumPy, so `ln()`, `log()`, `pow()` and `roots()`
   give the principal value from the correct side. The phase range is now [-π, π], not (-π, π].

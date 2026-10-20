@@ -637,6 +637,11 @@ catches a matrix that's singular in exact arithmetic, but whose determinant come
 rounding, e.g. `[[0.1, 0.3], [0.7, 2.1]]`. A matrix that's merely badly scaled, e.g. `[[1, 1e20], [0, 1]]`, isn't
 rejected.
 
+Rounding during elimination can still leave a singular matrix with pivots that pass that test, so the inverse is
+checked too. The matrix is singular if its condition number, with its rows and columns scaled the same way, is at least
+`1 / (n * PHP_FLOAT_EPSILON)`, since the inverse then has no correct digits. That also rejects a matrix that's
+invertible in exact arithmetic but too ill-conditioned to invert in floating point, e.g. the 12×12 Hilbert matrix.
+
 **Returns:** `self` - New matrix representing the inverse.
 
 **Throws:**
