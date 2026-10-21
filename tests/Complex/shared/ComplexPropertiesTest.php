@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Complex;
+namespace Mossy2100\Math\Tests\Complex;
 
-use OceanMoon\Math\Complex;
+use Mossy2100\Math\Complex;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use const OceanMoon\Math\M_I;
+use const Mossy2100\Math\M_I;
 
 #[CoversClass(Complex::class)]
 class ComplexPropertiesTest extends TestCase

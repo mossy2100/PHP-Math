@@ -1,5 +1,5 @@
 {
-    "name": "oceanmoon/math",
+    "name": "mossy2100/math",
     "description": "PHP classes for Complex and Rational number arithmetic, plus Vector and Matrix operations.",
     "type": "library",
     "license": "MIT",
@@ -32,21 +32,21 @@
             "options": {
                 "symlink": true,
                 "versions": {
-                    "oceanmoon/core": "4.0.1"
+                    "mossy2100/core": "4.0.1"
                 }
             }
         }
     ],
     "require": {
         "php": "^8.4",
-        "oceanmoon/core": "^4.0"
+        "mossy2100/core": "^4.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
         "squizlabs/php_codesniffer": "^4.0",
         "phpstan/phpstan": "^2.1",
         "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-        "oceanmoon/coding-standard": "^2.1"
+        "mossy2100/coding-standard": "^2.1"
     },
     "config": {
         "allow-plugins": {
@@ -58,7 +58,7 @@
     },
     "autoload": {
         "psr-4": {
-            "OceanMoon\\Math\\": "src/"
+            "Mossy2100\\Math\\": "src/"
         },
         "files": [
             "src/bootstrap.php"
@@ -66,7 +66,7 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "OceanMoon\\Math\\Tests\\": "tests/"
+            "Mossy2100\\Math\\Tests\\": "tests/"
         }
     },
     "scripts": {

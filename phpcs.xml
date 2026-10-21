@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
-<ruleset name="OceanMoon">
-    <description>Coding standard for the OceanMoon packages by Shaun Moss.</description>
+<ruleset name="Mossy2100">
+    <description>Coding standard for the Mossy2100 packages by Shaun Moss.</description>
 
     <!-- Paths to check -->
     <file>src</file>
     <file>tests</file>
 
-    <!-- Use OceanMoon PHP Coding Standard (includes PSR12 + additional rules) -->
-    <rule ref="OceanMoon"/>
+    <!-- Use Mossy2100 PHP Coding Standard (includes PSR12 + additional rules) -->
+    <rule ref="Mossy2100"/>
 
 </ruleset>

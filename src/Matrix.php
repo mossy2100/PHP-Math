@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math;
+namespace Mossy2100\Math;
 
 use ArrayAccess;
 use ArrayIterator;
@@ -12,11 +12,11 @@ use InvalidArgumentException;
 use IteratorAggregate;
 use LengthException;
 use LogicException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Core\Floats;
-use OceanMoon\Core\Numbers;
-use OceanMoon\Core\Stringify;
-use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Core\Floats;
+use Mossy2100\Core\Numbers;
+use Mossy2100\Core\Stringify;
+use Mossy2100\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use OverflowException;
 use Override;

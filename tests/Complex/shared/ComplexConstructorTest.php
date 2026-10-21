@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Complex;
+namespace Mossy2100\Math\Tests\Complex;
 
 use DomainException;
-use OceanMoon\Math\Complex;
+use Mossy2100\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

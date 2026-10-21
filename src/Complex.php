@@ -2,25 +2,25 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math;
+namespace Mossy2100\Math;
 
 use ArrayAccess;
 use DomainException;
 use InvalidArgumentException;
 use LogicException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Core\Exceptions\FormatException;
-use OceanMoon\Core\Floats;
-use OceanMoon\Core\Numbers;
-use OceanMoon\Core\Stringify;
-use OceanMoon\Core\Traits\Comparison\ApproxEquatable;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Core\Exceptions\FormatException;
+use Mossy2100\Core\Floats;
+use Mossy2100\Core\Numbers;
+use Mossy2100\Core\Stringify;
+use Mossy2100\Core\Traits\Comparison\ApproxEquatable;
 use OutOfRangeException;
 use OverflowException;
 use Override;
 use RoundingMode;
 use Stringable;
 
-use const OceanMoon\Core\M_TAU;
+use const Mossy2100\Core\M_TAU;
 
 /**
  * Encapsulates a complex number and provides a number of useful methods.

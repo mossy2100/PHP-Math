@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Matrix;
+namespace Mossy2100\Math\Tests\Matrix;
 
 use DomainException;
-use OceanMoon\Math\Matrix;
+use Mossy2100\Math\Matrix;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

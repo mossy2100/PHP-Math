@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Complex;
+namespace Mossy2100\Math\Tests\Complex;
 
 use DomainException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Math\Complex;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
-use const OceanMoon\Core\M_TAU;
+use const Mossy2100\Core\M_TAU;
 
 #[CoversClass(Complex::class)]
 class ComplexTranscendentalTest extends TestCase

@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Matrix;
+namespace Mossy2100\Math\Tests\Matrix;
 
 use DomainException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Core\Floats;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
-use OceanMoon\Math\Matrix;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Core\Floats;
+use Mossy2100\Core\Traits\Asserts\FloatAssertions;
+use Mossy2100\Math\Matrix;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

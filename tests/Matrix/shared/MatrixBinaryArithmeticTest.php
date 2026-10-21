@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Matrix;
+namespace Mossy2100\Math\Tests\Matrix;
 
 use DomainException;
 use LengthException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Math\Matrix;
-use OceanMoon\Math\Vector;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Math\Matrix;
+use Mossy2100\Math\Vector;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -296,7 +296,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
-            'must be of type OceanMoon\\Math\\Vector|OceanMoon\\Math\\Matrix|float, string given'
+            'must be of type Mossy2100\\Math\\Vector|Mossy2100\\Math\\Matrix|float, string given'
         );
 
         $x = Matrix::fromArray([

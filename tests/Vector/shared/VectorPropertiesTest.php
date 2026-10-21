@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Vector;
+namespace Mossy2100\Math\Tests\Vector;
 
 use Error;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
-use OceanMoon\Math\Vector;
+use Mossy2100\Core\Traits\Asserts\FloatAssertions;
+use Mossy2100\Math\Vector;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

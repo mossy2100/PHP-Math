@@ -904,7 +904,7 @@ echo $z->phase;      // 0.785... (π/4)
 ### Euler's Identities
 
 ```php
-use const OceanMoon\Core\M_TAU;
+use const Mossy2100\Core\M_TAU;
 
 // e^(iπ) = -1
 $z = new Complex(0, M_PI);
@@ -952,4 +952,4 @@ $sum = $sin2->add($cos2);  // 1
 - **[Vector](Vector.md)** - Vector operations
 - **[Floats](https://github.com/mossy2100/PHP-Core/blob/main/docs/Floats.md)** - Float utilities including approximate comparison
 - **[Globals](Globals.md)** - `M_I`, the imaginary unit constant, used throughout this class's examples
-- **`M_TAU`** - The `OceanMoon\Core\M_TAU` constant (2π), used by `roots()` and `exp()`. See [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).
+- **`M_TAU`** - The `Mossy2100\Core\M_TAU` constant (2π), used by `roots()` and `exp()`. See [Core's Globals](https://github.com/mossy2100/PHP-Core/blob/main/docs/Globals.md).

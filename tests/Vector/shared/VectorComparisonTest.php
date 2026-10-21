@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Vector;
+namespace Mossy2100\Math\Tests\Vector;
 
 use DomainException;
 use InvalidArgumentException;
-use OceanMoon\Math\Matrix;
-use OceanMoon\Math\Vector;
+use Mossy2100\Math\Matrix;
+use Mossy2100\Math\Vector;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

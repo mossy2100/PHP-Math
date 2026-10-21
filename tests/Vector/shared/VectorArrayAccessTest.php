@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Vector;
+namespace Mossy2100\Math\Tests\Vector;
 
 use InvalidArgumentException;
 use LogicException;
-use OceanMoon\Math\Vector;
+use Mossy2100\Math\Vector;
 use OutOfRangeException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;

@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Complex;
+namespace Mossy2100\Math\Tests\Complex;
 
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
-use OceanMoon\Math\Complex;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Core\Traits\Asserts\FloatAssertions;
+use Mossy2100\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use TypeError;
 
-use const OceanMoon\Math\M_I;
+use const Mossy2100\Math\M_I;
 
 #[CoversClass(Complex::class)]
 class ComplexBinaryArithmeticTest extends TestCase
@@ -80,7 +80,7 @@ class ComplexBinaryArithmeticTest extends TestCase
     public function testAddInvalidTypeThrows(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Complex|float, true given');
+        $this->expectExceptionMessage('must be of type Mossy2100\\Math\\Complex|float, true given');
 
         $x = new Complex(1, 2);
         $x->add(true); // @phpstan-ignore argument.type

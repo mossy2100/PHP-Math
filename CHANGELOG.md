@@ -23,6 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### Changed
 
+- **Renamed the package from `oceanmoon/math` to `mossy2100/math`, and the namespace from `OceanMoon\Math` to
+  `Mossy2100\Math` (breaking),** matching the author's GitHub and Packagist name. Update `composer.json` and any
+  `use` statements. It depends on `mossy2100/core`, and the matching extension is now `mossy2100_math`.
 - **`Rational::fromFloat()` gives the simplest `Rational` whose `toFloat()` is the float (breaking).** It's found from
   the exact continued fraction of the float, using integer arithmetic only, and tries semiconvergents as well as
   convergents. Previously, the floating-point continued fraction drifted, and about 3% of random floats didn't

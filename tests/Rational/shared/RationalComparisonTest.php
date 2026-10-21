@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Rational;
+namespace Mossy2100\Math\Tests\Rational;
 
 use DomainException;
 use InvalidArgumentException;
-use OceanMoon\Math\Rational;
+use Mossy2100\Math\Rational;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;

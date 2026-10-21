@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Vector;
+namespace Mossy2100\Math\Tests\Vector;
 
 use DomainException;
 use LengthException;
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Math\Matrix;
-use OceanMoon\Math\Vector;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Math\Matrix;
+use Mossy2100\Math\Vector;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;
@@ -228,7 +228,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulInvalidTypeThrows(): void
     {
         $this->expectException(TypeError::class);
-        $this->expectExceptionMessage('must be of type OceanMoon\\Math\\Matrix|float, string given');
+        $this->expectExceptionMessage('must be of type Mossy2100\\Math\\Matrix|float, string given');
 
         $x = Vector::fromArray([1, 2]);
         $x->mul('x'); // @phpstan-ignore argument.type

@@ -56,7 +56,7 @@ var_export($z == 5);
 Prints:
 
 ```text
-Notice: Object of class OceanMoon\Math\Complex could not be converted to int in /path/example.php on line 19
+Notice: Object of class Mossy2100\Math\Complex could not be converted to int in /path/example.php on line 19
 
 Call Stack:
     0.0002 472080 1. {main}() /path/example.php:0
@@ -257,7 +257,7 @@ Refer to the class documentation for more details:
 
 ## Overloading Operators: the Math Extension
 
-The [OceanMoon Math extension](https://github.com/mossy2100/PHP-Math-extension) provides a PHP extension that replicates this package, with the addition of operators. This
+The [Mossy2100 Math extension](https://github.com/mossy2100/PHP-Math-extension) provides a PHP extension that replicates this package, with the addition of operators. This
 enhances the utility of the types and readability of code, while also providing a substantial performance boost.
 
 All types get a useful set of arithmetic operators. `Complex` and `Rational` also get comparison operators, overriding

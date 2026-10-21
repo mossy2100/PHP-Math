@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace OceanMoon\Math\Tests\Complex;
+namespace Mossy2100\Math\Tests\Complex;
 
-use OceanMoon\Core\Exceptions\ArithmeticException;
-use OceanMoon\Core\Traits\Asserts\FloatAssertions;
-use OceanMoon\Math\Complex;
+use Mossy2100\Core\Exceptions\ArithmeticException;
+use Mossy2100\Core\Traits\Asserts\FloatAssertions;
+use Mossy2100\Math\Complex;
 use OverflowException;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\TestCase;

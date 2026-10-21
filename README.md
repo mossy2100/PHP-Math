@@ -1,4 +1,4 @@
-# OceanMoon PHP Math package
+# Mossy2100 PHP Math package
 
 Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 
@@ -50,14 +50,14 @@ approach has produced a well-designed, production-ready package with thorough te
 ## Requirements
 
 - PHP ^8.4
-- oceanmoon/core
+- mossy2100/core
 
 ---
 
 ## Installation
 
 ```bash
-composer require oceanmoon/math
+composer require mossy2100/math
 ```
 
 ---
@@ -65,8 +65,8 @@ composer require oceanmoon/math
 ## Quick start
 
 ```php
-use OceanMoon\Math\Complex;
-use OceanMoon\Math\Rational;
+use Mossy2100\Math\Complex;
+use Mossy2100\Math\Rational;
 
 $z = new Complex(3, 4);
 echo $z->mul(new Complex(1, -2));    // 11 - 2i
@@ -171,7 +171,7 @@ Mutable two-dimensional matrix with support for:
 
 ## [Globals](docs/Globals.md)
 
-`M_I`, the imaginary unit constant (namespaced to `OceanMoon\Math`), which is more convenient to use as a global than as
+`M_I`, the imaginary unit constant (namespaced to `Mossy2100\Math`), which is more convenient to use as a global than as
 a class member.
 
 ---
