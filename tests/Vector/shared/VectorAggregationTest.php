@@ -65,6 +65,16 @@ class VectorAggregationTest extends TestCase
     }
 
     /**
+     * Test a zero product with a negative factor isn't a negative zero. assertSame() treats -0.0 and 0.0 as equal, so
+     * compare the strings, where -0.0 is "-0".
+     */
+    public function testProdHasNoNegativeZero(): void
+    {
+        $v = Vector::fromArray([0, -3]);
+        $this->assertSame('0', strval($v->prod()));
+    }
+
+    /**
      * Test product of an empty vector is 1 (the multiplicative identity).
      */
     public function testProdWithEmptyVector(): void
