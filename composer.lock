@@ -4,22 +4,22 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9f331d0efb86152f520b2aaedcf9ac1d",
+    "content-hash": "a566c81ddb136d73ee4ffd8b2e7b3735",
     "packages": [
         {
-            "name": "oceanmoon/core",
+            "name": "mossy2100/core",
             "version": "4.0.1",
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "d2289c4f56edb599e6b2d699379d94047086cec0"
+                "reference": "a055842151d886f659da32ea0b4716ad48ae3662"
             },
             "require": {
                 "php": "^8.4"
             },
             "require-dev": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "oceanmoon/coding-standard": "^2.1",
+                "mossy2100/coding-standard": "^2.1",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^10.0 || ^11.0 || ^12.0",
                 "squizlabs/php_codesniffer": "^4.0"
@@ -30,7 +30,7 @@
             },
             "autoload": {
                 "psr-4": {
-                    "OceanMoon\\Core\\": "src/"
+                    "Mossy2100\\Core\\": "src/"
                 },
                 "files": [
                     "src/globals.php"
@@ -38,7 +38,7 @@
             },
             "autoload-dev": {
                 "psr-4": {
-                    "OceanMoon\\Core\\Tests\\": "tests/"
+                    "Mossy2100\\Core\\Tests\\": "tests/"
                 }
             },
             "scripts": {
@@ -205,6 +205,80 @@
             "time": "2026-05-06T08:26:05+00:00"
         },
         {
+            "name": "mossy2100/coding-standard",
+            "version": "2.2.0",
+            "dist": {
+                "type": "path",
+                "url": "../CodingStandard",
+                "reference": "923687941597bb6e8986e8b35f5028295c26d163"
+            },
+            "require": {
+                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+                "php": "^8.4",
+                "slevomat/coding-standard": "^8.25",
+                "squizlabs/php_codesniffer": "^4.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.0"
+            },
+            "type": "phpcodesniffer-standard",
+            "extra": {
+                "phpcodesniffer-search-depth": 3
+            },
+            "scripts": {
+                "fix": [
+                    "vendor/bin/phpcbf -vp"
+                ],
+                "check": [
+                    "vendor/bin/phpcs -s"
+                ],
+                "report": [
+                    "vendor/bin/phpcs -q --report=summary"
+                ],
+                "analyze": [
+                    "scripts/analyze"
+                ],
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "quality": [
+                    "@fix",
+                    "@check",
+                    "@analyze",
+                    "@test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Shaun Moss",
+                    "email": "mossy2100@gmail.com"
+                }
+            ],
+            "description": "PHP_CodeSniffer coding standard extending PSR-12 with lowerCamelCase naming and modern PHP 8.4+ rules.",
+            "homepage": "https://github.com/mossy2100/PHP-Coding-Standard",
+            "keywords": [
+                "code-style",
+                "codesniffer",
+                "coding-standard",
+                "linting",
+                "php",
+                "phpcs",
+                "psr-12"
+            ],
+            "support": {
+                "issues": "https://github.com/mossy2100/PHP-Coding-Standard/issues",
+                "source": "https://github.com/mossy2100/PHP-Coding-Standard"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "myclabs/deep-copy",
             "version": "1.14.0",
             "source": {
@@ -320,61 +394,6 @@
                 "source": "https://github.com/nikic/PHP-Parser/tree/v5.9.0"
             },
             "time": "2026-09-13T18:51:52+00:00"
-        },
-        {
-            "name": "oceanmoon/coding-standard",
-            "version": "v2.2.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/mossy2100/PHP-Coding-Standard.git",
-                "reference": "9e1801e07ebe955ad72b5a7f75f7d26920d94ebd"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/mossy2100/PHP-Coding-Standard/zipball/9e1801e07ebe955ad72b5a7f75f7d26920d94ebd",
-                "reference": "9e1801e07ebe955ad72b5a7f75f7d26920d94ebd",
-                "shasum": ""
-            },
-            "require": {
-                "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-                "php": "^8.4",
-                "slevomat/coding-standard": "^8.25",
-                "squizlabs/php_codesniffer": "^4.0"
-            },
-            "require-dev": {
-                "phpstan/phpstan": "^2.1",
-                "phpunit/phpunit": "^11.0"
-            },
-            "type": "phpcodesniffer-standard",
-            "extra": {
-                "phpcodesniffer-search-depth": 3
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Shaun Moss",
-                    "email": "mossy2100@gmail.com"
-                }
-            ],
-            "description": "PHP_CodeSniffer coding standard extending PSR-12 with lowerCamelCase naming and modern PHP 8.4+ rules.",
-            "homepage": "https://github.com/mossy2100/PHP-Coding-Standard",
-            "keywords": [
-                "code-style",
-                "codesniffer",
-                "coding-standard",
-                "linting",
-                "php",
-                "phpcs",
-                "psr-12"
-            ],
-            "support": {
-                "issues": "https://github.com/mossy2100/PHP-Coding-Standard/issues",
-                "source": "https://github.com/mossy2100/PHP-Coding-Standard"
-            },
-            "time": "2026-08-23T06:46:26+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -964,16 +983,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.38",
+            "version": "12.5.40",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "1e87ad87fe57665a7f6e99a6e467329c11e851cc"
+                "reference": "76bd3198f16aeb375a4d5f3626471445aed0966e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/1e87ad87fe57665a7f6e99a6e467329c11e851cc",
-                "reference": "1e87ad87fe57665a7f6e99a6e467329c11e851cc",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/76bd3198f16aeb375a4d5f3626471445aed0966e",
+                "reference": "76bd3198f16aeb375a4d5f3626471445aed0966e",
                 "shasum": ""
             },
             "require": {
@@ -1042,7 +1061,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.38"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.40"
             },
             "funding": [
                 {
@@ -1050,7 +1069,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-10-05T05:49:30+00:00"
+            "time": "2026-10-16T05:55:07+00:00"
         },
         {
             "name": "sebastian/cli-parser",

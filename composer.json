@@ -35,6 +35,16 @@
                     "mossy2100/core": "4.0.1"
                 }
             }
+        },
+        {
+            "type": "path",
+            "url": "../CodingStandard",
+            "options": {
+                "symlink": true,
+                "versions": {
+                    "mossy2100/coding-standard": "2.2.0"
+                }
+            }
         }
     ],
     "require": {
