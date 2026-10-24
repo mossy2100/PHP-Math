@@ -416,14 +416,14 @@ final class Rational implements Stringable
         // $other is a Rational.
         // If the denominators are equal, we only need to compare numerators.
         if ($this->denominator === $other->denominator) {
-            return Numbers::sign($this->numerator <=> $other->numerator);
+            return $this->numerator <=> $other->numerator;
         }
 
         try {
             // We can avoid a float conversion by cross multiplying and comparing a*d with b*c (for a/b vs c/d).
             $ad = Integers::mul($this->numerator, $other->denominator);
             $bc = Integers::mul($this->denominator, $other->numerator);
-            return Numbers::sign($ad <=> $bc);
+            return $ad <=> $bc;
         } catch (OverflowException) {
             // In case of integer overflow, use the slower exact comparison.
             return $this->compareExact($other);
