@@ -1,4 +1,4 @@
-# Mossy2100 PHP Math package
+# Mossy2100 PHP Math Package
 
 Provides classes for Complex numbers, Rational numbers, Vectors, and Matrices.
 
