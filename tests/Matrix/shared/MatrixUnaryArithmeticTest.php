@@ -426,9 +426,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     {
         $m = Matrix::fromArray($data);
 
-        foreach (
-            [$m->inv(), $m->pow(-1)] as $inverse
-        ) {
+        foreach ([$m->inv(), $m->pow(-1)] as $inverse) {
             foreach ($inverse->toArray() as $row) {
                 foreach ($row as $element) {
                     $this->assertFalse(Floats::isNegativeZero($element));
