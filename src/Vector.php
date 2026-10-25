@@ -169,9 +169,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     public function toRowMatrix(): Matrix
     {
-        return Matrix::fromArray([
-            $this->data,
-        ]);
+        return Matrix::fromArray([$this->data]);
     }
 
     /**
@@ -934,11 +932,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     private static function calcCross(array $a, array $b): array
     {
-        return [
-            $a[1] * $b[2] - $a[2] * $b[1],
-            $a[2] * $b[0] - $a[0] * $b[2],
-            $a[0] * $b[1] - $a[1] * $b[0],
-        ];
+        return [$a[1] * $b[2] - $a[2] * $b[1], $a[2] * $b[0] - $a[0] * $b[2], $a[0] * $b[1] - $a[1] * $b[0]];
     }
 
     /**

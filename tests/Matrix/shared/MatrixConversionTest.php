@@ -18,14 +18,8 @@ class MatrixConversionTest extends TestCase
      */
     public function testToArray(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
-        $this->assertSame([
-            [1.0, 2.0, 3.0],
-            [4.0, 5.0, 6.0],
-        ], $m->toArray());
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+        $this->assertSame([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]], $m->toArray());
     }
 
     #endregion
@@ -37,10 +31,7 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringUsesBoxDrawingCharacters(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $str = (string) $m;
         $this->assertStringContainsString("\u{250C}", $str); // top-left corner
         $this->assertStringContainsString("\u{2510}", $str); // top-right corner
@@ -65,10 +56,7 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringAlignmentWithMixedWidthNumbers(): void
     {
-        $m = Matrix::fromArray([
-            [1, 200],
-            [30, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 200], [30, 4]]);
         $str = (string) $m;
         // The wider number (200) should pad narrower numbers.
         $this->assertStringContainsString('200', $str);
@@ -89,16 +77,7 @@ class MatrixConversionTest extends TestCase
      */
     public function testToStringSuppressesFloatingPointNoise(): void
     {
-        $m = Matrix::fromArray([
-            [
-                0.1 + 0.2,
-                1,
-            ],
-            [
-                2,
-                0.1 + 0.2,
-            ],
-        ]);
+        $m = Matrix::fromArray([[0.1 + 0.2, 1], [2, 0.1 + 0.2]]);
         $str = (string) $m;
 
         // Cells should render as '0.3', not '0.30000000000000004'.

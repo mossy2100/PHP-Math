@@ -668,25 +668,18 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle special case of 0.
         if ($this->equal(0)) {
-            return [
-                new self(),
-            ];
+            return [new self()];
         }
 
         // Handle degree 1.
         if ($degree === 1) {
-            return [
-                clone $this,
-            ];
+            return [clone $this];
         }
 
         // Handle degree 2. Use sqrt(), so the results agree.
         if ($degree === 2) {
             $root = $this->sqrt();
-            return [
-                $root,
-                $root->neg(),
-            ];
+            return [$root, $root->neg()];
         }
 
         // Calculate the magnitude of the roots. Raising to the power 1/n is inexact, as 1/n is rounded, e.g.
@@ -714,9 +707,9 @@ final class Complex implements Stringable, ArrayAccess
             // A root that lies on an axis is the root magnitude times 1, i, -1 or -i, so calculate it exactly.
             if ($quarterTurns !== null && ($quarterTurns + 4 * $k) % $degree === 0) {
                 $roots[] = match (intdiv($quarterTurns + 4 * $k, $degree) % 4) {
-                    0       => new self($rootMag),
-                    1       => new self(0, $rootMag),
-                    2       => new self(-$rootMag),
+                    0 => new self($rootMag),
+                    1 => new self(0, $rootMag),
+                    2 => new self(-$rootMag),
                     default => new self(0, -$rootMag),
                 };
                 continue;
@@ -1386,10 +1379,7 @@ final class Complex implements Stringable, ArrayAccess
         // For a large argument, asinh(z) = sign(x)·(ln(sign(x)·z) + ln 2), to within rounding.
         if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
             [$logReal, $logImag] = Floats::isNegative($x) ? self::calcLogLarge(-$x, -$y) : self::calcLogLarge($x, $y);
-            return [
-                Numbers::copySign($logReal + M_LN2, $x),
-                Numbers::copySign($logImag, $y),
-            ];
+            return [Numbers::copySign($logReal + M_LN2, $x), Numbers::copySign($logImag, $y)];
         }
 
         // For a small argument (including zero), asinh(z) = z, to within rounding.
@@ -1399,10 +1389,7 @@ final class Complex implements Stringable, ArrayAccess
 
         [$rx, $bIsUsable, $b, $sqrtA2My2, $newY] = self::calcAsinhParts($ax, $ay);
         $ry = $bIsUsable ? asin($b) : atan2($newY, $sqrtA2My2);
-        return [
-            Numbers::copySign($rx, $x),
-            Numbers::copySign($ry, $y),
-        ];
+        return [Numbers::copySign($rx, $x), Numbers::copySign($ry, $y)];
     }
 
     /**
@@ -1423,10 +1410,7 @@ final class Complex implements Stringable, ArrayAccess
         if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
             [$logReal, $logImag] = self::calcLogLarge($x, $y);
             $ry = $logReal + M_LN2;
-            return [
-                abs($logImag),
-                Floats::isNegative($y) ? $ry : -$ry,
-            ];
+            return [abs($logImag), Floats::isNegative($y) ? $ry : -$ry];
         }
 
         // acos(1) = 0 exactly.
@@ -1436,10 +1420,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // For a small argument, acos(z) = π/2 - z, to within rounding.
         if ($ax < self::SQRT_6_EPSILON / 4 && $ay < self::SQRT_6_EPSILON / 4) {
-            return [
-                M_PI_2 - ($x - self::PI_2_LO),
-                -$y,
-            ];
+            return [M_PI_2 - ($x - self::PI_2_LO), -$y];
         }
 
         // The same calculation as asinh(), with the parts swapped.
@@ -1449,10 +1430,7 @@ final class Complex implements Stringable, ArrayAccess
         } else {
             $rx = atan2($sqrtA2Mx2, Floats::isNegative($x) ? -$newX : $newX);
         }
-        return [
-            $rx,
-            Floats::isNegative($y) ? $ry : -$ry,
-        ];
+        return [$rx, Floats::isNegative($y) ? $ry : -$ry];
     }
 
     /**
@@ -1500,13 +1478,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // For a tiny y, y / A could underflow, so return √(A² - y²) and y, scaled up, for atan2().
         if ($y < self::FOUR_SQRT_MIN) {
-            return [
-                $rx,
-                false,
-                0.0,
-                $a * (2 / PHP_FLOAT_EPSILON),
-                $y * (2 / PHP_FLOAT_EPSILON),
-            ];
+            return [$rx, false, 0.0, $a * (2 / PHP_FLOAT_EPSILON), $y * (2 / PHP_FLOAT_EPSILON)];
         }
 
         // B = y / A, which is usable unless it's close to 1, where asin() loses accuracy.
@@ -1572,26 +1544,17 @@ final class Complex implements Stringable, ArrayAccess
 
         // A real argument in [-1, 1].
         if ($y === 0.0 && $ax <= 1) {
-            return [
-                atanh($x),
-                $y,
-            ];
+            return [atanh($x), $y];
         }
 
         // An imaginary argument, matching the accuracy of atan().
         if ($x === 0.0) {
-            return [
-                $x,
-                atan($y),
-            ];
+            return [$x, atan($y)];
         }
 
         // For a large argument, atanh(z) = 1/z + sign(y)·iπ/2, to within rounding.
         if ($ax > self::RECIP_EPSILON || $ay > self::RECIP_EPSILON) {
-            return [
-                self::calcRealPartReciprocal($x, $y),
-                Numbers::copySign(M_PI_2, $y),
-            ];
+            return [self::calcRealPartReciprocal($x, $y), Numbers::copySign(M_PI_2, $y)];
         }
 
         // For a small argument, atanh(z) = z, to within rounding.
@@ -1617,10 +1580,7 @@ final class Complex implements Stringable, ArrayAccess
             $ry = atan2(2 * $ay, (1 - $ax) * (1 + $ax) - $ay * $ay) / 2;
         }
 
-        return [
-            Numbers::copySign($rx, $x),
-            Numbers::copySign($ry, $y),
-        ];
+        return [Numbers::copySign($rx, $x), Numbers::copySign($ry, $y)];
     }
 
     /**
@@ -1656,24 +1616,15 @@ final class Complex implements Stringable, ArrayAccess
 
         // hypot() could overflow, so divide both parts by e, and add 1 to the logarithm.
         if ($max > PHP_FLOAT_MAX / 2) {
-            return [
-                log(hypot($x / M_E, $y / M_E)) + 1,
-                atan2($y, $x),
-            ];
+            return [log(hypot($x / M_E, $y / M_E)) + 1, atan2($y, $x)];
         }
 
         // Squaring could overflow or underflow.
         if ($max > self::QUARTER_SQRT_MAX || $min < self::SQRT_MIN) {
-            return [
-                log(hypot($x, $y)),
-                atan2($y, $x),
-            ];
+            return [log(hypot($x, $y)), atan2($y, $x)];
         }
 
-        return [
-            log($max * $max + $min * $min) / 2,
-            atan2($y, $x),
-        ];
+        return [log($max * $max + $min * $min) / 2, atan2($y, $x)];
     }
 
     /**
@@ -1739,10 +1690,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         $sum = $a + $b;
         $bVirtual = $sum - $a;
-        return [
-            $sum,
-            ($a - ($sum - $bVirtual)) + ($b - $bVirtual),
-        ];
+        return [$sum, ($a - ($sum - $bVirtual)) + ($b - $bVirtual)];
     }
 
     /**
@@ -1763,10 +1711,7 @@ final class Complex implements Stringable, ArrayAccess
         $high = $c - ($c - $x);
         $low = $x - $high;
 
-        return [
-            $square,
-            (($high * $high - $square) + 2 * $high * $low) + $low * $low,
-        ];
+        return [$square, (($high * $high - $square) + 2 * $high * $low) + $low * $low];
     }
 
     /**

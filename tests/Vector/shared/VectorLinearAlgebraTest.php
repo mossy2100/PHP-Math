@@ -169,10 +169,7 @@ class VectorLinearAlgebraTest extends TestCase
         $this->assertSame(2, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
         // [1,2] ⊗ [3,4] = [[1*3, 1*4], [2*3, 2*4]] = [[3, 4], [6, 8]]
-        $this->assertSame([
-            [3.0, 4.0],
-            [6.0, 8.0],
-        ], $result->toArray());
+        $this->assertSame([[3.0, 4.0], [6.0, 8.0]], $result->toArray());
     }
 
     /**
@@ -188,11 +185,7 @@ class VectorLinearAlgebraTest extends TestCase
         $this->assertSame(3, $result->rowCount);
         $this->assertSame(2, $result->columnCount);
         // [1,2,3] ⊗ [4,5] = [[4, 5], [8, 10], [12, 15]]
-        $this->assertSame([
-            [4.0, 5.0],
-            [8.0, 10.0],
-            [12.0, 15.0],
-        ], $result->toArray());
+        $this->assertSame([[4.0, 5.0], [8.0, 10.0], [12.0, 15.0]], $result->toArray());
     }
 
     /**
@@ -277,26 +270,11 @@ class VectorLinearAlgebraTest extends TestCase
     public static function normalizeExtremeProvider(): array
     {
         return [
-            'huge'                => [
-                [3e300, 4e300],
-                [0.6, 0.8],
-            ],
-            'huge, magnitude INF' => [
-                [1.5e308, -1.5e308],
-                [M_SQRT1_2, -M_SQRT1_2],
-            ],
-            'tiny'                => [
-                [3e-200, 4e-200],
-                [0.6, 0.8],
-            ],
-            'subnormal'           => [
-                [0.0, -5e-324],
-                [0.0, -1.0],
-            ],
-            'largest float'       => [
-                [PHP_FLOAT_MAX, 0.0],
-                [1.0, 0.0],
-            ],
+            'huge' => [[3e300, 4e300], [0.6, 0.8]],
+            'huge, magnitude INF' => [[1.5e308, -1.5e308], [M_SQRT1_2, -M_SQRT1_2]],
+            'tiny' => [[3e-200, 4e-200], [0.6, 0.8]],
+            'subnormal' => [[0.0, -5e-324], [0.0, -1.0]],
+            'largest float' => [[PHP_FLOAT_MAX, 0.0], [1.0, 0.0]],
         ];
     }
 

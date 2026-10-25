@@ -231,21 +231,21 @@ class ComplexRootTest extends TestCase
     public static function sqrtExactProvider(): array
     {
         return [
-            'zero'                         => [0.0, 0.0, 0.0, 0.0],
-            'positive real'                => [4.0, 0.0, 2.0, 0.0],
+            'zero' => [0.0, 0.0, 0.0, 0.0],
+            'positive real' => [4.0, 0.0, 2.0, 0.0],
             'positive real, negative zero' => [4.0, -0.0, 2.0, 0.0],
-            'negative real'                => [-1.0, 0.0, 0.0, 1.0],
-            'negative real, larger'        => [-4.0, 0.0, 0.0, 2.0],
+            'negative real' => [-1.0, 0.0, 0.0, 1.0],
+            'negative real, larger' => [-4.0, 0.0, 0.0, 2.0],
             'negative real, negative zero' => [-4.0, -0.0, 0.0, 2.0],
-            'positive imaginary'           => [0.0, 2.0, 1.0, 1.0],
-            'negative imaginary'           => [0.0, -2.0, 1.0, -1.0],
-            'positive imaginary, larger'   => [0.0, 8.0, 2.0, 2.0],
-            'first quadrant'               => [3.0, 4.0, 2.0, 1.0],
-            'second quadrant'              => [-3.0, 4.0, 1.0, 2.0],
-            'third quadrant'               => [-3.0, -4.0, 1.0, -2.0],
-            'fourth quadrant'              => [3.0, -4.0, 2.0, -1.0],
-            'huge negative real'           => [-1.6e308, 0.0, 0.0, 1.2649110640673517e154],
-            'tiny negative real'           => [-5e-324, 0.0, 0.0, 2.2227587494850775e-162],
+            'positive imaginary' => [0.0, 2.0, 1.0, 1.0],
+            'negative imaginary' => [0.0, -2.0, 1.0, -1.0],
+            'positive imaginary, larger' => [0.0, 8.0, 2.0, 2.0],
+            'first quadrant' => [3.0, 4.0, 2.0, 1.0],
+            'second quadrant' => [-3.0, 4.0, 1.0, 2.0],
+            'third quadrant' => [-3.0, -4.0, 1.0, -2.0],
+            'fourth quadrant' => [3.0, -4.0, 2.0, -1.0],
+            'huge negative real' => [-1.6e308, 0.0, 0.0, 1.2649110640673517e154],
+            'tiny negative real' => [-5e-324, 0.0, 0.0, 2.2227587494850775e-162],
         ];
     }
 

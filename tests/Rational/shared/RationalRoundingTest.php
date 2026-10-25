@@ -262,9 +262,9 @@ class RationalRoundingTest extends TestCase
         return [
             'positive improper' => [9, 4],
             'negative improper' => [-9, 4],
-            'positive proper'   => [1, 2],
-            'negative proper'   => [-1, 2],
-            'integer'           => [6, 1],
+            'positive proper' => [1, 2],
+            'negative proper' => [-1, 2],
+            'integer' => [6, 1],
         ];
     }
 

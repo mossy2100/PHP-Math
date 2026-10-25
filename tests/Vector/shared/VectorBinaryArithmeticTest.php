@@ -138,11 +138,7 @@ class VectorBinaryArithmeticTest extends TestCase
     public function testMulByMatrix(): void
     {
         $v = Vector::fromArray([1, 2, 3]);
-        $m = Matrix::fromArray([
-            [1, 4],
-            [2, 5],
-            [3, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 4], [2, 5], [3, 6]]);
         $result = $v->mul($m);
 
         $this->assertInstanceOf(Vector::class, $result);
@@ -217,9 +213,7 @@ class VectorBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot multiply the given Vector and Matrix. The result would overflow.');
-        Vector::fromArray([1e200])->mul(Matrix::fromArray([
-            [1e200],
-        ]));
+        Vector::fromArray([1e200])->mul(Matrix::fromArray([[1e200]]));
     }
 
     /**

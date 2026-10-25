@@ -231,36 +231,16 @@ class ComplexPropertiesTest extends TestCase
     public static function phaseBoundaryProvider(): array
     {
         return [
-            'positive real axis'      => [
-                new Complex(1, 0),
-            ],
-            'negative real axis'      => [
-                new Complex(-1, 0),
-            ],
-            'positive imaginary axis' => [
-                new Complex(0, 1),
-            ],
-            'negative imaginary axis' => [
-                new Complex(0, -1),
-            ],
-            'quadrant 1'              => [
-                new Complex(1, 1),
-            ],
-            'quadrant 2'              => [
-                new Complex(-1, 1),
-            ],
-            'quadrant 3'              => [
-                new Complex(-1, -1),
-            ],
-            'quadrant 4'              => [
-                new Complex(1, -1),
-            ],
-            'angle -π'                => [
-                Complex::fromPolar(1, -M_PI),
-            ],
-            'angle 5π wraps to π'     => [
-                Complex::fromPolar(1, 5 * M_PI),
-            ],
+            'positive real axis' => [new Complex(1, 0)],
+            'negative real axis' => [new Complex(-1, 0)],
+            'positive imaginary axis' => [new Complex(0, 1)],
+            'negative imaginary axis' => [new Complex(0, -1)],
+            'quadrant 1' => [new Complex(1, 1)],
+            'quadrant 2' => [new Complex(-1, 1)],
+            'quadrant 3' => [new Complex(-1, -1)],
+            'quadrant 4' => [new Complex(1, -1)],
+            'angle -π' => [Complex::fromPolar(1, -M_PI)],
+            'angle 5π wraps to π' => [Complex::fromPolar(1, 5 * M_PI)],
         ];
     }
 

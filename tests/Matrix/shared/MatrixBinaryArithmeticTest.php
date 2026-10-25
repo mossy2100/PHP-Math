@@ -24,19 +24,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testAdd(): void
     {
-        $m1 = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $m2 = Matrix::fromArray([
-            [5, 6],
-            [7, 8],
-        ]);
+        $m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m2 = Matrix::fromArray([[5, 6], [7, 8]]);
         $result = $m1->add($m2);
-        $this->assertSame([
-            [6.0, 8.0],
-            [10.0, 12.0],
-        ], $result->toArray());
+        $this->assertSame([[6.0, 8.0], [10.0, 12.0]], $result->toArray());
     }
 
     /**
@@ -57,11 +48,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot add the given Matrices. The result would overflow.');
-        Matrix::fromArray([
-            [1e308],
-        ])->add(Matrix::fromArray([
-            [1e308],
-        ]));
+        Matrix::fromArray([[1e308]])->add(Matrix::fromArray([[1e308]]));
     }
 
     #endregion
@@ -73,19 +60,10 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testSub(): void
     {
-        $m1 = Matrix::fromArray([
-            [5, 6],
-            [7, 8],
-        ]);
-        $m2 = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m1 = Matrix::fromArray([[5, 6], [7, 8]]);
+        $m2 = Matrix::fromArray([[1, 2], [3, 4]]);
         $result = $m1->sub($m2);
-        $this->assertSame([
-            [4.0, 4.0],
-            [4.0, 4.0],
-        ], $result->toArray());
+        $this->assertSame([[4.0, 4.0], [4.0, 4.0]], $result->toArray());
     }
 
     /**
@@ -106,11 +84,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot subtract the given Matrices. The result would overflow.');
-        Matrix::fromArray([
-            [1e308],
-        ])->sub(Matrix::fromArray([
-            [-1e308],
-        ]));
+        Matrix::fromArray([[1e308]])->sub(Matrix::fromArray([[-1e308]]));
     }
 
     #endregion
@@ -122,15 +96,9 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByIntScalar(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $result = $m->mul(3);
-        $this->assertSame([
-            [3.0, 6.0],
-            [9.0, 12.0],
-        ], $result->toArray());
+        $this->assertSame([[3.0, 6.0], [9.0, 12.0]], $result->toArray());
     }
 
     /**
@@ -138,15 +106,9 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByFloatScalar(): void
     {
-        $m = Matrix::fromArray([
-            [2, 4],
-            [6, 8],
-        ]);
+        $m = Matrix::fromArray([[2, 4], [6, 8]]);
         $result = $m->mul(0.5);
-        $this->assertSame([
-            [1.0, 2.0],
-            [3.0, 4.0],
-        ], $result->toArray());
+        $this->assertSame([[1.0, 2.0], [3.0, 4.0]], $result->toArray());
     }
 
     /**
@@ -155,15 +117,8 @@ class MatrixBinaryArithmeticTest extends TestCase
     public function testMulByMatrix(): void
     {
         // 2x3 * 3x2 = 2x2
-        $m1 = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
-        $m2 = Matrix::fromArray([
-            [7, 8],
-            [9, 10],
-            [11, 12],
-        ]);
+        $m1 = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
+        $m2 = Matrix::fromArray([[7, 8], [9, 10], [11, 12]]);
         $result = $m1->mul($m2);
         $this->assertInstanceOf(Matrix::class, $result);
         $this->assertSame(2, $result->rowCount);
@@ -192,10 +147,7 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testMulByVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $v = Vector::fromArray([1, 2, 3]);
         $result = $m->mul($v);
         // Row 0: 1*1+2*2+3*3=14
@@ -248,9 +200,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot multiply the given Matrix by 1.0E+200. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->mul(1e200);
+        Matrix::fromArray([[1e200]])->mul(1e200);
     }
 
     /**
@@ -270,9 +220,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot multiply the given Matrix and Vector. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->mul(Vector::fromArray([1e200]));
+        Matrix::fromArray([[1e200]])->mul(Vector::fromArray([1e200]));
     }
 
     /**
@@ -282,11 +230,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot multiply the given Matrices. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->mul(Matrix::fromArray([
-            [1e200],
-        ]));
+        Matrix::fromArray([[1e200]])->mul(Matrix::fromArray([[1e200]]));
     }
 
     /**
@@ -299,9 +243,7 @@ class MatrixBinaryArithmeticTest extends TestCase
             'must be of type Mossy2100\\Math\\Vector|Mossy2100\\Math\\Matrix|float, string given'
         );
 
-        $x = Matrix::fromArray([
-            [1, 2],
-        ]);
+        $x = Matrix::fromArray([[1, 2]]);
         $x->mul('x'); // @phpstan-ignore argument.type
     }
 
@@ -314,10 +256,7 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testDivByScalar(): void
     {
-        $m = Matrix::fromArray([
-            [4, 8],
-            [12, 16],
-        ]);
+        $m = Matrix::fromArray([[4, 8], [12, 16]]);
         $result = $m->div(4);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
@@ -358,9 +297,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot divide the given Matrix by 1.0E-200. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->div(1e-200);
+        Matrix::fromArray([[1e200]])->div(1e-200);
     }
 
     #endregion
@@ -372,14 +309,8 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardMul(): void
     {
-        $m1 = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $m2 = Matrix::fromArray([
-            [5, 6],
-            [7, 8],
-        ]);
+        $m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m2 = Matrix::fromArray([[5, 6], [7, 8]]);
         $result = $m1->hadamardMul($m2);
         $this->assertEqualsWithDelta(5.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(12.0, $result->get(0, 1), EPSILON);
@@ -407,11 +338,7 @@ class MatrixBinaryArithmeticTest extends TestCase
         $this->expectExceptionMessage(
             'Cannot compute Hadamard product of the given Matrices. The result would overflow.'
         );
-        Matrix::fromArray([
-            [1e200],
-        ])->hadamardMul(Matrix::fromArray([
-            [1e200],
-        ]));
+        Matrix::fromArray([[1e200]])->hadamardMul(Matrix::fromArray([[1e200]]));
     }
 
     #endregion
@@ -423,14 +350,8 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDiv(): void
     {
-        $m1 = Matrix::fromArray([
-            [5, 12],
-            [21, 32],
-        ]);
-        $m2 = Matrix::fromArray([
-            [5, 6],
-            [7, 8],
-        ]);
+        $m1 = Matrix::fromArray([[5, 12], [21, 32]]);
+        $m2 = Matrix::fromArray([[5, 6], [7, 8]]);
         $result = $m1->hadamardDiv($m2);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(2.0, $result->get(0, 1), EPSILON);
@@ -454,14 +375,8 @@ class MatrixBinaryArithmeticTest extends TestCase
      */
     public function testHadamardDivByZeroElementThrows(): void
     {
-        $m1 = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
-        $m2 = Matrix::fromArray([
-            [1, 0],
-            [1, 1],
-        ]);
+        $m1 = Matrix::fromArray([[1, 2], [3, 4]]);
+        $m2 = Matrix::fromArray([[1, 0], [1, 1]]);
         $this->expectException(ArithmeticException::class);
         $m1->hadamardDiv($m2);
     }
@@ -475,11 +390,7 @@ class MatrixBinaryArithmeticTest extends TestCase
         $this->expectExceptionMessage(
             'Cannot compute Hadamard quotient of the given Matrices. The result would overflow.'
         );
-        Matrix::fromArray([
-            [1e200],
-        ])->hadamardDiv(Matrix::fromArray([
-            [1e-200],
-        ]));
+        Matrix::fromArray([[1e200]])->hadamardDiv(Matrix::fromArray([[1e-200]]));
     }
 
     #endregion

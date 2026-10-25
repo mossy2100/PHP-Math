@@ -118,18 +118,18 @@ class ComplexFactoryTest extends TestCase
     public static function invalidInputProvider(): array
     {
         return [
-            'empty string'                                    => [''],
-            'random text'                                     => ['abc'],
-            'incomplete expression'                           => ['3+'],
-            'double signs'                                    => ['++i'],
-            'missing imaginary unit'                          => ['3+4'],
-            'incomplete imaginary'                            => ['i+'],
-            'wrong imaginary unit'                            => ['3+4k'],
-            'j is not a supported imaginary unit'             => ['3+4j'],
+            'empty string' => [''],
+            'random text' => ['abc'],
+            'incomplete expression' => ['3+'],
+            'double signs' => ['++i'],
+            'missing imaginary unit' => ['3+4'],
+            'incomplete imaginary' => ['i+'],
+            'wrong imaginary unit' => ['3+4k'],
+            'j is not a supported imaginary unit' => ['3+4j'],
             'I (uppercase) is not a supported imaginary unit' => ['3+4I'],
-            'multiple decimal points'                         => ['3.4.5'],
-            'incomplete scientific notation'                  => ['3e'],
-            'double e'                                        => ['3ee4'],
+            'multiple decimal points' => ['3.4.5'],
+            'incomplete scientific notation' => ['3e'],
+            'double e' => ['3ee4'],
         ];
     }
 
@@ -242,10 +242,7 @@ class ComplexFactoryTest extends TestCase
      */
     public function testFromStringInvalidMessageKeepsNul(): void
     {
-        $cases = [
-            "ab\0cd" => "'ab\0cd'",
-            "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'",
-        ];
+        $cases = ["ab\0cd" => "'ab\0cd'", "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'"];
 
         foreach ($cases as $str => $quoted) {
             try {
@@ -347,23 +344,13 @@ class ComplexFactoryTest extends TestCase
     {
         return [
             'zero' => [0],
-            'π/6'  => [
-                M_PI / 6,
-            ],
-            'π/4'  => [
-                M_PI / 4,
-            ],
-            'π/3'  => [
-                M_PI / 3,
-            ],
-            'π/2'  => [
-                M_PI / 2,
-            ],
-            'π'    => [M_PI],
-            '-π/2' => [
-                -M_PI / 2,
-            ],
-            '-π'   => [-M_PI],
+            'π/6' => [M_PI / 6],
+            'π/4' => [M_PI / 4],
+            'π/3' => [M_PI / 3],
+            'π/2' => [M_PI / 2],
+            'π' => [M_PI],
+            '-π/2' => [-M_PI / 2],
+            '-π' => [-M_PI],
         ];
     }
 
@@ -560,28 +547,13 @@ class ComplexFactoryTest extends TestCase
     public static function polarPhaseProvider(): array
     {
         return [
-            'zero'                                 => [0, 0],
-            'π/6'                                  => [
-                M_PI / 6,
-                M_PI / 6,
-            ],
-            'π/4'                                  => [
-                M_PI / 4,
-                M_PI / 4,
-            ],
-            'π/3'                                  => [
-                M_PI / 3,
-                M_PI / 3,
-            ],
-            'π/2'                                  => [
-                M_PI / 2,
-                M_PI / 2,
-            ],
-            'π'                                    => [M_PI, M_PI],
-            '-π/2'                                 => [
-                -M_PI / 2,
-                -M_PI / 2,
-            ],
+            'zero' => [0, 0],
+            'π/6' => [M_PI / 6, M_PI / 6],
+            'π/4' => [M_PI / 4, M_PI / 4],
+            'π/3' => [M_PI / 3, M_PI / 3],
+            'π/2' => [M_PI / 2, M_PI / 2],
+            'π' => [M_PI, M_PI],
+            '-π/2' => [-M_PI / 2, -M_PI / 2],
             '-π stays -π (imaginary part below 0)' => [-M_PI, -M_PI],
         ];
     }
@@ -610,10 +582,7 @@ class ComplexFactoryTest extends TestCase
     public static function fromPolarCosSinProvider(): array
     {
         return [
-            'phase above π'  => [
-                2.0,
-                3 * M_PI,
-            ],
+            'phase above π' => [2.0, 3 * M_PI],
             'phase above 2π' => [1.0, 10.0],
             'tiny magnitude' => [1.825884099502994e-13, -0.38795732096208135],
             'huge magnitude' => [3.602413106058919e+279, 0.4972875853987818],

@@ -56,10 +56,7 @@ class MatrixAggregationTest extends TestCase
      */
     public function testCountMatchesRowIndexesAndForeach(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
         $rows = [];
         for ($i = 0; $i < count($m); $i++) {

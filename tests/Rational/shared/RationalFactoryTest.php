@@ -131,10 +131,7 @@ class RationalFactoryTest extends TestCase
      */
     public function testFromStringInvalidMessageKeepsNul(): void
     {
-        $cases = [
-            "ab\0cd"                       => "'ab\0cd'",
-            "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'",
-        ];
+        $cases = ["ab\0cd" => "'ab\0cd'", "ab\0cd" . str_repeat('x', 40) => "'ab\0cd" . str_repeat('x', 24) . "…'"];
 
         foreach ($cases as $str => $quoted) {
             try {
@@ -164,14 +161,14 @@ class RationalFactoryTest extends TestCase
     public static function fromStringOutOfRangeProvider(): array
     {
         return [
-            'PHP_INT_MAX + 1'       => ['9223372036854775808'],
-            'PHP_INT_MIN - 1'       => ['-9223372036854775809'],
-            '10^19 with a sign'     => ['+10000000000000000000'],
-            'leading zeros'         => ['009223372036854775808'],
-            'float too large'       => ['9.3e18'],
-            'float overflows'       => ['1e400'],
+            'PHP_INT_MAX + 1' => ['9223372036854775808'],
+            'PHP_INT_MIN - 1' => ['-9223372036854775809'],
+            '10^19 with a sign' => ['+10000000000000000000'],
+            'leading zeros' => ['009223372036854775808'],
+            'float too large' => ['9.3e18'],
+            'float overflows' => ['1e400'],
             'float overflows, neg.' => ['-1e999'],
-            'float too small'       => ['1e-30'],
+            'float too small' => ['1e-30'],
         ];
     }
 
@@ -380,9 +377,9 @@ class RationalFactoryTest extends TestCase
     public static function fromFloatClosestProvider(): array
     {
         return [
-            'convergent'                   => [4.2968161631783745e-19, 2, 4654609189797384543],
-            'semiconvergent'               => [4.113853429204107e-19, 3, 7292432877416344060],
-            'convergent, by tie-break'     => [2.111472453315322e-19, 1, 4736031476185507471],
+            'convergent' => [4.2968161631783745e-19, 2, 4654609189797384543],
+            'semiconvergent' => [4.113853429204107e-19, 3, 7292432877416344060],
+            'convergent, by tie-break' => [2.111472453315322e-19, 1, 4736031476185507471],
             'semiconvergent, by tie-break' => [3.9465414738445046e-19, 3, 7601592482639145431],
         ];
     }

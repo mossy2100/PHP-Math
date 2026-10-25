@@ -33,10 +33,7 @@ class MatrixNormTest extends TestCase
     public function testNormFrobeniusSimple(): void
     {
         // [[1, 2], [3, 4]]: sqrt(1+4+9+16) = sqrt(30)
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $this->assertEqualsWithDelta(sqrt(30), $m->norm(), EPSILON);
     }
 
@@ -46,10 +43,7 @@ class MatrixNormTest extends TestCase
     public function testNormFrobeniusNonSquare(): void
     {
         // [[1, 2, 3], [4, 5, 6]]: sqrt(1+4+9+16+25+36) = sqrt(91)
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $this->assertEqualsWithDelta(sqrt(91), $m->norm(), EPSILON);
     }
 
@@ -69,10 +63,10 @@ class MatrixNormTest extends TestCase
     public static function normFrobeniusExtremeProvider(): array
     {
         return [
-            'huge'                   => [3e300, 4e300, 5e300],
+            'huge' => [3e300, 4e300, 5e300],
             'huge, squares overflow' => [1e308, -1e308, 1.4142135623730951e308],
-            'tiny'                   => [3e-200, 4e-200, 5e-200],
-            'largest float'          => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
+            'tiny' => [3e-200, 4e-200, 5e-200],
+            'largest float' => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
         ];
     }
 
@@ -82,9 +76,7 @@ class MatrixNormTest extends TestCase
     #[DataProvider('normFrobeniusExtremeProvider')]
     public function testNormFrobeniusExtreme(float $a, float $b, float $expected): void
     {
-        $m = Matrix::fromArray([
-            [$a, $b],
-        ]);
+        $m = Matrix::fromArray([[$a, $b]]);
 
         // Use a zero absolute tolerance, so a norm that wrongly underflows to 0 fails.
         $this->assertApproxEqual($expected, $m->norm(), absTol: 0.0);
@@ -97,10 +89,7 @@ class MatrixNormTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute norm of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1.5e308],
-            [1.5e308],
-        ])->norm();
+        Matrix::fromArray([[1.5e308], [1.5e308]])->norm();
     }
 
     #endregion
@@ -113,10 +102,7 @@ class MatrixNormTest extends TestCase
     public function testNormP1(): void
     {
         // [[1, -2], [3, 4]]: col0 = |1|+|3| = 4, col1 = |-2|+|4| = 6 => 6
-        $m = Matrix::fromArray([
-            [1, -2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, -2], [3, 4]]);
         $this->assertSame(6.0, $m->p1Norm());
     }
 
@@ -127,10 +113,7 @@ class MatrixNormTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute P1 norm of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e308],
-            [1e308],
-        ])->p1Norm();
+        Matrix::fromArray([[1e308], [1e308]])->p1Norm();
     }
 
     #endregion
@@ -143,10 +126,7 @@ class MatrixNormTest extends TestCase
     public function testNormPInf(): void
     {
         // [[1, -2], [3, 4]]: row0 = |1|+|-2| = 3, row1 = |3|+|4| = 7 => 7
-        $m = Matrix::fromArray([
-            [1, -2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, -2], [3, 4]]);
         $this->assertSame(7.0, $m->pInfNorm());
     }
 
@@ -157,9 +137,7 @@ class MatrixNormTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute P-infinity norm of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e308, 1e308],
-        ])->pInfNorm();
+        Matrix::fromArray([[1e308, 1e308]])->pInfNorm();
     }
 
     #endregion

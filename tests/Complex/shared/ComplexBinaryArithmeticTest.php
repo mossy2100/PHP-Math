@@ -277,12 +277,12 @@ class ComplexBinaryArithmeticTest extends TestCase
     public static function divExtremeProvider(): array
     {
         return [
-            'tiny real divisor'           => [1.0, 0.0, 1e-160, 0.0, 1e160, 0.0],
-            'tiny complex divisor'        => [1.0, 0.0, 1e-300, 1e-300, 5e299, -5e299],
-            'tiny imaginary divisor'      => [1.0, 0.0, 0.0, 1e-300, 0.0, -1e300],
-            'huge real divisor'           => [1.0, 0.0, 1e200, 0.0, 1e-200, 0.0],
-            'huge complex divisor'        => [1e200, 0.0, 1e200, 1e200, 0.5, -0.5],
-            'huge dividend and divisor'   => [3e300, 4e300, 1e300, 2e300, 2.2, -0.4],
+            'tiny real divisor' => [1.0, 0.0, 1e-160, 0.0, 1e160, 0.0],
+            'tiny complex divisor' => [1.0, 0.0, 1e-300, 1e-300, 5e299, -5e299],
+            'tiny imaginary divisor' => [1.0, 0.0, 0.0, 1e-300, 0.0, -1e300],
+            'huge real divisor' => [1.0, 0.0, 1e200, 0.0, 1e-200, 0.0],
+            'huge complex divisor' => [1e200, 0.0, 1e200, 1e200, 0.5, -0.5],
+            'huge dividend and divisor' => [3e300, 4e300, 1e300, 2e300, 2.2, -0.4],
             'tiny dividend, tiny divisor' => [1e-300, 0.0, 0.0, 2e-300, 0.0, -0.5],
         ];
     }

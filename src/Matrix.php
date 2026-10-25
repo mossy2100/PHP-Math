@@ -1569,10 +1569,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         return [
-            'lu'        => $lu,
-            'perm'      => $perm,
-            'sign'      => $sign,
-            'singular'  => $singular,
+            'lu' => $lu,
+            'perm' => $perm,
+            'sign' => $sign,
+            'singular' => $singular,
             'colScales' => $colScales,
             'rowScales' => $rowScales,
         ];

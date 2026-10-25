@@ -99,10 +99,7 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetRowWithVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $m->setRow(1, Vector::fromArray([10, 11, 12]));
 
         $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
@@ -152,10 +149,7 @@ class MatrixModificationTest extends TestCase
      */
     public function testSetColumnWithVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $m->setColumn(2, Vector::fromArray([30, 60]));
 
         $this->assertSame([1.0, 2.0, 30.0], $m->getRow(0)->toArray());
@@ -192,16 +186,9 @@ class MatrixModificationTest extends TestCase
     public function testPasteAtDefaultOffset(): void
     {
         $m = new Matrix(3, 3);
-        $m->paste(Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]));
+        $m->paste(Matrix::fromArray([[1, 2], [3, 4]]));
 
-        $this->assertSame([
-            [1.0, 2.0, 0.0],
-            [3.0, 4.0, 0.0],
-            [0.0, 0.0, 0.0],
-        ], $m->toArray());
+        $this->assertSame([[1.0, 2.0, 0.0], [3.0, 4.0, 0.0], [0.0, 0.0, 0.0]], $m->toArray());
     }
 
     /**
@@ -210,16 +197,9 @@ class MatrixModificationTest extends TestCase
     public function testPasteAtOffset(): void
     {
         $m = new Matrix(3, 3);
-        $m->paste(Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]), 1, 1);
+        $m->paste(Matrix::fromArray([[1, 2], [3, 4]]), 1, 1);
 
-        $this->assertSame([
-            [0.0, 0.0, 0.0],
-            [0.0, 1.0, 2.0],
-            [0.0, 3.0, 4.0],
-        ], $m->toArray());
+        $this->assertSame([[0.0, 0.0, 0.0], [0.0, 1.0, 2.0], [0.0, 3.0, 4.0]], $m->toArray());
     }
 
     /**
@@ -228,15 +208,9 @@ class MatrixModificationTest extends TestCase
     public function testPasteOverwritesExistingElements(): void
     {
         $idMat = Matrix::identity(2);
-        $idMat->paste(Matrix::fromArray([
-            [5, 6],
-            [7, 8],
-        ]));
+        $idMat->paste(Matrix::fromArray([[5, 6], [7, 8]]));
 
-        $this->assertSame([
-            [5.0, 6.0],
-            [7.0, 8.0],
-        ], $idMat->toArray());
+        $this->assertSame([[5.0, 6.0], [7.0, 8.0]], $idMat->toArray());
     }
 
     /**
@@ -245,15 +219,9 @@ class MatrixModificationTest extends TestCase
     public function testPasteMutatesInPlace(): void
     {
         $m = new Matrix(2, 2);
-        $m->paste(Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]));
+        $m->paste(Matrix::fromArray([[1, 2], [3, 4]]));
 
-        $this->assertSame([
-            [1.0, 2.0],
-            [3.0, 4.0],
-        ], $m->toArray());
+        $this->assertSame([[1.0, 2.0], [3.0, 4.0]], $m->toArray());
     }
 
     /**
@@ -264,10 +232,7 @@ class MatrixModificationTest extends TestCase
         $idMat = Matrix::identity(2);
         $idMat->paste(new Matrix(0, 0));
 
-        $this->assertSame([
-            [1.0, 0.0],
-            [0.0, 1.0],
-        ], $idMat->toArray());
+        $this->assertSame([[1.0, 0.0], [0.0, 1.0]], $idMat->toArray());
     }
 
     /**
@@ -287,10 +252,7 @@ class MatrixModificationTest extends TestCase
     {
         $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->paste(Matrix::fromArray([
-            [1],
-            [2],
-        ]), 2, 0);
+        $m->paste(Matrix::fromArray([[1], [2]]), 2, 0);
     }
 
     /**
@@ -310,9 +272,7 @@ class MatrixModificationTest extends TestCase
     {
         $m = new Matrix(3, 3);
         $this->expectException(OutOfRangeException::class);
-        $m->paste(Matrix::fromArray([
-            [1, 2],
-        ]), 0, 2);
+        $m->paste(Matrix::fromArray([[1, 2]]), 0, 2);
     }
 
     /**
@@ -321,19 +281,12 @@ class MatrixModificationTest extends TestCase
      */
     public function testCopyAndPasteComposition(): void
     {
-        $rotation = Matrix::fromArray([
-            [0, -1],
-            [1, 0],
-        ]);
+        $rotation = Matrix::fromArray([[0, -1], [1, 0]]);
 
         $transform = Matrix::identity(3);
         $transform->paste($rotation);
 
-        $this->assertSame([
-            [0.0, -1.0, 0.0],
-            [1.0, 0.0, 0.0],
-            [0.0, 0.0, 1.0],
-        ], $transform->toArray());
+        $this->assertSame([[0.0, -1.0, 0.0], [1.0, 0.0, 0.0], [0.0, 0.0, 1.0]], $transform->toArray());
 
         // Extracting the same region back out should reproduce the original.
         $extracted = $transform->copy(0, 0, 2, 2);

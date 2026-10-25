@@ -412,13 +412,13 @@ class RationalBinaryArithmeticTest extends TestCase
     public static function modProvider(): array
     {
         return [
-            'both positive'        => ['7/2', '2', '3/2'],
-            'negative dividend'    => ['-7/2', '2', '-3/2'],
-            'negative divisor'     => ['7/2', '-2', '3/2'],
-            'both negative'        => ['-7/2', '-2', '-3/2'],
-            'fractional divisor'   => ['-1/2', '1/3', '-1/6'],
-            'exact multiple'       => ['9/2', '3/2', '0'],
-            'zero dividend'        => ['0', '-3/4', '0'],
+            'both positive' => ['7/2', '2', '3/2'],
+            'negative dividend' => ['-7/2', '2', '-3/2'],
+            'negative divisor' => ['7/2', '-2', '3/2'],
+            'both negative' => ['-7/2', '-2', '-3/2'],
+            'fractional divisor' => ['-1/2', '1/3', '-1/6'],
+            'exact multiple' => ['9/2', '3/2', '0'],
+            'zero dividend' => ['0', '-3/4', '0'],
             'smaller than divisor' => ['-1/3', '-2', '-1/3'],
         ];
     }
@@ -453,10 +453,7 @@ class RationalBinaryArithmeticTest extends TestCase
         $r = new Rational(3, 4);
 
         foreach (
-            [
-                0,
-                new Rational(0),
-            ] as $zero
+            [0, new Rational(0)] as $zero
         ) {
             try {
                 $r->mod($zero);

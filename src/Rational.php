@@ -300,10 +300,7 @@ final class Rational implements Stringable
     public function toMixedNumber(): array
     {
         // The remainder has the same sign as this Rational.
-        return [
-            $this->trunc(),
-            new self($this->numerator % $this->denominator, $this->denominator),
-        ];
+        return [$this->trunc(), new self($this->numerator % $this->denominator, $this->denominator)];
     }
 
     /**
@@ -1230,10 +1227,7 @@ final class Rational implements Stringable
                         return self::simplestSemiconvergent($h0, $k0, $h1, $k1, $t, $x);
                     }
                     if (self::semiconvergentIsCloser($terms, $n, $t)) {
-                        return [
-                            $h1 + $t * $h0,
-                            $k1 + $t * $k0,
-                        ];
+                        return [$h1 + $t * $h0, $k1 + $t * $k0];
                     }
                 }
                 return [$h0, $k0];
@@ -1346,10 +1340,7 @@ final class Rational implements Stringable
                 $low = $mid + 1;
             }
         }
-        return [
-            $h1 + $high * $h0,
-            $k1 + $high * $k0,
-        ];
+        return [$h1 + $high * $h0, $k1 + $high * $k0];
     }
 
     /**
@@ -1378,10 +1369,7 @@ final class Rational implements Stringable
         $ratio = array_reverse(array_slice($terms, 1, $n - 1));
         $count = count($ratio);
         if ($count > 1 && $ratio[$count - 1] === 1) {
-            $ratio = [
-                ...array_slice($ratio, 0, $count - 2),
-                $ratio[$count - 2] + 1,
-            ];
+            $ratio = [...array_slice($ratio, 0, $count - 2), $ratio[$count - 2] + 1];
         }
 
         return self::compareContinuedFractions($rest, $ratio) > 0;

@@ -70,10 +70,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetValidElement(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $this->assertSame(1.0, $m->get(0, 0));
         $this->assertSame(5.0, $m->get(1, 1));
         $this->assertSame(6.0, $m->get(1, 2));
@@ -117,9 +114,9 @@ class MatrixInspectionTest extends TestCase
     public static function getOutOfRangeMessageProvider(): array
     {
         return [
-            'row'        => [3, 3, 3, 0, 'Invalid row index: 3. Must be in the range 0-2.'],
-            'column'     => [3, 3, 0, -1, 'Invalid column index: -1. Must be in the range 0-2.'],
-            'no rows'    => [0, 0, 0, 0, 'Invalid row index: 0. The Matrix has no rows.'],
+            'row' => [3, 3, 3, 0, 'Invalid row index: 3. Must be in the range 0-2.'],
+            'column' => [3, 3, 0, -1, 'Invalid column index: -1. Must be in the range 0-2.'],
+            'no rows' => [0, 0, 0, 0, 'Invalid row index: 0. The Matrix has no rows.'],
             'no columns' => [2, 0, 0, 0, 'Invalid column index: 0. The Matrix has no columns.'],
         ];
     }
@@ -144,10 +141,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowReturnsCorrectVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $row = $m->getRow(0);
         $this->assertInstanceOf(Vector::class, $row);
         $this->assertSame([1.0, 2.0, 3.0], $row->toArray());
@@ -181,10 +175,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetRowReturnsIndependentCopy(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $row = $m->getRow(0);
         $row->set(0, 999);
 
@@ -200,10 +191,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testGetColumnReturnsCorrectVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $col = $m->getColumn(0);
         $this->assertInstanceOf(Vector::class, $col);
         $this->assertSame([1.0, 4.0], $col->toArray());
@@ -241,19 +229,12 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopy(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
 
         $sub = $m->copy(1, 1, 2, 2);
         $this->assertSame(2, $sub->rowCount);
         $this->assertSame(2, $sub->columnCount);
-        $this->assertSame([
-            [5.0, 6.0],
-            [8.0, 9.0],
-        ], $sub->toArray());
+        $this->assertSame([[5.0, 6.0], [8.0, 9.0]], $sub->toArray());
     }
 
     /**
@@ -261,15 +242,10 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyFromOrigin(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
         $sub = $m->copy(0, 0, 1, 2);
-        $this->assertSame([
-            [1.0, 2.0],
-        ], $sub->toArray());
+        $this->assertSame([[1.0, 2.0]], $sub->toArray());
     }
 
     /**
@@ -277,10 +253,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyEntireMatrix(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
 
         $sub = $m->copy(0, 0, 2, 2);
         $this->assertTrue($m->equal($sub));
@@ -292,10 +265,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyWithZeroDimension(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
 
         $rows = $m->copy(0, 0, 0, 2);
         $this->assertSame(0, $rows->rowCount);
@@ -311,10 +281,7 @@ class MatrixInspectionTest extends TestCase
      */
     public function testCopyDoesNotMutateOriginal(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
 
         $sub = $m->copy(0, 0, 1, 1);
         $sub->set(0, 0, 99);
@@ -390,26 +357,11 @@ class MatrixInspectionTest extends TestCase
     public static function copyOutOfRangeMessageProvider(): array
     {
         return [
-            'too many rows'    => [
-                [1, 0, 3, 1],
-                'Invalid row range: 1-3. Must be within 0-2.',
-            ],
-            'too many columns' => [
-                [0, 2, 1, 2],
-                'Invalid column range: 2-3. Must be within 0-2.',
-            ],
-            'start at the end' => [
-                [3, 0, 0, 0],
-                'Invalid row index: 3. Must be in the range 0-2.',
-            ],
-            'negative start'   => [
-                [-1, 0, 1, 1],
-                'Invalid row index: -1. Must be in the range 0-2.',
-            ],
-            'negative count'   => [
-                [0, 0, -1, 1],
-                'Invalid row count: -1. Must not be negative.',
-            ],
+            'too many rows' => [[1, 0, 3, 1], 'Invalid row range: 1-3. Must be within 0-2.'],
+            'too many columns' => [[0, 2, 1, 2], 'Invalid column range: 2-3. Must be within 0-2.'],
+            'start at the end' => [[3, 0, 0, 0], 'Invalid row index: 3. Must be in the range 0-2.'],
+            'negative start' => [[-1, 0, 1, 1], 'Invalid row index: -1. Must be in the range 0-2.'],
+            'negative count' => [[0, 0, -1, 1], 'Invalid row count: -1. Must not be negative.'],
         ];
     }
 

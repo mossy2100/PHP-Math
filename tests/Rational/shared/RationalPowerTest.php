@@ -190,23 +190,16 @@ class RationalPowerTest extends TestCase
     public static function powRationalProvider(): array
     {
         return [
-            'square root'           => [4, 9, 1, 2, 2, 3],
-            'negative cube root'    => [8, 27, -1, 3, 3, 2],
-            'root then power'       => [8, 27, -2, 3, 9, 4],
-            'odd root of negative'  => [-8, 27, 1, 3, -2, 3],
-            'odd root, even power'  => [-8, 27, 2, 3, 4, 9],
-            'zero base'             => [0, 1, 1, 2, 0, 1],
-            'base one'              => [1, 1, 5, 7, 1, 1],
+            'square root' => [4, 9, 1, 2, 2, 3],
+            'negative cube root' => [8, 27, -1, 3, 3, 2],
+            'root then power' => [8, 27, -2, 3, 9, 4],
+            'odd root of negative' => [-8, 27, 1, 3, -2, 3],
+            'odd root, even power' => [-8, 27, 2, 3, 4, 9],
+            'zero base' => [0, 1, 1, 2, 0, 1],
+            'base one' => [1, 1, 5, 7, 1, 1],
             'whole-number exponent' => [2, 3, 3, 1, 8, 27],
-            'integer base'          => [4, 1, -1, 2, 1, 2],
-            'largest square root'   => [
-                3037000499 * 3037000499,
-                1,
-                1,
-                2,
-                3037000499,
-                1,
-            ],
+            'integer base' => [4, 1, -1, 2, 1, 2],
+            'largest square root' => [3037000499 * 3037000499, 1, 1, 2, 3037000499, 1],
         ];
     }
 
@@ -231,10 +224,10 @@ class RationalPowerTest extends TestCase
     public static function powRationalIrrationalProvider(): array
     {
         return [
-            'numerator has no root'   => [2, 9, 1, 2],
+            'numerator has no root' => [2, 9, 1, 2],
             'denominator has no root' => [4, 3, 1, 2],
-            'odd root of negative'    => [-2, 1, 1, 3],
-            'root degree 63 or more'  => [2, 1, 1, 64],
+            'odd root of negative' => [-2, 1, 1, 3],
+            'root degree 63 or more' => [2, 1, 1, 64],
             'PHP_INT_MAX square root' => [PHP_INT_MAX, 1, 1, 2],
         ];
     }

@@ -22,10 +22,7 @@ class MatrixFactoryTest extends TestCase
      */
     public function testFromArrayWithValidData(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $this->assertSame(2, $m->rowCount);
         $this->assertSame(3, $m->columnCount);
         $this->assertSame(1.0, $m->get(0, 0));
@@ -37,10 +34,7 @@ class MatrixFactoryTest extends TestCase
      */
     public function testFromArrayWithFloats(): void
     {
-        $m = Matrix::fromArray([
-            [1.5, 2.5],
-            [3.5, 4.5],
-        ]);
+        $m = Matrix::fromArray([[1.5, 2.5], [3.5, 4.5]]);
         $this->assertSame(1.5, $m->get(0, 0));
         $this->assertSame(4.5, $m->get(1, 1));
     }
@@ -73,16 +67,12 @@ class MatrixFactoryTest extends TestCase
     public static function nonNumericElementProvider(): array
     {
         return [
-            'string'         => ['two'],
+            'string' => ['two'],
             'numeric string' => ['2'],
-            'bool'           => [true],
-            'null'           => [null],
-            'array'          => [
-                [1, 2],
-            ],
-            'object'         => [
-                new Matrix(1, 1),
-            ],
+            'bool' => [true],
+            'null' => [null],
+            'array' => [[1, 2]],
+            'object' => [new Matrix(1, 1)],
         ];
     }
 
@@ -98,9 +88,7 @@ class MatrixFactoryTest extends TestCase
         $this->expectExceptionMessage(
             'Cannot create Matrix from array. Element at row 0, column 1 must be an int or float.'
         );
-        Matrix::fromArray([
-            [1, $value, 3],
-        ]);
+        Matrix::fromArray([[1, $value, 3]]);
     }
 
     /**
@@ -109,10 +97,7 @@ class MatrixFactoryTest extends TestCase
     public function testFromArrayWithRaggedRowsThrows(): void
     {
         $this->expectException(LengthException::class);
-        Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5],
-        ]);
+        Matrix::fromArray([[1, 2, 3], [4, 5]]);
     }
 
     /**
@@ -121,10 +106,7 @@ class MatrixFactoryTest extends TestCase
     public function testFromArrayWithNonListOuterArrayThrows(): void
     {
         $this->expectException(DomainException::class);
-        Matrix::fromArray([
-            5 => [1, 2],
-            9 => [3, 4],
-        ]);
+        Matrix::fromArray([5 => [1, 2], 9 => [3, 4]]);
     }
 
     /**
@@ -134,13 +116,7 @@ class MatrixFactoryTest extends TestCase
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage('Cannot create Matrix from array. Row 1 must be a list.');
-        Matrix::fromArray([
-            [1, 2],
-            [
-                5 => 3,
-                9 => 4,
-            ],
-        ]);
+        Matrix::fromArray([[1, 2], [5 => 3, 9 => 4]]);
     }
 
     /**
@@ -150,11 +126,7 @@ class MatrixFactoryTest extends TestCase
      */
     public static function nonFiniteElementProvider(): array
     {
-        return [
-            'positive infinity' => [INF],
-            'negative infinity' => [-INF],
-            'NAN'               => [NAN],
-        ];
+        return ['positive infinity' => [INF], 'negative infinity' => [-INF], 'NAN' => [NAN]];
     }
 
     /**
@@ -169,9 +141,7 @@ class MatrixFactoryTest extends TestCase
         $this->expectExceptionMessageMatches(
             '/^Cannot create Matrix from array\. Element at row 0, column 1 \((INF|-INF|NAN)\) must be finite\.$/'
         );
-        Matrix::fromArray([
-            [1.0, $value],
-        ]);
+        Matrix::fromArray([[1.0, $value]]);
     }
 
     #endregion

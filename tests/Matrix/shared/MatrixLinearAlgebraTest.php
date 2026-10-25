@@ -20,10 +20,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTranspose(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $t = $m->t();
         $this->assertSame(3, $t->rowCount);
         $this->assertSame(2, $t->columnCount);
@@ -53,9 +50,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetOneByOne(): void
     {
-        $m = Matrix::fromArray([
-            [5],
-        ]);
+        $m = Matrix::fromArray([[5]]);
         $this->assertEqualsWithDelta(5.0, $m->det(), EPSILON);
     }
 
@@ -64,10 +59,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetTwoByTwo(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         // det = 1*4 - 2*3 = -2
         $this->assertEqualsWithDelta(-2.0, $m->det(), EPSILON);
     }
@@ -77,11 +69,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetThreeByThree(): void
     {
-        $m = Matrix::fromArray([
-            [6, 1, 1],
-            [4, -2, 5],
-            [2, 8, 7],
-        ]);
+        $m = Matrix::fromArray([[6, 1, 1], [4, -2, 5], [2, 8, 7]]);
         // det = 6(-2*7 - 5*8) - 1(4*7 - 5*2) + 1(4*8 - (-2)*2)
         //     = 6(-14-40) - 1(28-10) + 1(32+4)
         //     = 6(-54) - 18 + 36 = -324 - 18 + 36 = -306
@@ -95,12 +83,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetFourByFour(): void
     {
-        $m = Matrix::fromArray([
-            [2, 0, 1, 3],
-            [1, 3, 2, 0],
-            [0, 1, 4, 1],
-            [5, 2, 0, 2],
-        ]);
+        $m = Matrix::fromArray([[2, 0, 1, 3], [1, 3, 2, 0], [0, 1, 4, 1], [5, 2, 0, 2]]);
         // Verified via cofactor expansion along row 0 and independently via row reduction to
         // upper-triangular form (product of pivots 2, 3, 3.5, -3): det = -63.
         $this->assertEqualsWithDelta(-63.0, $m->det(), EPSILON);
@@ -123,10 +106,7 @@ class MatrixLinearAlgebraTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute determinant of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e200, 1e200],
-            [1e200, 1e200],
-        ])->det();
+        Matrix::fromArray([[1e200, 1e200], [1e200, 1e200]])->det();
     }
 
     /**
@@ -134,12 +114,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetLarge(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3, 4],
-            [5, 6, 7, 8],
-            [2, 6, 4, 8],
-            [3, 1, 1, 2],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3, 4], [5, 6, 7, 8], [2, 6, 4, 8], [3, 1, 1, 2]]);
 
         $this->assertEqualsWithDelta(72.0, $m->det(), 1e-12);
     }
@@ -150,21 +125,11 @@ class MatrixLinearAlgebraTest extends TestCase
     public function testDetLargeRowSwaps(): void
     {
         // Two swaps of pairs of rows of the identity, so the determinant is 1.
-        $m1 = Matrix::fromArray([
-            [0, 1, 0, 0],
-            [1, 0, 0, 0],
-            [0, 0, 0, 1],
-            [0, 0, 1, 0],
-        ]);
+        $m1 = Matrix::fromArray([[0, 1, 0, 0], [1, 0, 0, 0], [0, 0, 0, 1], [0, 0, 1, 0]]);
         $this->assertSame(1.0, $m1->det());
 
         // A 4-cycle of rows of the identity, so the determinant is -1.
-        $m2 = Matrix::fromArray([
-            [0, 1, 0, 0],
-            [0, 0, 1, 0],
-            [0, 0, 0, 1],
-            [1, 0, 0, 0],
-        ]);
+        $m2 = Matrix::fromArray([[0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1], [1, 0, 0, 0]]);
         $this->assertSame(-1.0, $m2->det());
     }
 
@@ -173,12 +138,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testDetLargeOverflowThrows(): void
     {
-        $m = Matrix::fromArray([
-            [1e100, 0, 0, 0],
-            [0, 1e100, 0, 0],
-            [0, 0, 1e100, 0],
-            [0, 0, 0, 1e100],
-        ]);
+        $m = Matrix::fromArray([[1e100, 0, 0, 0], [0, 1e100, 0, 0], [0, 0, 1e100, 0], [0, 0, 0, 1e100]]);
 
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute determinant of the given Matrix. The result would overflow.');
@@ -202,10 +162,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceTwoByTwo(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $this->assertSame(5.0, $m->trace());
     }
 
@@ -214,11 +171,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceThreeByThree(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-            [7, 8, 9],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6], [7, 8, 9]]);
         $this->assertSame(15.0, $m->trace());
     }
 
@@ -227,9 +180,7 @@ class MatrixLinearAlgebraTest extends TestCase
      */
     public function testTraceOneByOne(): void
     {
-        $m = Matrix::fromArray([
-            [7],
-        ]);
+        $m = Matrix::fromArray([[7]]);
         $this->assertSame(7.0, $m->trace());
     }
 
@@ -259,10 +210,7 @@ class MatrixLinearAlgebraTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute trace of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e308, 0],
-            [0, 1e308],
-        ])->trace();
+        Matrix::fromArray([[1e308, 0], [0, 1e308]])->trace();
     }
 
     #endregion

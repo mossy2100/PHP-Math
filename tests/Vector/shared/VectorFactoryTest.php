@@ -71,16 +71,12 @@ class VectorFactoryTest extends TestCase
     public static function nonNumericElementProvider(): array
     {
         return [
-            'string'         => ['hello'],
+            'string' => ['hello'],
             'numeric string' => ['2'],
-            'bool'           => [true],
-            'null'           => [null],
-            'array'          => [
-                [1, 2],
-            ],
-            'object'         => [
-                new Vector(2),
-            ],
+            'bool' => [true],
+            'null' => [null],
+            'array' => [[1, 2]],
+            'object' => [new Vector(2)],
         ];
     }
 
@@ -103,11 +99,7 @@ class VectorFactoryTest extends TestCase
     public function testFromArrayWithNonSequentialArrayThrows(): void
     {
         $this->expectException(DomainException::class);
-        Vector::fromArray([
-            5  => 10,
-            10 => 20,
-            15 => 30,
-        ]);
+        Vector::fromArray([5 => 10, 10 => 20, 15 => 30]);
     }
 
     /**
@@ -117,11 +109,7 @@ class VectorFactoryTest extends TestCase
      */
     public static function nonFiniteElementProvider(): array
     {
-        return [
-            'positive infinity' => [INF],
-            'negative infinity' => [-INF],
-            'NAN'               => [NAN],
-        ];
+        return ['positive infinity' => [INF], 'negative infinity' => [-INF], 'NAN' => [NAN]];
     }
 
     /**

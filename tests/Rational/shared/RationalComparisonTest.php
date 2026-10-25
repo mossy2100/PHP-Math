@@ -230,38 +230,18 @@ class RationalComparisonTest extends TestCase
     public static function compareFloatExactProvider(): array
     {
         return [
-            'one third vs its float'     => [
-                1,
-                3,
-                1 / 3,
-                1,
-            ],
-            'just above 2^53'            => [
-                2 ** 53 + 1,
-                1,
-                (float) 2 ** 53,
-                1,
-            ],
-            'dyadic equal'               => [5, 4, 1.25, 0],
-            'negative dyadic equal'      => [-5, 4, -1.25, 0],
-            'negative vs its float'      => [
-                -1,
-                3,
-                -1 / 3,
-                -1,
-            ],
-            'max int vs 2^63'            => [PHP_INT_MAX, 1, 9.2233720368547758e18, -1],
-            'min vs -2^63'               => [PHP_INT_MIN, 2, -9.2233720368547758e18, 1],
+            'one third vs its float' => [1, 3, 1 / 3, 1],
+            'just above 2^53' => [2 ** 53 + 1, 1, (float) 2 ** 53, 1],
+            'dyadic equal' => [5, 4, 1.25, 0],
+            'negative dyadic equal' => [-5, 4, -1.25, 0],
+            'negative vs its float' => [-1, 3, -1 / 3, -1],
+            'max int vs 2^63' => [PHP_INT_MAX, 1, 9.2233720368547758e18, -1],
+            'min vs -2^63' => [PHP_INT_MIN, 2, -9.2233720368547758e18, 1],
             'zero vs smallest subnormal' => [0, 1, 5e-324, -1],
-            'zero vs negative zero'      => [0, 1, -0.0, 0],
+            'zero vs negative zero' => [0, 1, -0.0, 0],
             'tiny vs smallest subnormal' => [1, PHP_INT_MAX, 5e-324, 1],
             'tiny negative vs subnormal' => [-1, PHP_INT_MAX, -5e-324, -1],
-            'large denominator'          => [
-                PHP_INT_MAX - 1,
-                PHP_INT_MAX,
-                1.0,
-                -1,
-            ],
+            'large denominator' => [PHP_INT_MAX - 1, PHP_INT_MAX, 1.0, -1],
         ];
     }
 
@@ -801,12 +781,7 @@ class RationalComparisonTest extends TestCase
      */
     public static function invalidToleranceProvider(): array
     {
-        return [
-            'negative' => [-1.0, '-1.0'],
-            'NAN'      => [NAN, 'NAN'],
-            'INF'      => [INF, 'INF'],
-            '-INF'     => [-INF, '-INF'],
-        ];
+        return ['negative' => [-1.0, '-1.0'], 'NAN' => [NAN, 'NAN'], 'INF' => [INF, 'INF'], '-INF' => [-INF, '-INF']];
     }
 
     /**

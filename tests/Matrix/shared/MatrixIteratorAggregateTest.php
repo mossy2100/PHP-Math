@@ -20,11 +20,7 @@ class MatrixIteratorAggregateTest extends TestCase
      */
     public function testForeachYieldsRows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-            [5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
 
         $result = [];
         foreach ($m as $index => $row) {
@@ -40,10 +36,7 @@ class MatrixIteratorAggregateTest extends TestCase
      */
     public function testGetIteratorYieldsLiveRows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $rows = iterator_to_array($m);
 
         $this->assertInstanceOf(ArrayIterator::class, $m->getIterator());
@@ -56,19 +49,13 @@ class MatrixIteratorAggregateTest extends TestCase
      */
     public function testChangingRowInLoopChangesMatrix(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
 
         foreach ($m as $index => $row) {
             $row[0] = 10 * ($index + 1);
         }
 
-        $this->assertSame([
-            [10.0, 2.0],
-            [20.0, 4.0],
-        ], $m->toArray());
+        $this->assertSame([[10.0, 2.0], [20.0, 4.0]], $m->toArray());
     }
 
     /**

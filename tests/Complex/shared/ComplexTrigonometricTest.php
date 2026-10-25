@@ -194,10 +194,10 @@ class ComplexTrigonometricTest extends TestCase
     public static function tanValuesProvider(): array
     {
         return [
-            'first quadrant'  => [0.3, 0.4],
+            'first quadrant' => [0.3, 0.4],
             'second quadrant' => [-1.2, 2.5],
             'fourth quadrant' => [2.0, -0.7],
-            'third quadrant'  => [-3.0, -3.0],
+            'third quadrant' => [-3.0, -3.0],
         ];
     }
 

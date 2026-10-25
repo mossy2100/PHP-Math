@@ -42,11 +42,7 @@ class MatrixPropertiesTest extends TestCase
      */
     public function testRowCountFromArray(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-            [5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
         $this->assertSame(3, $m->rowCount);
     }
 
@@ -83,11 +79,7 @@ class MatrixPropertiesTest extends TestCase
      */
     public function testColumnCountFromArray(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-            [5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4], [5, 6]]);
         $this->assertSame(2, $m->columnCount);
     }
 

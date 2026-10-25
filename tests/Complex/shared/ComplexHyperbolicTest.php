@@ -162,10 +162,10 @@ class ComplexHyperbolicTest extends TestCase
     public static function tanhValuesProvider(): array
     {
         return [
-            'first quadrant'        => [0.3, 0.4],
-            'second quadrant'       => [-1.2, 2.5],
-            'fourth quadrant'       => [2.0, -0.7],
-            'third quadrant'        => [-3.0, -3.0],
+            'first quadrant' => [0.3, 0.4],
+            'second quadrant' => [-1.2, 2.5],
+            'fourth quadrant' => [2.0, -0.7],
+            'third quadrant' => [-3.0, -3.0],
             'just below the cutoff' => [21.9, 1.0],
             'just above the cutoff' => [22.1, 1.0],
         ];

@@ -126,12 +126,9 @@ class VectorArrayAccessTest extends TestCase
     {
         return [
             'string' => ['hello', 'string'],
-            'array'  => [
-                [1, 2],
-                'array',
-            ],
-            'null'   => [null, 'null'],
-            'bool'   => [true, 'bool'],
+            'array' => [[1, 2], 'array'],
+            'null' => [null, 'null'],
+            'bool' => [true, 'bool'],
         ];
     }
 

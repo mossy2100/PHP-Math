@@ -20,10 +20,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowPositive(): void
     {
-        $m = Matrix::fromArray([
-            [1, 1],
-            [0, 1],
-        ]);
+        $m = Matrix::fromArray([[1, 1], [0, 1]]);
         $result = $m->pow(3);
         // [[1,1],[0,1]]^3 = [[1,3],[0,1]]
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
@@ -37,10 +34,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowZero(): void
     {
-        $m = Matrix::fromArray([
-            [2, 3],
-            [4, 5],
-        ]);
+        $m = Matrix::fromArray([[2, 3], [4, 5]]);
         $result = $m->pow(0);
         $this->assertEqualsWithDelta(1.0, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.0, $result->get(0, 1), EPSILON);
@@ -53,10 +47,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowOne(): void
     {
-        $m = Matrix::fromArray([
-            [2, 3],
-            [4, 5],
-        ]);
+        $m = Matrix::fromArray([[2, 3], [4, 5]]);
         $result = $m->pow(1);
 
         $this->assertNotSame($m, $result);
@@ -69,10 +60,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowOneCloneIsIndependent(): void
     {
-        $m = Matrix::fromArray([
-            [2, 3],
-            [4, 5],
-        ]);
+        $m = Matrix::fromArray([[2, 3], [4, 5]]);
         $result = $m->pow(1);
         $result->set(0, 0, 999);
 
@@ -85,10 +73,7 @@ class MatrixPowerTest extends TestCase
     public function testPowTwo(): void
     {
         // [[1, 2], [3, 4]]^2 = [[7, 10], [15, 22]]
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $result = $m->pow(2);
 
         $this->assertEqualsWithDelta(7.0, $result->get(0, 0), EPSILON);
@@ -102,10 +87,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowNegative(): void
     {
-        $m = Matrix::fromArray([
-            [1, 1],
-            [0, 1],
-        ]);
+        $m = Matrix::fromArray([[1, 1], [0, 1]]);
         $result = $m->pow(-1);
 
         // Verify M * M^-1 = I.
@@ -127,10 +109,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowIntMinExponent(): void
     {
-        $m = Matrix::fromArray([
-            [2, 0],
-            [0, 3],
-        ]);
+        $m = Matrix::fromArray([[2, 0], [0, 3]]);
         $result = $m->pow(PHP_INT_MIN);
 
         // Both diagonal entries underflow to 0.0 at this magnitude of exponent.
@@ -149,10 +128,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowIntMaxExponentExact(): void
     {
-        $m = Matrix::fromArray([
-            [0, -1],
-            [1, -1],
-        ]);
+        $m = Matrix::fromArray([[0, -1], [1, -1]]);
         $this->assertTrue($m->pow(PHP_INT_MAX)->equal($m));
     }
 
@@ -163,10 +139,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowIntMinExponentExact(): void
     {
-        $m = Matrix::fromArray([
-            [0, -1],
-            [1, -1],
-        ]);
+        $m = Matrix::fromArray([[0, -1], [1, -1]]);
         $this->assertTrue($m->pow(PHP_INT_MIN)->equal($m));
     }
 
@@ -176,10 +149,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testPowNegativeMagnitudeGreaterThanOne(): void
     {
-        $m = Matrix::fromArray([
-            [2, 1],
-            [0, 3],
-        ]);
+        $m = Matrix::fromArray([[2, 1], [0, 3]]);
         $result = $m->pow(-3);
 
         // Verify M^3 * M^-3 = I.
@@ -207,9 +177,7 @@ class MatrixPowerTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot raise the given Matrix to the given power. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->pow(3);
+        Matrix::fromArray([[1e200]])->pow(3);
     }
 
     #endregion
@@ -222,16 +190,10 @@ class MatrixPowerTest extends TestCase
     public function testSqr(): void
     {
         // [[1, 2], [3, 4]]² = [[7, 10], [15, 22]]
-        $m = Matrix::fromArray([
-            [1, 2],
-            [3, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [3, 4]]);
         $result = $m->sqr();
 
-        $expected = Matrix::fromArray([
-            [7, 10],
-            [15, 22],
-        ]);
+        $expected = Matrix::fromArray([[7, 10], [15, 22]]);
         $this->assertTrue($result->equal($expected));
     }
 
@@ -240,10 +202,7 @@ class MatrixPowerTest extends TestCase
      */
     public function testSqrEqualsPowTwo(): void
     {
-        $m = Matrix::fromArray([
-            [2, 1],
-            [0, 3],
-        ]);
+        $m = Matrix::fromArray([[2, 1], [0, 3]]);
         $this->assertTrue($m->sqr()->equal($m->pow(2)));
     }
 
@@ -264,9 +223,7 @@ class MatrixPowerTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot square the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e200],
-        ])->sqr();
+        Matrix::fromArray([[1e200]])->sqr();
     }
 
     #endregion

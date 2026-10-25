@@ -67,11 +67,11 @@ class VectorPropertiesTest extends TestCase
     public static function magnitudeExtremeProvider(): array
     {
         return [
-            'huge'                   => [3e300, 4e300, 5e300],
+            'huge' => [3e300, 4e300, 5e300],
             'huge, squares overflow' => [1e308, 1e308, 1.4142135623730951e308],
-            'tiny'                   => [3e-200, -4e-200, 5e-200],
-            'subnormal'              => [0.0, 5e-324, 5e-324],
-            'largest float'          => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
+            'tiny' => [3e-200, -4e-200, 5e-200],
+            'subnormal' => [0.0, 5e-324, 5e-324],
+            'largest float' => [PHP_FLOAT_MAX, 0.0, PHP_FLOAT_MAX],
         ];
     }
 
@@ -137,10 +137,7 @@ class VectorPropertiesTest extends TestCase
         $v = Vector::fromArray([3, 4]);
 
         $this->assertSame('{"count":2,"magnitude":5}', json_encode($v));
-        $this->assertSame([
-            'count'     => 2,
-            'magnitude' => 5.0,
-        ], get_object_vars($v));
+        $this->assertSame(['count' => 2, 'magnitude' => 5.0], get_object_vars($v));
         $this->assertStringContainsString("'magnitude' => 5.0", var_export($v, true));
     }
 

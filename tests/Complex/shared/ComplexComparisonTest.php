@@ -534,12 +534,7 @@ class ComplexComparisonTest extends TestCase
      */
     public static function invalidToleranceProvider(): array
     {
-        return [
-            'negative' => [-1.0, '-1.0'],
-            'NAN'      => [NAN, 'NAN'],
-            'INF'      => [INF, 'INF'],
-            '-INF'     => [-INF, '-INF'],
-        ];
+        return ['negative' => [-1.0, '-1.0'], 'NAN' => [NAN, 'NAN'], 'INF' => [INF, 'INF'], '-INF' => [-INF, '-INF']];
     }
 
     /**

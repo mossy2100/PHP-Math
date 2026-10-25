@@ -26,15 +26,9 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testNeg(): void
     {
-        $m = Matrix::fromArray([
-            [1, -2],
-            [3, -4],
-        ]);
+        $m = Matrix::fromArray([[1, -2], [3, -4]]);
         $result = $m->neg();
-        $this->assertSame([
-            [-1.0, 2.0],
-            [-3.0, 4.0],
-        ], $result->toArray());
+        $this->assertSame([[-1.0, 2.0], [-3.0, 4.0]], $result->toArray());
     }
 
     /**
@@ -44,10 +38,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     {
         $m = new Matrix(2, 2);
         $result = $m->neg();
-        $this->assertSame([
-            [0.0, 0.0],
-            [0.0, 0.0],
-        ], $result->toArray());
+        $this->assertSame([[0.0, 0.0], [0.0, 0.0]], $result->toArray());
     }
 
     /**
@@ -56,9 +47,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testNegHasNoNegativeZeros(): void
     {
-        $result = Matrix::fromArray([
-            [0, 1],
-        ])->neg();
+        $result = Matrix::fromArray([[0, 1]])->neg();
         $this->assertSame(['0', '-1'], array_map(strval(...), $result->toArray()[0]));
     }
 
@@ -71,10 +60,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testHadamardInv(): void
     {
-        $m = Matrix::fromArray([
-            [2, 4],
-            [5, 10],
-        ]);
+        $m = Matrix::fromArray([[2, 4], [5, 10]]);
         $result = $m->hadamardInv();
         $this->assertEqualsWithDelta(0.5, $result->get(0, 0), EPSILON);
         $this->assertEqualsWithDelta(0.25, $result->get(0, 1), EPSILON);
@@ -87,10 +73,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testHadamardInvOfZeroElementThrows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 0],
-            [2, 3],
-        ]);
+        $m = Matrix::fromArray([[1, 0], [2, 3]]);
         $this->expectException(ArithmeticException::class);
         $m->hadamardInv();
     }
@@ -102,9 +85,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot compute reciprocal of the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e-320],
-        ])->hadamardInv();
+        Matrix::fromArray([[1e-320]])->hadamardInv();
     }
 
     #endregion
@@ -116,10 +97,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvTwoByTwo(): void
     {
-        $m = Matrix::fromArray([
-            [4, 7],
-            [2, 6],
-        ]);
+        $m = Matrix::fromArray([[4, 7], [2, 6]]);
         $inv = $m->inv();
 
         // Verify A * A^-1 = I.
@@ -145,10 +123,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvSingularMatrixThrows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2],
-            [2, 4],
-        ]);
+        $m = Matrix::fromArray([[1, 2], [2, 4]]);
         $this->expectException(DomainException::class);
         $m->inv();
     }
@@ -160,10 +135,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public static function invExtremeProvider(): array
     {
-        return [
-            'tiny' => [1e-200],
-            'huge' => [1e200],
-        ];
+        return ['tiny' => [1e-200], 'huge' => [1e200]];
     }
 
     /**
@@ -173,16 +145,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     public function testInvExtreme(float $scale): void
     {
         // [[4, 7], [2, 6]] has determinant 10 and inverse [[0.6, -0.7], [-0.2, 0.4]].
-        $m = Matrix::fromArray([
-            [
-                4 * $scale,
-                7 * $scale,
-            ],
-            [
-                2 * $scale,
-                6 * $scale,
-            ],
-        ]);
+        $m = Matrix::fromArray([[4 * $scale, 7 * $scale], [2 * $scale, 6 * $scale]]);
         $inv = $m->inv();
 
         $this->assertApproxEqual(0.6 / $scale, $inv->get(0, 0));
@@ -199,10 +162,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvMixedMagnitude(): void
     {
-        $m = Matrix::fromArray([
-            [1e-300, 0],
-            [0, 1e300],
-        ]);
+        $m = Matrix::fromArray([[1e-300, 0], [0, 1e300]]);
         $inv = $m->inv();
 
         $this->assertApproxEqual(1e300, $inv->get(0, 0));
@@ -218,11 +178,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvDeterminantUnderflows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 0, 0],
-            [0, 1e-200, 0],
-            [0, 0, 1e-200],
-        ]);
+        $m = Matrix::fromArray([[1, 0, 0], [0, 1e-200, 0], [0, 0, 1e-200]]);
         $inv = $m->inv();
 
         $this->assertSame(1.0, $inv->get(0, 0));
@@ -238,10 +194,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvLargestFloats(): void
     {
-        $m = Matrix::fromArray([
-            [PHP_FLOAT_MAX, 0],
-            [0, PHP_FLOAT_MAX],
-        ]);
+        $m = Matrix::fromArray([[PHP_FLOAT_MAX, 0], [0, PHP_FLOAT_MAX]]);
         $inv = $m->inv();
 
         $this->assertSame(1 / PHP_FLOAT_MAX, $inv->get(0, 0));
@@ -266,9 +219,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage('Cannot invert the given Matrix. The result would overflow.');
-        Matrix::fromArray([
-            [1e-310],
-        ])->inv();
+        Matrix::fromArray([[1e-310]])->inv();
     }
 
     /**
@@ -277,10 +228,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvNearSingularThrows(): void
     {
-        $m = Matrix::fromArray([
-            [0.1, 0.3],
-            [0.7, 2.1],
-        ]);
+        $m = Matrix::fromArray([[0.1, 0.3], [0.7, 2.1]]);
 
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage('Cannot invert singular Matrix.');
@@ -296,39 +244,11 @@ class MatrixUnaryArithmeticTest extends TestCase
     public static function invBadlyScaledColumnsProvider(): array
     {
         return [
-            'shear'      => [
-                [
-                    [1, 1e20],
-                    [0, 1],
-                ],
-                [
-                    [1, -1e20],
-                    [0, 1],
-                ],
-            ],
-            'swapped'    => [
-                [
-                    [1, 1e16],
-                    [1, 0],
-                ],
-                [
-                    [0, 1],
-                    [1e-16, -1e-16],
-                ],
-            ],
+            'shear' => [[[1, 1e20], [0, 1]], [[1, -1e20], [0, 1]]],
+            'swapped' => [[[1, 1e16], [1, 0]], [[0, 1], [1e-16, -1e-16]]],
             'shear, 4×4' => [
-                [
-                    [1, 1e20, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1],
-                ],
-                [
-                    [1, -1e20, 0, 0],
-                    [0, 1, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, 1],
-                ],
+                [[1, 1e20, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
+                [[1, -1e20, 0, 0], [0, 1, 0, 0], [0, 0, 1, 0], [0, 0, 0, 1]],
             ],
         ];
     }
@@ -367,21 +287,8 @@ class MatrixUnaryArithmeticTest extends TestCase
     public static function invSingularScaledColumnsProvider(): array
     {
         return [
-            'rank 2, large column' => [
-                [
-                    [1, 2e10, 3],
-                    [4, 5e10, 6],
-                    [7, 8e10, 9],
-                ],
-            ],
-            'zero column, 4×4'     => [
-                [
-                    [1, 0, 2, 3],
-                    [4, 0, 5, 6],
-                    [7, 0, 8, 9],
-                    [1, 0, 1, 1],
-                ],
-            ],
+            'rank 2, large column' => [[[1, 2e10, 3], [4, 5e10, 6], [7, 8e10, 9]]],
+            'zero column, 4×4' => [[[1, 0, 2, 3], [4, 0, 5, 6], [7, 0, 8, 9], [1, 0, 1, 1]]],
         ];
     }
 
@@ -390,12 +297,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvLargeSingularThrows(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3, 4],
-            [2, 4, 6, 8],
-            [1, 0, 1, 0],
-            [0, 1, 0, 1],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3, 4], [2, 4, 6, 8], [1, 0, 1, 0], [0, 1, 0, 1]]);
 
         $this->expectException(ArithmeticException::class);
         $this->expectExceptionMessage('Cannot invert singular Matrix.');
@@ -411,24 +313,11 @@ class MatrixUnaryArithmeticTest extends TestCase
     public static function singularAfterRoundingProvider(): array
     {
         return [
-            '4×4, row 3 = row 0 - 2 × row 1' => [
-                [
-                    [2, -4, 3, -4],
-                    [-2, 1, -5, -3],
-                    [1, 5, 5, -1],
-                    [6, -6, 13, 2],
-                ],
-            ],
+            '4×4, row 3 = row 0 - 2 × row 1' => [[[2, -4, 3, -4], [-2, 1, -5, -3], [1, 5, 5, -1], [6, -6, 13, 2]]],
             '5×5, row 4 = 2 × row 0 + row 3' => [
-                [
-                    [-1, -3, 5, -4, -5],
-                    [3, 4, 3, 3, -5],
-                    [-5, -4, -1, -2, 0],
-                    [5, -2, -5, -5, 5],
-                    [3, -8, 5, -13, -5],
-                ],
+                [[-1, -3, 5, -4, -5], [3, 4, 3, 3, -5], [-5, -4, -1, -2, 0], [5, -2, -5, -5, 5], [3, -8, 5, -13, -5]],
             ],
-            '6×6, row 5 = row 0 + row 1'     => [
+            '6×6, row 5 = row 0 + row 1' => [
                 [
                     [-2, 3, -2, 2, 1, -4],
                     [1, 0, -3, 5, 1, -4],
@@ -482,13 +371,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvLarge(): void
     {
-        $m = Matrix::fromArray([
-            [4, 1, 0, 0, 2],
-            [1, 5, 1, 0, 0],
-            [0, 1, 6, 1, 0],
-            [0, 0, 1, 7, 1],
-            [2, 0, 0, 1, 8],
-        ]);
+        $m = Matrix::fromArray([[4, 1, 0, 0, 2], [1, 5, 1, 0, 0], [0, 1, 6, 1, 0], [0, 0, 1, 7, 1], [2, 0, 0, 1, 8]]);
 
         $this->assertTrue($m->mul($m->inv())->approxEqual(Matrix::identity(5), absTol: 1e-12));
     }
@@ -499,12 +382,7 @@ class MatrixUnaryArithmeticTest extends TestCase
     public function testInvLargeNeedsPivoting(): void
     {
         // A permutation matrix's inverse is its transpose.
-        $m = Matrix::fromArray([
-            [0, 1, 0, 0],
-            [0, 0, 0, 1],
-            [1, 0, 0, 0],
-            [0, 0, 1, 0],
-        ]);
+        $m = Matrix::fromArray([[0, 1, 0, 0], [0, 0, 0, 1], [1, 0, 0, 0], [0, 0, 1, 0]]);
 
         $this->assertTrue($m->inv()->equal($m->t()));
     }
@@ -514,12 +392,7 @@ class MatrixUnaryArithmeticTest extends TestCase
      */
     public function testInvLargeMixedMagnitude(): void
     {
-        $m = Matrix::fromArray([
-            [1e-300, 0, 0, 0],
-            [0, 2, 0, 0],
-            [0, 0, 4, 0],
-            [0, 0, 0, 1e300],
-        ]);
+        $m = Matrix::fromArray([[1e-300, 0, 0, 0], [0, 2, 0, 0], [0, 0, 4, 0], [0, 0, 0, 1e300]]);
         $inv = $m->inv();
 
         $this->assertApproxEqual(1e300, $inv->get(0, 0));
@@ -536,34 +409,10 @@ class MatrixUnaryArithmeticTest extends TestCase
     public static function invNegativeZeroProvider(): array
     {
         return [
-            '2×2 identity'      => [
-                [
-                    [1, 0],
-                    [0, 1],
-                ],
-            ],
-            '3×3 identity'      => [
-                [
-                    [1, 0, 0],
-                    [0, 1, 0],
-                    [0, 0, 1],
-                ],
-            ],
-            '3×3 upper'         => [
-                [
-                    [1, 2, 0],
-                    [0, 1, 0],
-                    [0, 0, 1],
-                ],
-            ],
-            '4×4 diagonal (LU)' => [
-                [
-                    [2, 0, 0, 0],
-                    [0, -4, 0, 0],
-                    [0, 0, 1, 0],
-                    [0, 0, 0, -1],
-                ],
-            ],
+            '2×2 identity' => [[[1, 0], [0, 1]]],
+            '3×3 identity' => [[[1, 0, 0], [0, 1, 0], [0, 0, 1]]],
+            '3×3 upper' => [[[1, 2, 0], [0, 1, 0], [0, 0, 1]]],
+            '4×4 diagonal (LU)' => [[[2, 0, 0, 0], [0, -4, 0, 0], [0, 0, 1, 0], [0, 0, 0, -1]]],
         ];
     }
 
@@ -578,10 +427,7 @@ class MatrixUnaryArithmeticTest extends TestCase
         $m = Matrix::fromArray($data);
 
         foreach (
-            [
-                $m->inv(),
-                $m->pow(-1),
-            ] as $inverse
+            [$m->inv(), $m->pow(-1)] as $inverse
         ) {
             foreach ($inverse->toArray() as $row) {
                 foreach ($row as $element) {

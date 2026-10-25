@@ -58,10 +58,7 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetReturnsVector(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
         $this->assertInstanceOf(Vector::class, $m[0]);
         $this->assertSame([1.0, 2.0, 3.0], $m[0]->toArray());
@@ -73,10 +70,7 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetDoubleIndex(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
         $this->assertSame(1.0, $m[0][0]);
         $this->assertSame(6.0, $m[1][2]);
@@ -113,10 +107,7 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetSetSingleIndex(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $m[1] = Vector::fromArray([10, 11, 12]);
 
         $this->assertSame([1.0, 2.0, 3.0], $m->getRow(0)->toArray());
@@ -192,10 +183,7 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testOffsetGetReturnsLiveReference(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
 
         // $m[$row] is live: mutating it mutates the Matrix.
         $liveRow = $m[0];
@@ -214,10 +202,7 @@ class MatrixArrayAccessTest extends TestCase
      */
     public function testLiveReferenceStaysValidAfterSetRow(): void
     {
-        $m = Matrix::fromArray([
-            [1, 2, 3],
-            [4, 5, 6],
-        ]);
+        $m = Matrix::fromArray([[1, 2, 3], [4, 5, 6]]);
         $liveRow = $m[0];
 
         $m->setRow(0, Vector::fromArray([7, 8, 9]));
