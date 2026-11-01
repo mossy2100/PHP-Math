@@ -1253,7 +1253,9 @@ final class Rational implements Stringable
         }
 
         // Not reached: the last convergent is $x exactly, and so converts back to it.
+        // @codeCoverageIgnoreStart
         return [$h0, $k0];
+        // @codeCoverageIgnoreEnd
     }
 
     /**
@@ -1393,14 +1395,11 @@ final class Rational implements Stringable
             return $t > $a - $t;
         }
 
-        // The rest of the continued fraction after term n, and k0/k1 = [a(n-1); a(n-2), ..., a(1)]. A trailing term
-        // of 1 is folded into the one before, so equal values compare as equal.
+        // The rest of the continued fraction after term n, and k0/k1 = [a(n-1); a(n-2), ..., a(1)]. Neither ends in a
+        // term of 1, which would make equal values compare as unequal: cfTerms() never ends in one, and a(1) is at
+        // least 1024, as the convergents only overflow for x below 2^-10.
         $rest = array_slice($terms, $n + 1);
         $ratio = array_reverse(array_slice($terms, 1, $n - 1));
-        $count = count($ratio);
-        if ($count > 1 && $ratio[$count - 1] === 1) {
-            $ratio = [...array_slice($ratio, 0, $count - 2), $ratio[$count - 2] + 1];
-        }
 
         return self::compareContinuedFractions($rest, $ratio) > 0;
     }
@@ -1426,7 +1425,11 @@ final class Rational implements Stringable
                 return $i % 2 === 0 ? $cmp : -$cmp;
             }
         }
+
+        // Equal only if the rest of x's continued fraction is the terms before it reversed. No float found does this.
+        // @codeCoverageIgnoreStart
         return 0;
+        // @codeCoverageIgnoreEnd
     }
 
     #endregion

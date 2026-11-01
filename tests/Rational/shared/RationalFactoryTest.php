@@ -339,9 +339,10 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
-     * Floats, and the simplest Rationals whose float value is the float. The old algorithm missed these, as its
-     * floating-point continued fraction overflowed or stopped early, or, for the last four, as a convergent above
-     * 2^53 - 1 failed the float test through double rounding.
+     * Floats, and the simplest Rationals whose float value is the float. The old algorithm missed the first four, as
+     * its floating-point continued fraction overflowed or stopped early, and the next four, as a convergent above
+     * 2^53 - 1 failed the float test through double rounding. In the last, the convergent overflows, and the best
+     * semiconvergent that fits converts back.
      *
      * @return list<array{float, int, int}>
      */
@@ -356,6 +357,7 @@ class RationalFactoryTest extends TestCase
             [7.365343252832697e-16, 5, 6788549872508671],
             [-3.129083003443239e-16, -2, 6391648920144345],
             [3.5731256909543303e-16, 3, 8396010270768682],
+            [7.8171445639675674e-19, 7, 8954676407374986296],
         ];
     }
 
