@@ -400,7 +400,7 @@ final class Rational implements Stringable
 
             // Fast path: if the numerator and denominator are exactly representable as floats, toFloat() is correctly
             // rounded. Rounding preserves order, so if the result differs from $other, it's on the same side.
-            if (abs($this->numerator) <= 2 ** 53 && $this->denominator <= 2 ** 53) {
+            if (abs($this->numerator) <= Floats::MAX_SAFE_INT && $this->denominator <= Floats::MAX_SAFE_INT) {
                 $value = $this->toFloat();
                 if ($value !== $other) {
                     return $value <=> $other;
@@ -1195,6 +1195,10 @@ final class Rational implements Stringable
      * found by binary search. If the convergents overflow first, the best semiconvergent that fits is tried the same
      * way. If neither converts back to $x, the closer of it and the last convergent is returned. These two lie on
      * opposite sides of $x, and one of them is the closest fraction in range.
+     *
+     * Above Floats::MAX_SAFE_INT, an int may convert to a float with rounding, so floatValueIs() rounds twice and can
+     * reject a fraction within $x's rounding interval. So when a convergent goes above it, its term's semiconvergents
+     * within it, where the test is exact, are tried first.
      * @see https://en.wikipedia.org/wiki/Simple_continued_fraction#Best_rational_approximations
      *
      * @param float $x A positive, finite float that isn't an integer, within the range of Rational.
@@ -1214,14 +1218,19 @@ final class Rational implements Stringable
             $h = $a * $h0 + $h1;
             $k = $a * $k0 + $k1;
 
+            // If the next convergent goes above Floats::MAX_SAFE_INT, where floatValueIs() can round twice, first try
+            // the semiconvergents within it, where it's exact.
+            if (is_float($h) || is_float($k) || $h > Floats::MAX_SAFE_INT || $k > Floats::MAX_SAFE_INT) {
+                $t = self::largestSemiconvergentT($a, $h0, $k0, $h1, $k1, Floats::MAX_SAFE_INT);
+                if ($t >= 1 && self::floatValueIs($h1 + $t * $h0, $k1 + $t * $k0, $x)) {
+                    return self::simplestSemiconvergent($h0, $k0, $h1, $k1, $t, $x);
+                }
+            }
+
             // If the next convergent overflows, try the best semiconvergent that fits: the largest t such that
             // (h1 + t * h0) / (k1 + t * k0) is in range. It's less than $a, as t = $a gives the convergent.
             if (is_float($h) || is_float($k)) {
-                $t = min(
-                    $a - 1,
-                    $k0 === 0 ? PHP_INT_MAX : intdiv(PHP_INT_MAX - $k1, $k0),
-                    $h0 === 0 ? PHP_INT_MAX : intdiv(PHP_INT_MAX - $h1, $h0)
-                );
+                $t = self::largestSemiconvergentT($a, $h0, $k0, $h1, $k1, PHP_INT_MAX);
                 if ($t >= 1) {
                     if (self::floatValueIs($h1 + $t * $h0, $k1 + $t * $k0, $x)) {
                         return self::simplestSemiconvergent($h0, $k0, $h1, $k1, $t, $x);
@@ -1311,6 +1320,27 @@ final class Rational implements Stringable
     private static function floatValueIs(int $num, int $den, float $x): bool
     {
         return $num / $den === $x;
+    }
+
+    /**
+     * Get the largest t below the term $a, for which the semiconvergent (h1 + t * h0) / (k1 + t * k0) has its
+     * numerator and denominator both at most $limit.
+     *
+     * @param int $a The term.
+     * @param int $h0 The numerator of the most recent convergent.
+     * @param int $k0 The denominator of the most recent convergent.
+     * @param int $h1 The numerator of the convergent before it.
+     * @param int $k1 The denominator of the convergent before it.
+     * @param int $limit The largest numerator and denominator allowed.
+     * @return int The largest t, which is less than 1 if there's none.
+     */
+    private static function largestSemiconvergentT(int $a, int $h0, int $k0, int $h1, int $k1, int $limit): int
+    {
+        return min(
+            $a - 1,
+            $k0 === 0 ? PHP_INT_MAX : intdiv($limit - $k1, $k0),
+            $h0 === 0 ? PHP_INT_MAX : intdiv($limit - $h1, $h0)
+        );
     }
 
     /**

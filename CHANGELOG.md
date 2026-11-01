@@ -115,6 +115,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   `new Complex(3.4e-314, -1.5e-315)`. It's now within 2 ulps.
 - **`Complex::ln()` lost about 7 digits when both parts are subnormal,** e.g. for `new Complex(-5.307e-320,
   -3.2386e-320)`. It now scales them first, as `sqrt()` does, and is within 2 ulps.
+- **`Rational::fromFloat()` missed the simplest fraction for some floats below about 1e-15,** e.g.
+  `2.138024252903659e-15` gave `177/82786712900761355` rather than `12/5612658501746533`.
 - **`Matrix::inv()` inverted some exactly singular matrices (breaking),** e.g. a 4×4 or larger one with a row that's a
   combination of two others, giving elements around 1e15. Rounding left the last pivot just above the singularity
   threshold. The inverse is now also rejected if the condition number shows it has no correct digits. That also
