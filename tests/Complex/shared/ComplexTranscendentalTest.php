@@ -176,6 +176,34 @@ class ComplexTranscendentalTest extends TestCase
         $this->assertEqualsWithDelta(1.0, $result->real / $expected, 1e-15);
     }
 
+    /**
+     * Inputs with both parts subnormal, and their logarithms, from Python's cmath.log().
+     *
+     * @return list<array{float, float, float, float}>
+     */
+    public static function lnSubnormalProvider(): array
+    {
+        return [
+            [-5.307e-320, -3.2386e-320, -734.9999534711736, -2.593649784294244],
+            [5e-324, 5e-324, -744.0934983311014, 0.7853981633974483],
+            [1e-310, -2e-315, -713.8013788279542, -2.0000000016373636e-5],
+            [-4.9e-322, 1e-320, -736.8260460767816, 1.6196704182521664],
+            [3.4099830507e-314, 1.53760452e-315, -721.7839963002908, 0.045060742872153656],
+        ];
+    }
+
+    /**
+     * Test ln() is accurate when both parts are subnormal, so |z| itself has lost precision.
+     */
+    #[DataProvider('lnSubnormalProvider')]
+    public function testLnBothPartsSubnormal(float $real, float $imag, float $expectedReal, float $expectedImag): void
+    {
+        $result = new Complex($real, $imag)->ln();
+
+        $this->assertEqualsWithDelta(1.0, $result->real / $expectedReal, 1e-15);
+        $this->assertEqualsWithDelta(1.0, $result->imaginary / $expectedImag, 1e-15);
+    }
+
     #endregion
 
     #region Method log() tests.

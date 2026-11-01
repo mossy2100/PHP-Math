@@ -1657,6 +1657,8 @@ final class Complex implements Stringable, ArrayAccess
      * |z|² - 1 = x² + y² - 1 calculated almost exactly: x² and y² are each the exact sum of two floats, from
      * squareExact(), and the five terms are added with sumExact(), keeping each rounding error.
      *
+     * If both parts are subnormal, so is |z|, which has lost bits. Then z is scaled up by 2^106 first, exactly.
+     *
      * @param float $real The real part.
      * @param float $imag The imaginary part.
      * @param float $magnitude The magnitude, |z|.
@@ -1664,6 +1666,12 @@ final class Complex implements Stringable, ArrayAccess
      */
     private static function calcLnMagnitude(float $real, float $imag, float $magnitude): float
     {
+        // If both parts are subnormal, so is |z|, which has lost bits. Scale z up by 2^106, exactly, and subtract
+        // 106 ln 2.
+        if (abs($real) < PHP_FLOAT_MIN && abs($imag) < PHP_FLOAT_MIN) {
+            return log(hypot($real * 2 ** 106, $imag * 2 ** 106)) - 106 * M_LN2;
+        }
+
         if ($magnitude <= 0.5 || $magnitude >= 2) {
             return log($magnitude);
         }
