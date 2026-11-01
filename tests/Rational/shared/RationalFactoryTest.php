@@ -339,6 +339,18 @@ class RationalFactoryTest extends TestCase
     }
 
     /**
+     * Test the fromFloat() out of range message shows the float exactly, in its shortest form.
+     */
+    public function testFromFloatOutOfRangeMessageShowsExactFloat(): void
+    {
+        $this->expectException(DomainException::class);
+        $this->expectExceptionMessage(
+            'Cannot create Rational from float: 1.2345678901234567E+300. Outside valid range.'
+        );
+        Rational::fromFloat(1.2345678901234567e300);
+    }
+
+    /**
      * Floats, and the simplest Rationals whose float value is the float. The old algorithm missed the first four, as
      * its floating-point continued fraction overflowed or stopped early, and the next four, as a convergent above
      * 2^53 - 1 failed the float test through double rounding. In the last, the convergent overflows, and the best
