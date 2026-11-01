@@ -36,12 +36,19 @@ The salient features of the package include:
 
 ## Development and Quality Assurance
 
-[Claude Chat](https://claude.ai) and [Claude Code](https://www.claude.com/product/claude-code) were used in the development of this package. The core classes were designed, coded, and
-commented primarily by the author, with Claude providing substantial assistance with code review, suggesting
-improvements, debugging, and generating tests and documentation. All code was thoroughly reviewed by the author, and
-validated using industry-standard tools including [PHP_Codesniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), [PHPStan](https://phpstan.org/) (to level 9), and [PHPUnit](https://phpunit.de/index.html) to ensure full
-compliance with [PSR-12](https://www.php-fig.org/psr/psr-12/) coding standards and comprehensive unit testing with 100% code coverage. This collaborative
-approach has produced a well-designed, production-ready package with thorough test coverage and documentation.
+This package was developed with [Claude Code](https://claude.com/product/claude-code):
+
+- The author developed the initial concept, designed the public API, and did most of the initial coding.
+- Claude Code wrote the tests and most of the documentation.
+- Claude Code also assisted with multiple code reviews, which led to bug fixes, performance improvements and other
+  refinements.
+
+The code is checked with:
+
+- [PHP_CodeSniffer](https://github.com/PHPCSStandards/PHP_CodeSniffer/), for [PSR-12](https://www.php-fig.org/psr/psr-12/)
+  compliance plus the Mossy2100 coding standard
+- [PHPStan](https://phpstan.org/), at level 9
+- [PHPUnit](https://phpunit.de/index.html), with 100% code coverage
 
 ![Code Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen)
 
