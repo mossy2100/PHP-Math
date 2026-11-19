@@ -86,7 +86,7 @@ class MatrixFactoryTest extends TestCase
     {
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage(
-            'Cannot create Matrix from array. Element at row 0, column 1 must be an int or float.'
+            'Cannot create Matrix from array. Element at row 0, column 1 must be an int or float.',
         );
         Matrix::fromArray([[1, $value, 3]]);
     }
@@ -139,7 +139,7 @@ class MatrixFactoryTest extends TestCase
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessageMatches(
-            '/^Cannot create Matrix from array\. Element at row 0, column 1 \((INF|-INF|NAN)\) must be finite\.$/'
+            '/^Cannot create Matrix from array\. Element at row 0, column 1 \((INF|-INF|NAN)\) must be finite\.$/',
         );
         Matrix::fromArray([[1.0, $value]]);
     }

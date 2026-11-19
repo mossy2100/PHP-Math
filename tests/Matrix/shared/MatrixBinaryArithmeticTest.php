@@ -240,7 +240,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(TypeError::class);
         $this->expectExceptionMessage(
-            'must be of type Mossy2100\\Math\\Vector|Mossy2100\\Math\\Matrix|float, string given'
+            'must be of type Mossy2100\\Math\\Vector|Mossy2100\\Math\\Matrix|float, string given',
         );
 
         $x = Matrix::fromArray([[1, 2]]);
@@ -336,7 +336,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute Hadamard product of the given Matrices. The result would overflow.'
+            'Cannot compute Hadamard product of the given Matrices. The result would overflow.',
         );
         Matrix::fromArray([[1e200]])->hadamardMul(Matrix::fromArray([[1e200]]));
     }
@@ -388,7 +388,7 @@ class MatrixBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute Hadamard quotient of the given Matrices. The result would overflow.'
+            'Cannot compute Hadamard quotient of the given Matrices. The result would overflow.',
         );
         Matrix::fromArray([[1e200]])->hadamardDiv(Matrix::fromArray([[1e-200]]));
     }

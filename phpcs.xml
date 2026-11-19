@@ -1,12 +1,11 @@
 <?xml version="1.0"?>
-<ruleset name="Mossy2100">
+<ruleset name="Jumbo">
     <description>Coding standard for the Mossy2100 packages by Shaun Moss.</description>
 
     <!-- Paths to check -->
     <file>src</file>
     <file>tests</file>
 
-    <!-- Use Mossy2100 PHP Coding Standard (includes PSR12 + additional rules) -->
-    <rule ref="Mossy2100"/>
-
+    <!-- Use the Jumbo Coding Standard (PER Coding Style 3.1 plus extra rules) -->
+    <rule ref="Jumbo"/>
 </ruleset>

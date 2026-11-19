@@ -17,8 +17,8 @@ require_once __DIR__ . '/epsilon.php';
 if (extension_loaded('mossy2100_math')) {
     fwrite(
         STDERR,
-        "\n\033[41;97m mossy2100_math extension is LOADED -- testing the C extension's classes, not this package's! " .
-        "\033[0m\n\n"
+        "\n\033[41;97m mossy2100_math extension is LOADED -- testing the C extension's classes, not this package's! "
+            . "\033[0m\n\n",
     );
 } else {
     fwrite(STDERR, "\n\033[42;30m mossy2100_math extension: not loaded (testing pure PHP). \033[0m\n\n");

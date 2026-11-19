@@ -339,8 +339,7 @@ class ComplexInverseHyperbolicTest extends TestCase
             $result = new Complex($x)->$function();
             $expected = $function($x);
             if (
-                $result->imaginary !== 0.0
-                || !Floats::approxEqual($expected, $result->real, 4 * PHP_FLOAT_EPSILON, 0.0)
+                $result->imaginary !== 0.0 || !Floats::approxEqual($expected, $result->real, 4 * PHP_FLOAT_EPSILON, 0.0)
             ) {
                 $mismatches[] = "$function($x) gave $result, expected $expected.";
             }

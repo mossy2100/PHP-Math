@@ -125,7 +125,7 @@ class ComplexConstructorTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot create Complex with real part 1.7E+308 and imaginary part 1.7E+308. Its magnitude would overflow.'
+            'Cannot create Complex with real part 1.7E+308 and imaginary part 1.7E+308. Its magnitude would overflow.',
         );
         new Complex(1.7e308, 1.7e308);
     }

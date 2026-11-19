@@ -107,10 +107,10 @@ class RationalRoundingTest extends TestCase
      */
     public function testRoundHalfEven(): void
     {
-        $this->assertSame(0, new Rational(1, 2)->round(RoundingMode::HalfEven));  // 0.5 -> 0 (even)
-        $this->assertSame(2, new Rational(3, 2)->round(RoundingMode::HalfEven));  // 1.5 -> 2 (even)
-        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::HalfEven));  // 2.5 -> 2 (even)
-        $this->assertSame(4, new Rational(7, 2)->round(RoundingMode::HalfEven));  // 3.5 -> 4 (even)
+        $this->assertSame(0, new Rational(1, 2)->round(RoundingMode::HalfEven)); // 0.5 -> 0 (even)
+        $this->assertSame(2, new Rational(3, 2)->round(RoundingMode::HalfEven)); // 1.5 -> 2 (even)
+        $this->assertSame(2, new Rational(5, 2)->round(RoundingMode::HalfEven)); // 2.5 -> 2 (even)
+        $this->assertSame(4, new Rational(7, 2)->round(RoundingMode::HalfEven)); // 3.5 -> 4 (even)
         $this->assertSame(-2, new Rational(-5, 2)->round(RoundingMode::HalfEven)); // -2.5 -> -2 (even)
     }
 
@@ -119,10 +119,10 @@ class RationalRoundingTest extends TestCase
      */
     public function testRoundHalfOdd(): void
     {
-        $this->assertSame(1, new Rational(1, 2)->round(RoundingMode::HalfOdd));  // 0.5 -> 1 (odd)
-        $this->assertSame(1, new Rational(3, 2)->round(RoundingMode::HalfOdd));  // 1.5 -> 1 (odd)
-        $this->assertSame(3, new Rational(5, 2)->round(RoundingMode::HalfOdd));  // 2.5 -> 3 (odd)
-        $this->assertSame(3, new Rational(7, 2)->round(RoundingMode::HalfOdd));  // 3.5 -> 3 (odd)
+        $this->assertSame(1, new Rational(1, 2)->round(RoundingMode::HalfOdd)); // 0.5 -> 1 (odd)
+        $this->assertSame(1, new Rational(3, 2)->round(RoundingMode::HalfOdd)); // 1.5 -> 1 (odd)
+        $this->assertSame(3, new Rational(5, 2)->round(RoundingMode::HalfOdd)); // 2.5 -> 3 (odd)
+        $this->assertSame(3, new Rational(7, 2)->round(RoundingMode::HalfOdd)); // 3.5 -> 3 (odd)
         $this->assertSame(-3, new Rational(-5, 2)->round(RoundingMode::HalfOdd)); // -2.5 -> -3 (odd)
     }
 

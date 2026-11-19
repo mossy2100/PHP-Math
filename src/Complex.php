@@ -135,7 +135,7 @@ final class Complex implements Stringable, ArrayAccess
         }
         if (!is_finite($imag)) {
             throw new DomainException(
-                Stringify::prepEx('Cannot create Complex with non-finite imaginary part: ?.', $imag)
+                Stringify::prepEx('Cannot create Complex with non-finite imaginary part: ?.', $imag),
             );
         }
 
@@ -153,7 +153,7 @@ final class Complex implements Stringable, ArrayAccess
                 throw new OverflowException(Stringify::prepEx(
                     'Cannot create Complex with real part ? and imaginary part ?. Its magnitude would overflow.',
                     $real,
-                    $imag
+                    $imag,
                 ));
             }
             // atan2() gives the principal value. With a tiny imaginary part, it rounds to ±π, keeping the sign of the
@@ -214,7 +214,7 @@ final class Complex implements Stringable, ArrayAccess
             throw new FormatException(
                 mb_check_encoding($str, 'UTF-8')
                     ? Stringify::prepEx('Cannot convert string ? to Complex. Invalid format.', $str)
-                    : 'Cannot convert string to Complex. Invalid format.'
+                    : 'Cannot convert string to Complex. Invalid format.',
             );
         }
 
@@ -323,7 +323,7 @@ final class Complex implements Stringable, ArrayAccess
         // Check type.
         if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
-                'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
+                'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.',
             );
         }
 
@@ -368,12 +368,12 @@ final class Complex implements Stringable, ArrayAccess
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE,
     ): bool {
         // Check type.
         if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
-                'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.'
+                'Cannot compare Complex with ' . get_debug_type($other) . '. Must be Complex, int, or float.',
             );
         }
 
@@ -395,8 +395,8 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // Compare real and imaginary parts.
-        return Floats::approxEqual($this->real, $other->real, $relTol, $absTol) &&
-            Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
+        return Floats::approxEqual($this->real, $other->real, $relTol, $absTol)
+            && Floats::approxEqual($this->imaginary, $other->imaginary, $relTol, $absTol);
     }
 
     #endregion
@@ -427,7 +427,7 @@ final class Complex implements Stringable, ArrayAccess
             throw new ArithmeticException('Cannot divide by zero.');
         }
 
-        return self::calcWithOverflowMessage('invert the given Complex', fn () => new self(1)->div($this));
+        return self::calcWithOverflowMessage('invert the given Complex', fn() => new self(1)->div($this));
     }
 
     /**
@@ -463,7 +463,7 @@ final class Complex implements Stringable, ArrayAccess
         return self::fromResult(
             $this->real + $other->real,
             $this->imaginary + $other->imaginary,
-            'add the given Complex numbers'
+            'add the given Complex numbers',
         );
     }
 
@@ -486,7 +486,7 @@ final class Complex implements Stringable, ArrayAccess
         return self::fromResult(
             $this->real - $other->real,
             $this->imaginary - $other->imaginary,
-            'subtract the given Complex numbers'
+            'subtract the given Complex numbers',
         );
     }
 
@@ -620,12 +620,12 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle exponent = 1. Any number to power 1 is itself.
         if ($exp->equal(1)) {
-            return clone $this;
+            return clone($this);
         }
 
         return self::calcWithOverflowMessage(
             'raise the given Complex to the given power',
-            fn () => $this->calcPow($exp)
+            fn() => $this->calcPow($exp),
         );
     }
 
@@ -673,7 +673,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Handle degree 1.
         if ($degree === 1) {
-            return [clone $this];
+            return [clone($this)];
         }
 
         // Handle degree 2. Use sqrt(), so the results agree.
@@ -920,7 +920,7 @@ final class Complex implements Stringable, ArrayAccess
         // General solution. Compute log_b(z) = ln(z) / ln(b)
         return self::calcWithOverflowMessage(
             'compute logarithm of the given Complex',
-            fn () => $this->ln()->div($base->ln())
+            fn() => $this->ln()->div($base->ln()),
         );
     }
 
@@ -1069,7 +1069,7 @@ final class Complex implements Stringable, ArrayAccess
         return self::fromResult(
             cosh($x) * cos($y),
             sinh($x) * sin($y),
-            'compute hyperbolic cosine of the given Complex'
+            'compute hyperbolic cosine of the given Complex',
         );
     }
 
@@ -1271,7 +1271,7 @@ final class Complex implements Stringable, ArrayAccess
         // For integer exponents, do exponentiation by squaring.
         if ($exp->isReal() && Floats::isInt($exp->real)) {
             $result = new self(1);
-            $x = clone $this;
+            $x = clone($this);
             // For negative exponents, invert the base. This works better than inverting the result at the end, because
             // it avoids a possible overflow for large negative exponents.
             if ($exp->real < 0) {
@@ -1646,7 +1646,7 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         // The constructor throws if the magnitude overflows.
-        return self::calcWithOverflowMessage($operation, static fn () => new self($real, $imag));
+        return self::calcWithOverflowMessage($operation, static fn() => new self($real, $imag));
     }
 
     /**

@@ -122,7 +122,7 @@ class VectorFactoryTest extends TestCase
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessageMatches(
-            '/^Cannot create Vector from array\. Element at index 1 \((INF|-INF|NAN)\) must be finite\.$/'
+            '/^Cannot create Vector from array\. Element at index 1 \((INF|-INF|NAN)\) must be finite\.$/',
         );
         Vector::fromArray([1.0, $value]);
     }

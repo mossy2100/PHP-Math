@@ -50,11 +50,11 @@ class ComplexRootTest extends TestCase
 
         $this->assertEqualsWithDelta(0.0, $root1->real, EPSILON);
         $this->assertTrue(
-            Floats::approxEqual($root1->imaginary, 1.0) || Floats::approxEqual($root1->imaginary, -1.0)
+            Floats::approxEqual($root1->imaginary, 1.0) || Floats::approxEqual($root1->imaginary, -1.0),
         );
         $this->assertEqualsWithDelta(0.0, $root2->real, EPSILON);
         $this->assertTrue(
-            Floats::approxEqual($root2->imaginary, 1.0) || Floats::approxEqual($root2->imaginary, -1.0)
+            Floats::approxEqual($root2->imaginary, 1.0) || Floats::approxEqual($root2->imaginary, -1.0),
         );
     }
 

@@ -483,7 +483,7 @@ class RationalBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot find the remainder of the given Rational numbers. The result would overflow.'
+            'Cannot find the remainder of the given Rational numbers. The result would overflow.',
         );
 
         // 4000000007 and 4000000009 are prime, so the remainder, 2/(4000000007 × 4000000009), is in lowest terms, and

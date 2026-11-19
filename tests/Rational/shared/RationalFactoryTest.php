@@ -121,7 +121,7 @@ class RationalFactoryTest extends TestCase
     {
         $this->expectException(FormatException::class);
         $this->expectExceptionMessage(
-            "Cannot convert string '" . str_repeat('x', 29) . "…' to Rational. Invalid format."
+            "Cannot convert string '" . str_repeat('x', 29) . "…' to Rational. Invalid format.",
         );
         Rational::fromString(str_repeat('x', 40));
     }
@@ -345,7 +345,7 @@ class RationalFactoryTest extends TestCase
     {
         $this->expectException(DomainException::class);
         $this->expectExceptionMessage(
-            'Cannot create Rational from float: 1.2345678901234567E+300. Outside valid range.'
+            'Cannot create Rational from float: 1.2345678901234567E+300. Outside valid range.',
         );
         Rational::fromFloat(1.2345678901234567e300);
     }

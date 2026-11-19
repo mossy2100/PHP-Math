@@ -345,7 +345,7 @@ class VectorBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute Hadamard product of the given Vectors. The result would overflow.'
+            'Cannot compute Hadamard product of the given Vectors. The result would overflow.',
         );
         Vector::fromArray([1e200])->hadamardMul(Vector::fromArray([1e200]));
     }
@@ -373,7 +373,7 @@ class VectorBinaryArithmeticTest extends TestCase
         $v2 = Vector::fromArray([1, 2]);
         $this->expectException(LengthException::class);
         $this->expectExceptionMessage(
-            'Cannot compute Hadamard quotient with Vector of incorrect count: 2. Expected 3.'
+            'Cannot compute Hadamard quotient with Vector of incorrect count: 2. Expected 3.',
         );
         $v1->hadamardDiv($v2);
     }
@@ -397,7 +397,7 @@ class VectorBinaryArithmeticTest extends TestCase
     {
         $this->expectException(OverflowException::class);
         $this->expectExceptionMessage(
-            'Cannot compute Hadamard quotient of the given Vectors. The result would overflow.'
+            'Cannot compute Hadamard quotient of the given Vectors. The result would overflow.',
         );
         Vector::fromArray([1e200])->hadamardDiv(Vector::fromArray([1e-200]));
     }

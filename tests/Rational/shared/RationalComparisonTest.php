@@ -62,7 +62,7 @@ class RationalComparisonTest extends TestCase
         $r = new Rational(3, 2);
 
         $this->assertSame(-1, $r->compare(2)); // 3/2 < 2
-        $this->assertSame(1, $r->compare(1));  // 3/2 > 1
+        $this->assertSame(1, $r->compare(1)); // 3/2 > 1
         $this->assertSame(0, new Rational(4, 2)->compare(2)); // 2 == 2
     }
 
@@ -73,9 +73,9 @@ class RationalComparisonTest extends TestCase
     {
         $r = new Rational(1, 2);
 
-        $this->assertSame(0, $r->compare(0.5));  // 1/2 == 0.5
+        $this->assertSame(0, $r->compare(0.5)); // 1/2 == 0.5
         $this->assertSame(-1, $r->compare(0.6)); // 1/2 < 0.6
-        $this->assertSame(1, $r->compare(0.4));  // 1/2 > 0.4
+        $this->assertSame(1, $r->compare(0.4)); // 1/2 > 0.4
     }
 
     /**
@@ -86,7 +86,7 @@ class RationalComparisonTest extends TestCase
         $r = new Rational(11, 2);
 
         $this->assertSame(-1, $r->compare(6.0)); // 11/2 < 6.0
-        $this->assertSame(1, $r->compare(5.0));  // 11/2 > 5.0
+        $this->assertSame(1, $r->compare(5.0)); // 11/2 > 5.0
     }
 
     /**
@@ -909,7 +909,6 @@ class RationalComparisonTest extends TestCase
         $this->assertSame(-1, $r->approxCompare(INF));
         $this->assertSame(1, $r->approxCompare(-INF));
     }
-
 
     /**
      * Test approxCompare() with an invalid tolerance throws DomainException.

@@ -170,7 +170,7 @@ final class Rational implements Stringable
         // Check for values outside the valid range for Rational.
         if ($absValue < $min || $absValue > $max) {
             throw new DomainException(
-                Stringify::prepEx('Cannot create Rational from float: ?. Outside valid range.', $value)
+                Stringify::prepEx('Cannot create Rational from float: ?. Outside valid range.', $value),
             );
         }
 
@@ -231,7 +231,7 @@ final class Rational implements Stringable
             $max = (string) PHP_INT_MAX;
             if (strlen($digits) > strlen($max) || (strlen($digits) === strlen($max) && strcmp($digits, $max) > 0)) {
                 throw new DomainException(
-                    Stringify::prepEx('Cannot convert string ? to Rational. Outside valid range.', $str)
+                    Stringify::prepEx('Cannot convert string ? to Rational. Outside valid range.', $str),
                 );
             }
         }
@@ -245,7 +245,7 @@ final class Rational implements Stringable
                 throw new DomainException(
                     Stringify::prepEx('Cannot convert string ? to Rational. Outside valid range.', $str),
                     0,
-                    $e
+                    $e,
                 );
             }
         }
@@ -265,7 +265,7 @@ final class Rational implements Stringable
         throw new FormatException(
             mb_check_encoding($str, 'UTF-8')
                 ? Stringify::prepEx('Cannot convert string ? to Rational. Invalid format.', $str)
-                : 'Cannot convert string to Rational. Invalid format.'
+                : 'Cannot convert string to Rational. Invalid format.',
         );
     }
 
@@ -366,7 +366,7 @@ final class Rational implements Stringable
         // Check type.
         if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
-                'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.'
+                'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.',
             );
         }
 
@@ -451,12 +451,12 @@ final class Rational implements Stringable
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE,
     ): bool {
         // Check type.
         if (!$other instanceof self && !Numbers::isNumber($other)) {
             throw new InvalidArgumentException(
-                'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.'
+                'Cannot compare Rational with ' . get_debug_type($other) . '. Must be Rational, int, or float.',
             );
         }
 
@@ -535,7 +535,7 @@ final class Rational implements Stringable
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
         return self::calcWithOverflowMessage(
             'add the given Rational numbers',
-            static fn () => self::calcAddSub($a, $b, $c, $d, false)
+            static fn() => self::calcAddSub($a, $b, $c, $d, false),
         );
     }
 
@@ -552,7 +552,7 @@ final class Rational implements Stringable
         [$a, $b, $c, $d] = $this->getOperandComponents($other);
         return self::calcWithOverflowMessage(
             'subtract the given Rational numbers',
-            static fn () => self::calcAddSub($a, $b, $c, $d, true)
+            static fn() => self::calcAddSub($a, $b, $c, $d, true),
         );
     }
 
@@ -585,7 +585,7 @@ final class Rational implements Stringable
         // Multiply reduced terms: (a/b) * (c/d) = ac/bd
         return self::calcWithOverflowMessage(
             'multiply the given Rational numbers',
-            static fn () => new self(Integers::mul($a, $c), Integers::mul($b, $d))
+            static fn() => new self(Integers::mul($a, $c), Integers::mul($b, $d)),
         );
     }
 
@@ -630,7 +630,7 @@ final class Rational implements Stringable
         // Multiply reduced terms: (a/b) / (c/d) = ad/bc
         return self::calcWithOverflowMessage(
             'divide the given Rational numbers',
-            static fn () => new self(Integers::mul($a, $d), Integers::mul($b, $c))
+            static fn() => new self(Integers::mul($a, $d), Integers::mul($b, $c)),
         );
     }
 
@@ -677,7 +677,7 @@ final class Rational implements Stringable
                 $rem = intdiv($rem, $g1);
                 $g2 = Integers::gcd($rem, $d);
                 return new self(intdiv($rem, $g2), Integers::mul(intdiv($bOverG, $g1), intdiv($d, $g2)));
-            }
+            },
         );
     }
 
@@ -712,7 +712,7 @@ final class Rational implements Stringable
     {
         return self::calcWithOverflowMessage(
             'raise the given Rational to the given power',
-            fn () => $this->calcPow($exp)
+            fn() => $this->calcPow($exp),
         );
     }
 
@@ -726,7 +726,7 @@ final class Rational implements Stringable
      */
     public function sqr(): self
     {
-        return self::calcWithOverflowMessage('square the given Rational', fn () => $this->mul($this));
+        return self::calcWithOverflowMessage('square the given Rational', fn() => $this->mul($this));
     }
 
     #endregion
@@ -923,7 +923,7 @@ final class Rational implements Stringable
 
         // Handle exponent = 1. Any number to power 1 is itself.
         if ($exp === 1) {
-            return clone $this;
+            return clone($this);
         }
 
         // Handle exponent = 2.
@@ -949,7 +949,7 @@ final class Rational implements Stringable
         // General solution. Calculate the new numerator and denominator with overflow checks.
         return new self(
             Integers::pow($this->numerator, $exp),
-            Integers::pow($this->denominator, $exp)
+            Integers::pow($this->denominator, $exp),
         );
     }
 
@@ -1341,7 +1341,7 @@ final class Rational implements Stringable
         return min(
             $a - 1,
             $k0 === 0 ? PHP_INT_MAX : intdiv($limit - $k1, $k0),
-            $h0 === 0 ? PHP_INT_MAX : intdiv($limit - $h1, $h0)
+            $h0 === 0 ? PHP_INT_MAX : intdiv($limit - $h1, $h0),
         );
     }
 

@@ -232,7 +232,7 @@ class ComplexFactoryTest extends TestCase
     {
         $this->expectException(FormatException::class);
         $this->expectExceptionMessage(
-            "Cannot convert string '" . str_repeat('x', 29) . "…' to Complex. Invalid format."
+            "Cannot convert string '" . str_repeat('x', 29) . "…' to Complex. Invalid format.",
         );
         Complex::fromString(str_repeat('x', 40));
     }
@@ -468,7 +468,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromPolarRoundTripQuadrant1(): void
     {
         $mag = 5.0;
-        $phase = M_PI / 6;  // 30 degrees
+        $phase = M_PI / 6; // 30 degrees
         $z = Complex::fromPolar($mag, $phase);
 
         $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
@@ -478,7 +478,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromPolarRoundTripQuadrant2(): void
     {
         $mag = 5.0;
-        $phase = 2 * M_PI / 3;  // 120 degrees
+        $phase = 2 * M_PI / 3; // 120 degrees
         $z = Complex::fromPolar($mag, $phase);
 
         $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
@@ -488,7 +488,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromPolarRoundTripQuadrant3(): void
     {
         $mag = 5.0;
-        $phase = -5 * M_PI / 6;  // -150 degrees
+        $phase = -5 * M_PI / 6; // -150 degrees
         $z = Complex::fromPolar($mag, $phase);
 
         $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
@@ -498,7 +498,7 @@ class ComplexFactoryTest extends TestCase
     public function testFromPolarRoundTripQuadrant4(): void
     {
         $mag = 5.0;
-        $phase = -M_PI / 4;  // -45 degrees
+        $phase = -M_PI / 4; // -45 degrees
         $z = Complex::fromPolar($mag, $phase);
 
         $this->assertEqualsWithDelta($mag, $z->magnitude, EPSILON);
@@ -511,7 +511,7 @@ class ComplexFactoryTest extends TestCase
     public function testPolarToRectangularConsistency(): void
     {
         $mag = 10.0;
-        $phase = -M_PI / 3;  // -60 degrees (quadrant 4)
+        $phase = -M_PI / 3; // -60 degrees (quadrant 4)
 
         $z = Complex::fromPolar($mag, $phase);
 
@@ -570,7 +570,7 @@ class ComplexFactoryTest extends TestCase
             $expectedPhase,
             $z->phase,
             EPSILON,
-            "Phase should be $expectedPhase for input angle $inputAngle"
+            "Phase should be $expectedPhase for input angle $inputAngle",
         );
     }
 

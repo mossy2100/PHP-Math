@@ -125,7 +125,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             // Check the value is a number.
             if (!Numbers::isNumber($value)) {
                 throw new InvalidArgumentException(
-                    "Cannot create Vector from array. Element at index $index must be an int or float."
+                    "Cannot create Vector from array. Element at index $index must be an int or float.",
                 );
             }
 
@@ -133,7 +133,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             if (!is_finite($value)) {
                 throw new DomainException(Stringify::prepEx(
                     "Cannot create Vector from array. Element at index $index (?) must be finite.",
-                    $value
+                    $value,
                 ));
             }
 
@@ -272,7 +272,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.'
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.',
             );
         }
 
@@ -309,13 +309,13 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function approxEqual(
         mixed $other,
         float $relTol = Floats::DEFAULT_RELATIVE_TOLERANCE,
-        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE
+        float $absTol = Floats::DEFAULT_ABSOLUTE_TOLERANCE,
     ): bool {
         // The argument has to be mixed to align with the trait method being overridden, so we add our own type check.
         // If we don't have a Vector, abort.
         if (!$other instanceof self) {
             throw new InvalidArgumentException(
-                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.'
+                'Cannot compare Vector with ' . get_debug_type($other) . '. Must be Vector.',
             );
         }
 
@@ -390,7 +390,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have the same count.
         if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot add Vector of incorrect count: {$other->count}. Expected {$this->count}."
+                "Cannot add Vector of incorrect count: {$other->count}. Expected {$this->count}.",
             );
         }
 
@@ -416,7 +416,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have the same count.
         if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot subtract Vector of incorrect count: {$other->count}. Expected {$this->count}."
+                "Cannot subtract Vector of incorrect count: {$other->count}. Expected {$this->count}.",
             );
         }
 
@@ -465,7 +465,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Multiply vector by a matrix: xA, treating this vector as a row vector.
         if ($this->count !== $multiplier->rowCount) {
             throw new LengthException(
-                "Invalid Matrix row count: {$multiplier->rowCount}. Must equal this Vector's count: {$this->count}."
+                "Invalid Matrix row count: {$multiplier->rowCount}. Must equal this Vector's count: {$this->count}.",
             );
         }
 
@@ -529,8 +529,8 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have the same count.
         if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute Hadamard product with Vector of incorrect count: {$other->count}. " .
-                "Expected {$this->count}."
+                "Cannot compute Hadamard product with Vector of incorrect count: {$other->count}. "
+                    . "Expected {$this->count}.",
             );
         }
 
@@ -539,7 +539,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         for ($i = 0; $i < $this->count; $i++) {
             $data[] = self::checkResult(
                 $this->data[$i] * $other->data[$i],
-                'compute Hadamard product of the given Vectors'
+                'compute Hadamard product of the given Vectors',
             );
         }
 
@@ -560,8 +560,8 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have the same count.
         if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute Hadamard quotient with Vector of incorrect count: {$other->count}. " .
-                "Expected {$this->count}."
+                "Cannot compute Hadamard quotient with Vector of incorrect count: {$other->count}. "
+                    . "Expected {$this->count}.",
             );
         }
 
@@ -573,7 +573,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             }
             $data[] = self::checkResult(
                 $this->data[$i] / $other->data[$i],
-                'compute Hadamard quotient of the given Vectors'
+                'compute Hadamard quotient of the given Vectors',
             );
         }
 
@@ -597,7 +597,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have the same count.
         if ($this->count !== $other->count) {
             throw new LengthException(
-                "Cannot compute dot product with Vector of incorrect count: {$other->count}. Expected {$this->count}."
+                "Cannot compute dot product with Vector of incorrect count: {$other->count}. Expected {$this->count}.",
             );
         }
 
@@ -627,12 +627,12 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if vectors have a count of 3.
         if ($this->count !== 3) {
             throw new LengthException(
-                'Cannot compute cross product with first Vector count: ' . $this->count . '. Must be 3.'
+                'Cannot compute cross product with first Vector count: ' . $this->count . '. Must be 3.',
             );
         }
         if ($other->count !== 3) {
             throw new LengthException(
-                'Cannot compute cross product with second Vector count: ' . $other->count . '. Must be 3.'
+                'Cannot compute cross product with second Vector count: ' . $other->count . '. Must be 3.',
             );
         }
 
@@ -647,17 +647,17 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             $scaleA = self::powerOf2Scale($a);
             $scaleB = self::powerOf2Scale($b);
             $result = self::calcCross(
-                array_map(static fn ($x) => $x / $scaleA, $a),
-                array_map(static fn ($x) => $x / $scaleB, $b)
+                array_map(static fn($x) => $x / $scaleA, $a),
+                array_map(static fn($x) => $x / $scaleB, $b),
             );
 
             // Undo the scaling, applying the smaller scale first, so only a genuine overflow gives INF.
             $minScale = min($scaleA, $scaleB);
             $maxScale = max($scaleA, $scaleB);
-            $result = array_map(static fn ($x) => $x * $minScale * $maxScale, $result);
+            $result = array_map(static fn($x) => $x * $minScale * $maxScale, $result);
             if (!self::allFinite($result)) {
                 throw new OverflowException(
-                    'Cannot compute cross product of the given Vectors. The result would overflow.'
+                    'Cannot compute cross product of the given Vectors. The result would overflow.',
                 );
             }
         }
@@ -686,7 +686,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
             throw new OverflowException(
                 'Cannot compute outer product of the given Vectors. The result would overflow.',
                 0,
-                $e
+                $e,
             );
         }
     }
@@ -804,7 +804,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check element type.
         if (!Numbers::isNumber($value)) {
             throw new InvalidArgumentException(
-                'Invalid element type: ' . get_debug_type($value) . '. Must be int or float.'
+                'Invalid element type: ' . get_debug_type($value) . '. Must be int or float.',
             );
         }
 
@@ -857,7 +857,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
     {
         return new OutOfRangeException(
             "Invalid index: $index. "
-            . ($this->count === 0 ? 'The Vector is empty.' : 'Must be in the range 0-' . ($this->count - 1) . '.')
+                . ($this->count === 0 ? 'The Vector is empty.' : 'Must be in the range 0-' . ($this->count - 1) . '.'),
         );
     }
 
@@ -943,7 +943,7 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     private static function allFinite(array $values): bool
     {
-        return array_all($values, static fn ($x) => is_finite($x));
+        return array_all($values, static fn($x) => is_finite($x));
     }
 
     #endregion
