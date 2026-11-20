@@ -76,10 +76,10 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     {
         // Check if dimensions are non-negative.
         if ($rowCount < 0) {
-            throw new DomainException("Cannot create Matrix with $rowCount rows. Must not be negative.");
+            throw new DomainException("Cannot create Matrix with {$rowCount} rows. Must not be negative.");
         }
         if ($columnCount < 0) {
-            throw new DomainException("Cannot create Matrix with $columnCount columns. Must not be negative.");
+            throw new DomainException("Cannot create Matrix with {$columnCount} columns. Must not be negative.");
         }
 
         // Initialize matrix properties.
@@ -145,12 +145,12 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         foreach ($arr as $i => $row) {
             // Check each row is an array.
             if (!is_array($row)) {
-                throw new InvalidArgumentException("Cannot create Matrix from array. Row $i must be an array.");
+                throw new InvalidArgumentException("Cannot create Matrix from array. Row {$i} must be an array.");
             }
 
             // Check each row is a list.
             if (!array_is_list($row)) {
-                throw new DomainException("Cannot create Matrix from array. Row $i must be a list.");
+                throw new DomainException("Cannot create Matrix from array. Row {$i} must be a list.");
             }
 
             // Check all rows have the same number of columns.
@@ -170,14 +170,14 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 // Check the value is a number.
                 if (!Numbers::isNumber($value)) {
                     throw new InvalidArgumentException(
-                        "Cannot create Matrix from array. Element at row $i, column $j must be an int or float.",
+                        "Cannot create Matrix from array. Element at row {$i}, column {$j} must be an int or float.",
                     );
                 }
 
                 // Check the value is finite.
                 if (!is_finite($value)) {
                     throw new DomainException(Stringify::prepEx(
-                        "Cannot create Matrix from array. Element at row $i, column $j (?) must be finite.",
+                        "Cannot create Matrix from array. Element at row {$i}, column {$j} (?) must be finite.",
                         $value,
                     ));
                 }
@@ -235,7 +235,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     public function __toString(): string
     {
         if ($this->rowCount === 0 || $this->columnCount === 0) {
-            return '┌ ┐' . "\n" . '└ ┘';
+            return "┌ ┐\n└ ┘";
         }
 
         // Format every cell up front so column widths are calculated against the same strings that get rendered.
@@ -252,7 +252,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
 
         // Top border.
         $innerWidth = $this->columnCount * ($maxWidth + 2);
-        $result = '┌' . str_repeat(' ', $innerWidth) . '┐' . "\n";
+        $result = '┌' . str_repeat(' ', $innerWidth) . "┐\n";
 
         // Data rows.
         for ($i = 0; $i < $this->rowCount; $i++) {
@@ -263,7 +263,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 }
                 $result .= str_pad($cells[$i][$j], $maxWidth, ' ', STR_PAD_LEFT);
             }
-            $result .= ' │' . "\n";
+            $result .= " │\n";
         }
 
         // Bottom border.
@@ -421,7 +421,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         $vectorCount = count($vec);
         if ($vectorCount !== $this->columnCount) {
             throw new LengthException(
-                "Cannot set row due to incorrect Vector count: $vectorCount. Expected {$this->columnCount}.",
+                "Cannot set row due to incorrect Vector count: {$vectorCount}. Expected {$this->columnCount}.",
             );
         }
 
@@ -448,7 +448,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         $vectorCount = count($vec);
         if ($vectorCount !== $this->rowCount) {
             throw new LengthException(
-                "Cannot set column due to incorrect Vector count: $vectorCount. Expected {$this->rowCount}.",
+                "Cannot set column due to incorrect Vector count: {$vectorCount}. Expected {$this->rowCount}.",
             );
         }
 
@@ -636,7 +636,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         foreach ($this->toArray() as $i => $row) {
             foreach ($row as $j => $value) {
                 if ($value === 0.0) {
-                    throw new ArithmeticException("Cannot compute reciprocal of zero at row $i, column $j.");
+                    throw new ArithmeticException("Cannot compute reciprocal of zero at row {$i}, column {$j}.");
                 }
                 $row[$j] = self::checkResult(1 / $value, 'compute reciprocal of the given Matrix');
             }
@@ -709,8 +709,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
             throw new LengthException(
-                "Cannot add Matrix of incorrect dimensions: {$other->rowCount}x{$other->columnCount}. "
-                    . "Expected {$this->rowCount}x{$this->columnCount}.",
+                "Cannot add Matrix of incorrect dimensions: {$other->rowCount}x{$other->columnCount}. Expected "
+                    . "{$this->rowCount}x{$this->columnCount}.",
             );
         }
 
@@ -739,8 +739,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         // Check if dimensions are the same.
         if ($this->rowCount !== $other->rowCount || $this->columnCount !== $other->columnCount) {
             throw new LengthException(
-                "Cannot subtract Matrix of incorrect dimensions: {$other->rowCount}x{$other->columnCount}. "
-                    . "Expected {$this->rowCount}x{$this->columnCount}.",
+                "Cannot subtract Matrix of incorrect dimensions: {$other->rowCount}x{$other->columnCount}. Expected "
+                    . "{$this->rowCount}x{$this->columnCount}.",
             );
         }
 
@@ -936,7 +936,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
             foreach ($row as $j => $value) {
                 $divisor = $otherRows[$i][$j];
                 if ($divisor === 0.0) {
-                    throw new ArithmeticException("Cannot divide by zero at row $i, column $j.");
+                    throw new ArithmeticException("Cannot divide by zero at row {$i}, column {$j}.");
                 }
                 $row[$j] = self::checkResult($value / $divisor, 'compute Hadamard quotient of the given Matrices');
             }
@@ -1294,7 +1294,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      */
     private static function indexMessage(string $axis, int $index, int $size): string
     {
-        return "Invalid $axis index: $index. "
+        return "Invalid {$axis} index: {$index}. "
             . ($size === 0 ? "The Matrix has no {$axis}s." : 'Must be in the range 0-' . ($size - 1) . '.');
     }
 
@@ -1318,12 +1318,12 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
         }
 
         if ($count < 0) {
-            throw new OutOfRangeException("Invalid $axis count: $count. Must not be negative.");
+            throw new OutOfRangeException("Invalid {$axis} count: {$count}. Must not be negative.");
         }
 
         if ($start + $count > $size) {
             throw new OutOfRangeException(
-                "Invalid $axis range: $start-" . ($start + $count - 1) . '. Must be within 0-' . ($size - 1) . '.',
+                "Invalid {$axis} range: {$start}-" . ($start + $count - 1) . '. Must be within 0-' . ($size - 1) . '.',
             );
         }
     }
@@ -1392,7 +1392,7 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
     private static function checkResult(float $value, string $operation): float
     {
         if (!is_finite($value)) {
-            throw new OverflowException("Cannot $operation. The result would overflow.");
+            throw new OverflowException("Cannot {$operation}. The result would overflow.");
         }
 
         return $value;

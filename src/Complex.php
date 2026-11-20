@@ -192,20 +192,20 @@ final class Complex implements Stringable, ArrayAccess
         }
 
         $rxNum = '(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?';
-        if (preg_match("/^([+-]?)($rxNum)$/", $str, $matches)) {
+        if (preg_match("/^([+-]?)({$rxNum})$/", $str, $matches)) {
             // Pattern: ±a (real only)
             [$entire, $realSign, $realVal] = $matches;
             $imagSign = '';
             $imagVal = 0;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:{$rxNum})?)i$/", $str, $matches)) {
             // Pattern: ±bi (imaginary only)
             [$entire, $imagSign, $imagVal] = $matches;
             $realSign = '';
             $realVal = 0;
-        } elseif (preg_match("/^([+-]?)($rxNum)\s*([+-])\s*((?:$rxNum)?)i$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)({$rxNum})\s*([+-])\s*((?:{$rxNum})?)i$/", $str, $matches)) {
             // Pattern: ±a ± bi (real + imag)
             [$entire, $realSign, $realVal, $imagSign, $imagVal] = $matches;
-        } elseif (preg_match("/^([+-]?)((?:$rxNum)?)i\s*([+-])\s*($rxNum)$/", $str, $matches)) {
+        } elseif (preg_match("/^([+-]?)((?:{$rxNum})?)i\s*([+-])\s*({$rxNum})$/", $str, $matches)) {
             // Pattern: ±bi ± a (imag + real)
             [$entire, $imagSign, $imagVal, $realSign, $realVal] = $matches;
         } else {
@@ -281,12 +281,12 @@ final class Complex implements Stringable, ArrayAccess
             if ($this->imaginary === -1.0) {
                 return '-i';
             }
-            return $this->imaginary . 'i';
+            return "{$this->imaginary}i";
         }
 
         // Construct the string for the a + bi or a - bi form.
         $abs = abs($this->imaginary);
-        return $this->real . ' ' . ($this->imaginary > 0 ? '+' : '-') . ' ' . ($abs === 1.0 ? '' : $abs) . 'i';
+        return "{$this->real} " . ($this->imaginary > 0 ? '+' : '-') . ' ' . ($abs === 1.0 ? '' : $abs) . 'i';
     }
 
     #endregion
@@ -663,7 +663,7 @@ final class Complex implements Stringable, ArrayAccess
     {
         // Check for negative degree.
         if ($degree <= 0) {
-            throw new DomainException("Cannot compute roots of degree: $degree. Must be positive.");
+            throw new DomainException("Cannot compute roots of degree: {$degree}. Must be positive.");
         }
 
         // Handle special case of 0.
@@ -1025,7 +1025,7 @@ final class Complex implements Stringable, ArrayAccess
         // atan(z) is undefined at z = ±i.
         if ($this->real === 0.0 && abs($this->imaginary) === 1.0) {
             $value = $this->imaginary > 0 ? 'i' : '-i';
-            throw new ArithmeticException("Cannot compute inverse tangent of $value.");
+            throw new ArithmeticException("Cannot compute inverse tangent of {$value}.");
         }
 
         // atan(x + iy) is atanh(y + ix) with its parts swapped.
@@ -1138,7 +1138,7 @@ final class Complex implements Stringable, ArrayAccess
         // atanh(z) is undefined at z = ±1.
         if ($this->imaginary === 0.0 && abs($this->real) === 1.0) {
             $value = $this->real > 0 ? '1' : '-1';
-            throw new ArithmeticException("Cannot compute inverse hyperbolic tangent of $value.");
+            throw new ArithmeticException("Cannot compute inverse hyperbolic tangent of {$value}.");
         }
 
         [$real, $imag] = self::calcAtanh($this->real, $this->imaginary);
@@ -1201,7 +1201,7 @@ final class Complex implements Stringable, ArrayAccess
 
         // Check offset value.
         if (!$this->offsetExists($offset)) {
-            throw new OutOfRangeException("Invalid offset: $offset. Must be 0 or 1.");
+            throw new OutOfRangeException("Invalid offset: {$offset}. Must be 0 or 1.");
         }
 
         // Return the appropriate value.
@@ -1642,7 +1642,7 @@ final class Complex implements Stringable, ArrayAccess
     private static function fromResult(float $real, float $imag, string $operation): self
     {
         if (!is_finite($real) || !is_finite($imag)) {
-            throw new OverflowException("Cannot $operation. The result would overflow.");
+            throw new OverflowException("Cannot {$operation}. The result would overflow.");
         }
 
         // The constructor throws if the magnitude overflows.
@@ -1736,7 +1736,7 @@ final class Complex implements Stringable, ArrayAccess
         try {
             return $calc();
         } catch (OverflowException $e) {
-            throw new OverflowException("Cannot $operation. The result would overflow.", 0, $e);
+            throw new OverflowException("Cannot {$operation}. The result would overflow.", 0, $e);
         }
     }
 

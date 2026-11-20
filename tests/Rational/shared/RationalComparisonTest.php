@@ -791,7 +791,7 @@ class RationalComparisonTest extends TestCase
     public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid relative tolerance: {$expected}. Must be finite and non-negative.");
 
         $r = new Rational(1, 2);
         $r->approxEqual(0.5, $relTol);
@@ -804,7 +804,7 @@ class RationalComparisonTest extends TestCase
     public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid absolute tolerance: {$expected}. Must be finite and non-negative.");
 
         $r = new Rational(1, 2);
         $r->approxEqual(0.5, 1e-9, $absTol);
@@ -917,7 +917,7 @@ class RationalComparisonTest extends TestCase
     public function testApproxCompareWithInvalidToleranceThrows(float $relTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid relative tolerance: {$expected}. Must be finite and non-negative.");
 
         $r = new Rational(7, 2);
         $r->approxCompare(7, $relTol);

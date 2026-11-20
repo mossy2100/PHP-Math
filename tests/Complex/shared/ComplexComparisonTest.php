@@ -544,7 +544,7 @@ class ComplexComparisonTest extends TestCase
     public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid relative tolerance: {$expected}. Must be finite and non-negative.");
 
         $z = new Complex(3, 4);
         $z->approxEqual(new Complex(3, 4), $relTol);
@@ -557,7 +557,7 @@ class ComplexComparisonTest extends TestCase
     public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid absolute tolerance: {$expected}. Must be finite and non-negative.");
 
         $z = new Complex(3, 4);
         $z->approxEqual(new Complex(3, 4), 1e-9, $absTol);

@@ -146,7 +146,7 @@ class VectorArrayAccessTest extends TestCase
     {
         $v = Vector::fromArray([1, 2, 3]);
         $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage("Invalid element type: $type. Must be int or float.");
+        $this->expectExceptionMessage("Invalid element type: {$type}. Must be int or float.");
         $v[0] = $value;
     }
 

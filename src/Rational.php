@@ -81,7 +81,7 @@ final class Rational implements Stringable
 
         // If either value is PHP_INT_MIN and the other is odd, then the ratio is unrepresentable.
         if (($num === PHP_INT_MIN && $den % 2 !== 0) || ($den === PHP_INT_MIN && $num % 2 !== 0)) {
-            throw new DomainException("Cannot express ratio $num/$den as Rational.");
+            throw new DomainException("Cannot express ratio {$num}/{$den} as Rational.");
         }
 
         // Simplify the ratio to canonical form.
@@ -898,7 +898,7 @@ final class Rational implements Stringable
             if ($rootNum === null || $rootDen === null) {
                 $notReal = $this->numerator < 0 && $q % 2 === 0;
                 $reason = $notReal ? 'The result is not real.' : 'The result is irrational.';
-                throw new DomainException("Cannot raise $this to power $exp. $reason");
+                throw new DomainException("Cannot raise {$this} to power {$exp}. {$reason}");
             }
             return new self($rootNum, $rootDen)->calcPow($p);
         }
@@ -968,7 +968,7 @@ final class Rational implements Stringable
         try {
             return $calc();
         } catch (OverflowException $e) {
-            throw new OverflowException("Cannot $operation. The result would overflow.", 0, $e);
+            throw new OverflowException("Cannot {$operation}. The result would overflow.", 0, $e);
         }
     }
 

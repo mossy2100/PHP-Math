@@ -138,7 +138,7 @@ class RationalFactoryTest extends TestCase
                 Rational::fromString((string) $str);
                 $this->fail('Expected FormatException.');
             } catch (FormatException $e) {
-                $this->assertSame("Cannot convert string $quoted to Rational. Invalid format.", $e->getMessage());
+                $this->assertSame("Cannot convert string {$quoted} to Rational. Invalid format.", $e->getMessage());
             }
         }
     }
@@ -180,7 +180,7 @@ class RationalFactoryTest extends TestCase
     public function testFromStringOutOfRangeThrows(string $str): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Cannot convert string '$str' to Rational. Outside valid range.");
+        $this->expectExceptionMessage("Cannot convert string '{$str}' to Rational. Outside valid range.");
         Rational::fromString($str);
     }
 

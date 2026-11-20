@@ -220,8 +220,8 @@ class ComplexRoundingTest extends TestCase
 
         foreach ($cases as [$precision, $real, $imag]) {
             $result = $z->round($precision);
-            $this->assertSame($real, $result->real, "Real part for precision $precision");
-            $this->assertSame($imag, $result->imaginary, "Imaginary part for precision $precision");
+            $this->assertSame($real, $result->real, "Real part for precision {$precision}");
+            $this->assertSame($imag, $result->imaginary, "Imaginary part for precision {$precision}");
         }
     }
 

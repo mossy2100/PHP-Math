@@ -307,7 +307,7 @@ class ComplexInverseTrigonometricTest extends TestCase
             if (
                 $result->imaginary !== 0.0 || !Floats::approxEqual($expected, $result->real, 4 * PHP_FLOAT_EPSILON, 0.0)
             ) {
-                $mismatches[] = "$function($x) gave $result, expected $expected.";
+                $mismatches[] = "{$function}({$x}) gave {$result}, expected {$expected}.";
             }
         }
 

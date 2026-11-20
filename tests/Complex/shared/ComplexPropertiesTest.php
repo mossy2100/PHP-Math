@@ -250,8 +250,8 @@ class ComplexPropertiesTest extends TestCase
     #[DataProvider('phaseBoundaryProvider')]
     public function testPhaseAlwaysInPrincipalRange(Complex $z): void
     {
-        $this->assertGreaterThanOrEqual(-M_PI, $z->phase, "Phase should be >= -π for $z");
-        $this->assertLessThanOrEqual(M_PI, $z->phase, "Phase should be <= π for $z");
+        $this->assertGreaterThanOrEqual(-M_PI, $z->phase, "Phase should be >= -π for {$z}");
+        $this->assertLessThanOrEqual(M_PI, $z->phase, "Phase should be <= π for {$z}");
     }
 
     /**

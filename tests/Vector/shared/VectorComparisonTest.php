@@ -206,7 +206,7 @@ class VectorComparisonTest extends TestCase
     public function testApproxEqualWithInvalidRelativeToleranceThrows(float $relTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid relative tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid relative tolerance: {$expected}. Must be finite and non-negative.");
 
         $v = Vector::fromArray([1, 2]);
         $v->approxEqual(Vector::fromArray([1, 2]), $relTol);
@@ -219,7 +219,7 @@ class VectorComparisonTest extends TestCase
     public function testApproxEqualWithInvalidAbsoluteToleranceThrows(float $absTol, string $expected): void
     {
         $this->expectException(DomainException::class);
-        $this->expectExceptionMessage("Invalid absolute tolerance: $expected. Must be finite and non-negative.");
+        $this->expectExceptionMessage("Invalid absolute tolerance: {$expected}. Must be finite and non-negative.");
 
         $v = Vector::fromArray([1, 2]);
         $v->approxEqual(Vector::fromArray([1, 2]), 1e-9, $absTol);

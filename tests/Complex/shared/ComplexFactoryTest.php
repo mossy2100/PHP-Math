@@ -249,7 +249,7 @@ class ComplexFactoryTest extends TestCase
                 Complex::fromString((string) $str);
                 $this->fail('Expected FormatException.');
             } catch (FormatException $e) {
-                $this->assertSame("Cannot convert string $quoted to Complex. Invalid format.", $e->getMessage());
+                $this->assertSame("Cannot convert string {$quoted} to Complex. Invalid format.", $e->getMessage());
             }
         }
     }
@@ -570,7 +570,7 @@ class ComplexFactoryTest extends TestCase
             $expectedPhase,
             $z->phase,
             EPSILON,
-            "Phase should be $expectedPhase for input angle $inputAngle",
+            "Phase should be {$expectedPhase} for input angle {$inputAngle}",
         );
     }
 
