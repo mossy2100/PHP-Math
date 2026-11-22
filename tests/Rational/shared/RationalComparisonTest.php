@@ -325,7 +325,7 @@ class RationalComparisonTest extends TestCase
     {
         $r = new Rational(3, 4);
         $this->expectException(InvalidArgumentException::class);
-        $this->assertFalse($r->equal('string'));
+        $r->equal('string');
     }
 
     /**
