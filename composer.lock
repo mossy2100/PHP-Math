@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6103e7f42f2fbfe915ffa7337931b906",
+    "content-hash": "76957ac61ea34ec8b347bb435f7d720b",
     "packages": [
         {
             "name": "mossy2100/core",
@@ -12,7 +12,7 @@
             "dist": {
                 "type": "path",
                 "url": "../Core",
-                "reference": "b262c17659d80ba4639c18818362b3d5caa1d104"
+                "reference": "23c4a2d90af4b554355c2ccb57aa79ab9fcebe02"
             },
             "require": {
                 "ext-intl": "*",
@@ -215,8 +215,8 @@
             "version": "2.2.0",
             "dist": {
                 "type": "path",
-                "url": "../CodingStandard",
-                "reference": "e0bf861ee4cc691b820219c3eeeee0ada2a2923e"
+                "url": "../CodingStandard/Jumbo",
+                "reference": "be29dfb2c3ee70bff4c6ad98e7cd71a3e87d5758"
             },
             "require": {
                 "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
