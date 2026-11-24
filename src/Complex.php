@@ -315,8 +315,8 @@ final class Complex implements Stringable, ArrayAccess
      * @throws InvalidArgumentException If $other is not Complex, int, or float.
      * @throws DomainException If $other is NAN. There's no meaningful answer for NAN, unlike ±INF, which a Complex
      * is simply never equal to.
+     * @disregard P1128
      */
-    /** @disregard P1128 */
     #[Override] // Equatable
     public function equal(mixed $other): bool
     {

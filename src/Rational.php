@@ -32,8 +32,8 @@ use Stringable;
  * Allowing the numerator or the denominator to equal PHP_INT_MIN therefore complicates negation, reciprocal,
  * subtraction, and simplification methods.
  * So, while it's technically possible, supporting this edge case inflates the code for little gain.
+ * @disregard P1128
  */
-/** @disregard P1128 */
 final class Rational implements Stringable
 {
     use ApproxComparable;
@@ -358,8 +358,8 @@ final class Rational implements Stringable
      * @return int Returns -1 if this < other, 0 if equal, 1 if this > other.
      * @throws InvalidArgumentException If $other is not a Rational, int, or float.
      * @throws DomainException If $other is NAN.
+     * @disregard P1128
      */
-    /** @disregard P1128 */
     #[Override] // Comparable
     public function compare(mixed $other): int
     {
@@ -445,8 +445,8 @@ final class Rational implements Stringable
      * @throws DomainException If $other is NAN. There's no meaningful answer for NAN, unlike ±INF, which a Rational
      * is simply never (approximately) equal to.
      * @see Floats::approxEqual() For the tolerance algorithm details.
+     * @disregard P1128
      */
-    /** @disregard P1128 */
     #[Override] // ApproxEquatable
     public function approxEqual(
         mixed $other,

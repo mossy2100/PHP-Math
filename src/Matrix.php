@@ -496,8 +496,8 @@ final class Matrix implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @param mixed $other The Matrix to compare with.
      * @return bool True if the Matrices have the same dimensions and all elements are equal.
      * @throws InvalidArgumentException If $other is not a Matrix.
+     * @disregard P1128
      */
-    /** @disregard P1128 */
     #[Override] // Equatable
     public function equal(mixed $other): bool
     {

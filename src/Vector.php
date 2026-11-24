@@ -263,8 +263,8 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
      * @param mixed $other The value to compare with.
      * @return bool True if the vectors have the same count and all elements are equal.
      * @throws InvalidArgumentException If $other is not a Vector.
+     * @disregard P1128
      */
-    /** @disregard P1128 */
     #[Override] // Equatable
     public function equal(mixed $other): bool
     {
