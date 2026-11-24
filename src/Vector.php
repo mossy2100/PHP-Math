@@ -63,8 +63,10 @@ final class Vector implements Stringable, Countable, ArrayAccess, IteratorAggreg
                 return 0.0;
             }
 
-            // Calculate the magnitude of the scaled vector, then undo the scaling. Square with * rather than ** 2,
-            // which calls pow(), as pow() can be a unit in the last place off where * is always correctly rounded.
+            // Calculate the magnitude of the scaled vector, then undo the scaling. Square with * rather than ** 2.
+            // Like PHP's pow() function, the ** operator calls C's pow() function, which isn't guaranteed to be
+            // correctly rounded and can be a unit in the last place off. The * operator, however, is guaranteed to be
+            // correctly rounded.
             $sum = 0.0;
             foreach ($this->data as $x) {
                 $scaled = $x / $scale;
